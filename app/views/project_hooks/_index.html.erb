@@ -1,0 +1,29 @@
+<% if @project.hooks.any? %>
+
+  <% if @project.hooks.global.any? %>
+    <h2><%= l( :project_hooks ) %></h2>
+    <%= render :partial => 'project_hooks/hooks',
+               :locals => { :project => @project, :hooks => @project.hooks.global.by_position } %>
+  <% end %>
+
+  <% @project.repositories.each do |repository| %>
+    <% if repository.respond_to?( :hooks ) && repository.hooks.any? %>
+      <h2><%= l(:repository_hooks, :repository => ( repository.name || repository.url )) %></h2>
+      <%= render :partial => 'project_hooks/hooks',
+                 :locals => { :project => @project, :hooks => repository.hooks.by_position } %>
+    <% end %>
+  <% end %>
+
+<% else %>
+  <p class="nodata"><%= l( :label_no_data ) %></p>
+<% end %>
+
+<p>
+  <%= link_to_if_authorized l( :new_hook ),
+                             {
+                                 :controller => 'project_hooks',
+                                 :action => 'new',
+                                 :project_id => @project.id
+                             },
+                             :class => 'icon icon-add' %>
+</p>

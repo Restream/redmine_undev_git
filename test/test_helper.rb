@@ -21,4 +21,40 @@ class ActiveSupport::TestCase
     options[:path_encoding] = 'ISO-8859-1' unless options.key?(:path_encoding)
     Repository::UndevGit.create(options)
   end
+  
+  def create_hooks!(options = {})
+    repository_id = options[:repository_id] || 1
+    GlobalHook.create!(
+        :branches => 'master',
+        :keywords => 'close,fix',
+        :new_status_id => 1,
+        :new_done_ratio => '100%'
+    )
+    GlobalHook.create!(
+        :branches => 'production',
+        :keywords => 'close,fix',
+        :new_status_id => 2
+    )
+    ProjectHook.create!(
+        :project_id => 3,
+        :repository_id => repository_id,
+        :branches => 'master',
+        :keywords => 'close,fix',
+        :new_status_id => 1,
+        :new_done_ratio => '100%'
+    )
+    ProjectHook.create!(
+        :project_id => 3,
+        :repository_id => repository_id,
+        :branches => 'production',
+        :keywords => 'close,fix',
+        :new_status_id => 2
+    )
+    ProjectHook.create!(
+        :project_id => 3,
+        :branches => 'production',
+        :keywords => 'fix',
+        :new_status_id => 3
+    )
+  end
 end

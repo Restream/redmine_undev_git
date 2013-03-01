@@ -1,0 +1,3 @@
+class GlobalHook < HookBase
+
+end

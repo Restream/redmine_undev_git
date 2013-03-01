@@ -1,0 +1,47 @@
+<div class="contextual">
+<%= link_to l( :new_hook ), new_global_hook_path, :class => 'icon icon-add' %>
+</div>
+
+<h2><%=l( :label_hooks_plural )%></h2>
+
+<% if @hooks.any? %>
+  <table class="list">
+    <thead>
+      <tr>
+        <th><%= l( :field_branches ) %></th>
+        <th><%= l( :field_keywords ) %></th>
+        <th><%= l( :field_new_status ) %></th>
+        <th><%= l( :field_new_done_ratio ) %></th>
+        <th><%= l( :button_sort ) %></th>
+        <th width="10%"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @hooks.each do |hook| %>
+        <tr>
+          <td align="center"><%= hook.branches.join( ", " ) %></td>
+          <td align="center"><%= hook.keywords.join( ", " ) %></td>
+          <td align="center"><%= hook.new_status ? hook.new_status.name : nil %></td>
+          <td align="center"><%= hook.new_done_ratio %></td>
+          <td align="center">
+            <%= reorder_links('hook', {
+                :controller => 'global_hooks',
+                :action => 'update',
+                :id => hook
+            }, :put) %>
+          </td>
+          <td class="buttons">
+            <%= link_to(l(:button_edit), edit_global_hook_path(hook), :class => 'icon icon-edit') %>
+
+            <%= link_to(l(:button_delete), global_hook_path(hook),
+                        :method  => :delete,
+                        :confirm => l( :text_are_you_sure ),
+                        :class   => 'icon icon-del' ) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>

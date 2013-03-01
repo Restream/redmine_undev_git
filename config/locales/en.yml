@@ -1,27 +1,34 @@
 en:
-  label_branches: "Branches"
-  text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
-  label_hooks_plural: "Hooks"
-  new_hook: "New hook"
-  label_hook_new: "New hook"
-  label_hook_edit: "Edit hook"
   field_branches: "Branches"
   field_keywords: "Keywords"
-  field_new_status: "New status"
   field_new_done_ratio: "New % done"
-  text_branches: "* = any branch<br />Multiple values allowed (comma separated)."
-  label_project_hooks_plural: "Hooks"
-  project_hooks: "Project hooks"
-  repository_hooks: "Hooks for %{repository}"
+  field_new_status: "New status"
   field_repository: "Repository"
   field_use_init_hooks: "Enable usage of hooks for the repository initialization"
-  text_hook_repository_note: "* = any UndevGit repository"
+
+  label_branches: "Branches"
+  label_global_hooks: "Global hooks"
+  label_hook_edit: "Edit hook"
+  label_hook_new: "New hook"
   label_hooks_for_undev_git: "Those hooks are for UndevGit repositories only"
+  label_hooks_plural: "Hooks"
   label_not_for_undev_git: "Those settings aren't supported by the UndevGit repository"
+  label_project_hooks_plural: "Hooks"
+
+  new_hook: "New hook"
+
+  project_hooks: "Project hooks"
+
+  repository_hooks: "Hooks for %{repository}"
   repository_taken: "has already been taken by %{identifier} in %{project}"
   repository_taken_without_id: "has already been taken in %{project}"
   repository_url_malformed: "malformed, use git://, http(s):// or local path"
-  text_changed_by_changeset_hook: "Applied in changeset %{value}."
-  text_hook_cannot_be_empty: "Define new status or new % done"
 
   setting_undev_git_max_branches_in_assoc: "Maximum branches in associated revisions"
+
+  text_branches: "* = any branch<br />Multiple values allowed (comma separated)."
+  text_changed_by_changeset_hook: "Applied in changeset %{value}."
+  text_hook_cannot_be_empty: "Define new status or new % done"
+  text_hook_repository_note: "* = any UndevGit repository"
+  text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
+

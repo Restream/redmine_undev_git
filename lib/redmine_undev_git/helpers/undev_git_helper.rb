@@ -11,7 +11,7 @@ module RedmineUndevGit::Helpers
     end
 
     def link_to_branch(branch, repository, revision = nil)
-      link_to(h(branch), {
+      link_to(h(branch), url_for(
           :controller => 'repositories',
           :action => 'show',
           :id => repository.project,
@@ -20,8 +20,9 @@ module RedmineUndevGit::Helpers
           :params => {
               :branch => branch,
               :rev => revision
-          }
-      })
+          },
+          :trailing_slash => false)
+      )
     end
   end
 end

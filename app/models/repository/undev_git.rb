@@ -20,8 +20,10 @@ class Repository::UndevGit < Repository
   cattr_accessor :repo_storage_dir
   self.repo_storage_dir = Redmine::Configuration['scm_repo_storage_dir'] || Rails.root.join('repos')
 
-  #has_many :hooks, class_name: 'ProjectHook', foreign_key: 'repository_id',
-  #         dependent: :destroy
+  has_many :hooks,
+           :class_name => 'ProjectHook',
+           :foreign_key => 'repository_id',
+           :dependent => :destroy
 
   validates :project, presence: true
   validates :url, presence: true, url: true

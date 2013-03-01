@@ -1,0 +1,30 @@
+<%= error_messages_for 'hook' %>
+
+<div class="box">
+  <p>
+    <em><%= l(:label_hooks_for_undev_git) %></em>
+  </p>
+  <p>
+    <%= f.select :repository_id, [["*", nil]] +
+          @project.repositories.select { |r| r.is_a? Repository::UndevGit }.map { |r| [ r.name, r.id ] } %><br />
+    <em><%= l(:text_hook_repository_note) %></em>
+  </p>
+
+  <p>
+    <%= f.text_field :branches, :required => true %><br />
+    <em><%= raw(l(:text_branches)) %></em>
+  </p>
+
+  <p>
+    <%= f.text_field :keywords, :required => true %><br />
+    <em><%= l(:text_comma_separated) %></em>
+  </p>
+
+  <p>
+    <%= f.select :new_status_id, [["", nil]] + IssueStatus.all.map { |status| [ status.name, status.id ] } %>
+  </p>
+
+  <p>
+    <%= f.select :new_done_ratio, [["", nil]] + ( 0 .. 10 ).to_a.map { |r| [ "#{r * 10} %", r * 10 ] } %>
+  </p>
+</div>

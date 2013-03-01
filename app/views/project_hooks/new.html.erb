@@ -1,0 +1,6 @@
+<h2><%= @project.name %>&nbsp;&#187;&nbsp;<%= l( :label_hook_new ) %></h2>
+<%= labelled_form_for(@hook, :url => project_hooks_path(@project)) do |f| %>
+  <%= render :partial => 'form', :locals => { :f => f } %>
+  <%= submit_tag l( :button_save ) %>
+  <%= link_to l(:button_cancel), settings_project_path(@project, :tab => 'hooks') %>
+<% end %>

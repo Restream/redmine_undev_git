@@ -28,7 +28,7 @@ class ApplicationHelperTest < ActionView::TestCase
 
   def test_link_to_branch
     branch = 'test_branch'
-    link = "<a href=\"/projects/#{@project.identifier}/repository/?branch=#{branch}\">#{branch}</a>"
+    link = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}\">#{branch}</a>"
     link_named = "<a href=\"/projects/#{@project.identifier}/repository/#{@named_repository.identifier}?branch=#{branch}\">#{branch}</a>"
     assert_equal link, link_to_branch(branch, @repository)
     assert_equal link_named, link_to_branch(branch, @named_repository)
@@ -37,7 +37,7 @@ class ApplicationHelperTest < ActionView::TestCase
   def test_link_to_branch_with_rev
     branch = 'test_branch'
     rev = 'fba357b886984ee71185ad2065e65fc0417d9b92'
-    link = "<a href=\"/projects/#{@project.identifier}/repository/?branch=#{branch}&amp;rev=#{rev}\">#{branch}</a>"
+    link = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}&amp;rev=#{rev}\">#{branch}</a>"
     link_named = "<a href=\"/projects/#{@project.identifier}/repository/#{@named_repository.identifier}?branch=#{branch}&amp;rev=#{rev}\">#{branch}</a>"
     assert_equal link, link_to_branch(branch, @repository, rev)
     assert_equal link_named, link_to_branch(branch, @named_repository, rev)

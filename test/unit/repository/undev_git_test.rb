@@ -645,11 +645,11 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_branches_in_associated_revisions
-
+      #TODO
     end
 
   else
-    puts "Git test repository NOT FOUND. Skipping unit tests !!!"
+    puts 'Git test repository NOT FOUND. Skipping unit tests !!!'
     def test_fake; assert true end
   end
 end

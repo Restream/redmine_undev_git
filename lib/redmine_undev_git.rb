@@ -1,6 +1,7 @@
 module RedmineUndevGit
 end
 
+require 'redmine_undev_git/patches/string_patch'
 require 'redmine_undev_git/patches/project_patch'
 require 'redmine_undev_git/patches/changeset_patch'
 

@@ -177,6 +177,10 @@ class Repository::UndevGit < Repository
     merge_extra_info(:use_init_hooks => val)
   end
 
+  def initialization_done?
+    extra_info && extra_info['heads'].any?
+  end
+
   private
 
   def save_revisions(prev_db_heads, repo_heads)
@@ -220,7 +224,7 @@ class Repository::UndevGit < Repository
 
   def save_revision(rev)
     parents = (rev.parents || []).collect{|rp| find_changeset_by_name(rp)}.compact
-    changeset = Changeset.create(
+    changeset = Changeset.create!(
         :repository   => self,
         :revision     => rev.identifier,
         :scmid        => rev.scmid,
@@ -232,10 +236,37 @@ class Repository::UndevGit < Repository
         :patch_id     => rev.patch_id,
         :authored_on  => rev.authored_on
     )
-    unless changeset.new_record?
-      rev.paths.each { |change| changeset.create_change(change) }
-    end
+    rev.paths.each { |change| changeset.create_change(change) }
+
+    parse_comments(changeset) if initialization_done? || use_init_hooks?
+
     changeset
+  end
+
+  def parse_comments(changeset)
+    ref_keywords = Setting.commit_ref_keywords
+    all_hooks = hooks + project.hooks.global + GlobalHook.all
+    fix_keywords = all_hooks.map(&:keywords).join(',')
+
+    parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)
+
+    # make references to issues
+    parsed[:ref_issues].each do |issue|
+      issue.changesets << changeset
+    end
+
+    # change issues by hooks
+    parsed[:fix_issues].each do |issue, keywords|
+      hook = all_hooks.first { |h| h.applied_for?(keywords, changeset.branches) }
+      hook.apply_for_issue_by_changeset(issue, changeset) if hook
+    end
+
+    # log time for issues
+    if Setting.commit_logtime_enabled?
+      parsed[:log_time].each do |issue, hours|
+        changeset.log_time(issue, hours)
+      end
+    end
   end
 
   def clear_extra_info_of_changesets
@@ -246,44 +277,6 @@ class Repository::UndevGit < Repository
     h['extra_report_last_commit'] = v
     merge_extra_info(h)
     self.save
-  end
-
-  #===========================================
-
-  def create_changesets(revisions)
-    buffer = {}
-
-    revisions.values.reverse.each do |rev|
-
-      parents = rev.parents.map do |parent_sha|
-        buffer[parent_sha] ||= changesets.find_by_revision(parent_sha)
-      end
-
-      changeset = Changeset.create!(
-          :repository   => self,
-          :revision     => rev.identifier,
-          :scmid        => rev.scmid,
-          :committer    => rev.author,
-          :committed_on => rev.time,
-          :comments     => rev.message,
-          :parents      => parents.compact,
-          :branches     => rev.branches,
-          :scan_pending => found_hook?(rev)
-      )
-
-      buffer[rev.identifier] = changeset
-
-      #rev.paths.each { |change| changeset.create_change(change) }
-
-    end
-  end
-
-  def execute_hooks(rev)
-
-  end
-
-  def found_hook?(rev)
-    true
   end
 
   def url_uniqueness_check

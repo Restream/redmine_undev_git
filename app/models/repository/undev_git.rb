@@ -245,7 +245,7 @@ class Repository::UndevGit < Repository
 
   def parse_comments(changeset)
     ref_keywords = Setting.commit_ref_keywords
-    all_hooks = hooks + project.hooks.global + GlobalHook.all
+    all_hooks = hooks.by_position + project.hooks.global.by_position + GlobalHook.by_position
     fix_keywords = all_hooks.map(&:keywords).join(',')
 
     parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)

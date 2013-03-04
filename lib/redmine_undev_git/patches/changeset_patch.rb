@@ -49,6 +49,20 @@ module RedmineUndevGit::Patches
       ret
     end
 
+    def full_text_tag(ref_project = nil)
+      tag = scmid? ? scmid.to_s : "r#{revision}"
+
+      if repository && repository.identifier.present?
+        tag = "#{repository.identifier}|#{tag}"
+      end
+
+      tag = "commit:#{tag}" if scmid?
+
+      tag = "#{project.identifier}:#{tag}" if ref_project && ref_project != project
+
+      tag
+    end
+
   end
 end
 

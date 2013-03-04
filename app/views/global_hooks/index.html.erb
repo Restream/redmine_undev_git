@@ -24,7 +24,7 @@
           <td align="center"><%= hook.new_status ? hook.new_status.name : nil %></td>
           <td align="center"><%= hook.new_done_ratio %></td>
           <td align="center">
-            <%= reorder_links('hook', {
+            <%= reorder_links('global_hook', {
                 :controller => 'global_hooks',
                 :action => 'update',
                 :id => hook

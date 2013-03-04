@@ -3,9 +3,6 @@ class HookBase < ActiveRecord::Base
 
   include Redmine::SafeAttributes
 
-  # Each hook has a priority
-  acts_as_list :scope => :repository
-
   safe_attributes %w{branches keywords new_status_id new_done_ratio}
 
   validates :branches, :presence => true
@@ -52,10 +49,10 @@ class HookBase < ActiveRecord::Base
 
     issue.init_journal(
         changeset.user || User.anonymous,
-        ll(Setting.default_language, :text_changed_by_changeset_hook, text_tag(issue.project))
+        ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
     )
     issue.status = new_status if new_status
-    issue.done_ratio = done_ratio if new_done_ratio
+    issue.done_ratio = new_done_ratio if new_done_ratio
     Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
                             { :changeset => changeset, :issue => issue })
     unless issue.save

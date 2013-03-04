@@ -80,4 +80,40 @@ class GlobalHooksControllerTest < ActionController::TestCase
     hook = GlobalHook.find_by_id(@hook.id)
     assert_nil hook
   end
+
+  def test_move_higher
+    h1 = GlobalHook.by_position[0]
+    h2 = GlobalHook.by_position[1]
+
+    assert_equal 1, h1.position
+    assert_equal 2, h2.position
+
+    put :update, :id => h2.id, :global_hook => { 'move_to' => 'higher' }
+
+    assert_response :redirect
+
+    h1.reload
+    h2.reload
+
+    assert_equal 2, h1.position
+    assert_equal 1, h2.position
+  end
+
+  def test_move_lower
+    h1 = GlobalHook.by_position[0]
+    h2 = GlobalHook.by_position[1]
+
+    assert_equal 1, h1.position
+    assert_equal 2, h2.position
+
+    put :update, :id => h1.id, :global_hook => { 'move_to' => 'lower' }
+
+    assert_response :redirect
+
+    h1.reload
+    h2.reload
+
+    assert_equal 2, h1.position
+    assert_equal 1, h2.position
+  end
 end

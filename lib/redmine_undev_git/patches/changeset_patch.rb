@@ -7,6 +7,13 @@ module RedmineUndevGit::Patches
     included do
       serialize :branches, Array
 
+      belongs_to :rebased_from,
+                 :class_name => 'Changeset'
+
+      has_one :rebased_to,
+              :class_name => 'Changeset',
+              :foreign_key => 'rebased_from_id'
+
       skip_callback :create, :after, :scan_for_issues,
                     :if => lambda { self.repository.is_a? Repository::UndevGit }
     end

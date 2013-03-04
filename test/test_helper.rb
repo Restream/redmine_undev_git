@@ -5,6 +5,11 @@ require 'tmpdir'
 class ActiveSupport::TestCase
   REPOSITORY_PATH = File.join(Rails.root, 'tmp', 'test', 'undev_git_repository')
 
+  # these repositories looks like:
+  # http://git-scm.com/book/en/Git-Branching-Rebasing#More-Interesting-Rebases
+  R_BEFORE_REBASE_PATH = File.join(Rails.root, 'tmp', 'test', 'rebase_test_before.git')
+  R_AFTER_REBASE_PATH = File.join(Rails.root, 'tmp', 'test', 'rebase_test_after.git')
+
   def make_temp_dir
     @temp_storage_dir = Dir.mktmpdir('repo')
     Repository::UndevGit.repo_storage_dir = @temp_storage_dir
@@ -56,5 +61,36 @@ class ActiveSupport::TestCase
         :keywords => 'fix',
         :new_status_id => 3
     )
+  end
+
+  def rebased_changesets
+    repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
+                                  :path_encoding => 'UTF-8')
+    repo.fetch_changesets
+
+    # replace origin url to fetch rebased commits
+    repo.scm.send :git_cmd, ['remote', 'set-url', 'origin', R_AFTER_REBASE_PATH]
+
+    repo.fetch_changesets
+
+    cs = {
+        :c1 => '21d88b7',
+        :c2 => 'ac7080c',
+        :c3 => '8455e27',
+        :c4 => '40a5965',
+        :c5 => '43784cc',
+        :c6 => 'b278ae2',
+        :c8 => 'd2815cb',
+        :c9 => 'ad445de',
+        :c10 => '2b91d81',
+        # rebased
+        :c3r => 'c906d8f',
+        :c4r => '1bb0a5f',
+        :c8r => 'e679660',
+        :c9r => '3cd80ef',
+        :c10r => 'feeb6b1',
+    }
+
+    cs.each_key { |key| cs[key] = repo.find_changeset_by_name(cs[key]) }
   end
 end

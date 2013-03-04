@@ -116,6 +116,7 @@ class Repository::UndevGit < Repository
   end
 
   def fetch_changesets
+    @scm = nil
     scm.fetch!
 
     scm_brs = branches
@@ -224,6 +225,9 @@ class Repository::UndevGit < Repository
 
   def save_revision(rev)
     parents = (rev.parents || []).collect{|rp| find_changeset_by_name(rp)}.compact
+
+    rebased_from = find_original_changeset(rev) if rev.looks_like_rebased?
+
     changeset = Changeset.create!(
         :repository   => self,
         :revision     => rev.identifier,
@@ -234,13 +238,25 @@ class Repository::UndevGit < Repository
         :parents      => parents,
         :branches     => rev.branches,
         :patch_id     => rev.patch_id,
-        :authored_on  => rev.authored_on
+        :authored_on  => rev.authored_on,
+        :rebased_from => rebased_from
     )
     rev.paths.each { |change| changeset.create_change(change) }
 
     parse_comments(changeset) if initialization_done? || use_init_hooks?
 
     changeset
+  end
+
+  # find original changeset for revision that looks like rebased
+  def find_original_changeset(rev)
+    changesets.where(
+        'patch_id = ? and committer = ? and authored_on = ? and revision <> ?',
+        rev.patch_id,
+        rev.author,
+        rev.authored_on,
+        rev.identifier
+    ).first
   end
 
   def parse_comments(changeset)

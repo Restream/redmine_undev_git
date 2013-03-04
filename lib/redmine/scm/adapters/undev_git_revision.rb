@@ -21,6 +21,10 @@ module Redmine::Scm::Adapters
     def format_identifier
       identifier[0,8]
     end
+
+    def looks_like_rebased?
+      time != authored_on
+    end
   end
 
   class UndevGitRevisions < Hash

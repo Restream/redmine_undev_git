@@ -648,6 +648,26 @@ class UndevGitTest < ActiveSupport::TestCase
       #TODO
     end
 
+    def test_rebased_from
+      cs = rebased_changesets
+
+      assert_equal cs[:c3], cs[:c3r].rebased_from
+      assert_equal cs[:c4], cs[:c4r].rebased_from
+      assert_equal cs[:c8], cs[:c8r].rebased_from
+      assert_equal cs[:c9], cs[:c9r].rebased_from
+      assert_equal cs[:c10], cs[:c10r].rebased_from
+    end
+
+    def test_rebased_to
+      cs = rebased_changesets
+
+      assert_equal cs[:c3r], cs[:c3].rebased_to
+      assert_equal cs[:c4r], cs[:c4].rebased_to
+      assert_equal cs[:c8r], cs[:c8].rebased_to
+      assert_equal cs[:c9r], cs[:c9].rebased_to
+      assert_equal cs[:c10r], cs[:c10].rebased_to
+    end
+
   else
     puts 'Git test repository NOT FOUND. Skipping unit tests !!!'
     def test_fake; assert true end

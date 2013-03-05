@@ -31,4 +31,5 @@ en:
   text_hook_cannot_be_empty: "Define new status or new % done"
   text_hook_repository_note: "* = any UndevGit repository"
   text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
-
+  text_commit_was_rebased_from: "This revision was rebased from %{rebased_from}"
+  text_commit_was_rebased_to: "This revision was rebased to %{rebased_to}"

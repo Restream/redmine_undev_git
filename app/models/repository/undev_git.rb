@@ -268,19 +268,29 @@ class Repository::UndevGit < Repository
 
     # make references to issues
     parsed[:ref_issues].each do |issue|
+
+      # remove references to old commits that was rebased
+      if changesets.rebased_from
+        issue.changesets.delete(changesets.rebased_from)
+      end
+
       issue.changesets << changeset
     end
 
-    # change issues by hooks
-    parsed[:fix_issues].each do |issue, keywords|
-      hook = all_hooks.first { |h| h.applied_for?(keywords, changeset.branches) }
-      hook.apply_for_issue_by_changeset(issue, changeset) if hook
-    end
+    # if our commit is reabased one than don't repeat changes
+    unless changesets.rebased_from
 
-    # log time for issues
-    if Setting.commit_logtime_enabled?
-      parsed[:log_time].each do |issue, hours|
-        changeset.log_time(issue, hours)
+      # change issues by hooks
+      parsed[:fix_issues].each do |issue, keywords|
+        hook = all_hooks.first { |h| h.applied_for?(keywords, changeset.branches) }
+        hook.apply_for_issue_by_changeset(issue, changeset) if hook
+      end
+
+      # log time for issues
+      if Setting.commit_logtime_enabled?
+        parsed[:log_time].each do |issue, hours|
+          changeset.log_time(issue, hours)
+        end
       end
     end
   end

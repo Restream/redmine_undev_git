@@ -63,7 +63,7 @@ class ActiveSupport::TestCase
     )
   end
 
-  def rebased_changesets
+  def create_rebased_repository
     repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
                                   :path_encoding => 'UTF-8')
     repo.fetch_changesets
@@ -72,6 +72,12 @@ class ActiveSupport::TestCase
     repo.scm.send :git_cmd, ['remote', 'set-url', 'origin', R_AFTER_REBASE_PATH]
 
     repo.fetch_changesets
+
+    repo
+  end
+
+  def rebased_changesets(repo = nil)
+    repo ||= create_rebased_repository
 
     cs = {
         :c1 => '21d88b7',

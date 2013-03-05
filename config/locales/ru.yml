@@ -31,3 +31,5 @@ ru:
   text_hook_cannot_be_empty: "Укажите Новый статус или Новый % готовности"
   text_hook_repository_note: "* = любой репозиторий UndevGit"
   text_undev_git_repository_note: "Ссылка или путь к локальному репозиторию<br />(например, git://example.com/repo.git, https://example.com/repo.git или /repos/gitrepo)"
+  text_commit_was_rebased_from: "Это перемещенный коммит. Старый коммит %{rebased_from}"
+  text_commit_was_rebased_to: "Этот коммит был перемещен. Новый коммит %{rebased_to}"

@@ -373,7 +373,7 @@ module Redmine::Scm::Adapters
     end
 
     def fetch!
-      args = %w{fetch origin --force --prune}
+      args = %w{fetch origin --force}
       git_cmd(args)
     end
 

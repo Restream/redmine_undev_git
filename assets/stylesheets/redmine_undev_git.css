@@ -1,3 +1,19 @@
 .global_hooks_label {
   background-image: url(/plugin_assets/redmine_undev_git/images/transmit.png);
 }
+
+table.list.changesets td.rebase-info {
+  width: 15px;
+}
+
+table.list.changesets tr.rebased-to {
+  background-color: #fdd;
+}
+
+h2 em.rebased-to {
+  background-color: #fff0f0;
+}
+
+h2 em.rebased-from {
+  background-color: #f0fff0;
+}

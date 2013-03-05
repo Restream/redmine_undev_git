@@ -24,5 +24,23 @@ module RedmineUndevGit::Helpers
           :trailing_slash => false)
       )
     end
+
+    def link_to_revision_wb(revision, repository, &block)
+      if repository.is_a?(Project)
+        repository = repository.repository
+      end
+      rev = revision.respond_to?(:identifier) ? revision.identifier : revision
+      link_to(
+          {
+              :controller => 'repositories',
+              :action => 'revision',
+              :id => repository.project,
+              :repository_id => repository.identifier_param,
+              :rev => rev
+          },
+          :title => l(:label_revision_id, format_revision(revision)),
+          &block
+      )
+    end
   end
 end

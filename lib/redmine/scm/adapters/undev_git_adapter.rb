@@ -293,7 +293,7 @@ module Redmine::Scm::Adapters
       boundary_drags = nil
 
       options.merge!(
-          :format => '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%s%h',
+          :format => '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%s%n%b%n%h',
           :identifier_from => identifier_from,
           :identifier_to => identifier_to)
 

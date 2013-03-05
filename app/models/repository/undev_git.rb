@@ -270,7 +270,7 @@ class Repository::UndevGit < Repository
     parsed[:ref_issues].each do |issue|
 
       # remove references to old commits that was rebased
-      if changesets.rebased_from
+      if changeset.rebased_from
         issue.changesets.delete(changesets.rebased_from)
       end
 
@@ -278,7 +278,7 @@ class Repository::UndevGit < Repository
     end
 
     # if our commit is reabased one than don't repeat changes
-    unless changesets.rebased_from
+    unless changeset.rebased_from
 
       # change issues by hooks
       parsed[:fix_issues].each do |issue, keywords|

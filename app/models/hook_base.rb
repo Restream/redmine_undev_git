@@ -27,15 +27,13 @@ class HookBase < ActiveRecord::Base
   end
 
   def applied_for?(o_keywords, o_branches)
-    o_keywords = o_keywords.join(',') if o_keywords.respond_to?(:join)
-    o_branches = o_branches.join(',') if o_branches.respond_to?(:join)
-    found_keywords = (keywords.to_s.split_by_comma & o_keywords.to_s.split_by_comma).any?
-    found_branches = any_branch? || (branches.to_s.split_by_comma & o_branches.to_s.split_by_comma).any?
+    found_keywords = (keywords & o_keywords).any?
+    found_branches = any_branch? || (branches & o_branches).any?
     found_keywords && found_branches
   end
 
   def any_branch?
-    branches.strip == '*'
+    branches == %w{*}
   end
 
   def apply_for_issue_by_changeset(issue, changeset)

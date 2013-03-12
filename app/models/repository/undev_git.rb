@@ -277,7 +277,7 @@ class Repository::UndevGit < Repository
       issue.changesets << changeset
     end
 
-    # if our commit is reabased one than don't repeat changes
+    # if our commit is rebased one then don't repeat changes
     unless changeset.rebased_from
 
       # change issues by hooks

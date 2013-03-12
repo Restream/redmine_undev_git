@@ -28,6 +28,11 @@ module Redmine::Scm::Adapters
         @@client_version ||= (scm_command_version || [])
       end
 
+      def client_version_eq_or_higher?(ver)
+        ver = ver.split('.').map(&:to_i)
+        (client_version.slice(0, ver.length) <=> ver) >= 0
+      end
+
       def client_available
         !client_version.empty?
       end
@@ -296,6 +301,10 @@ module Redmine::Scm::Adapters
           :format => '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%s%n%b%n%h',
           :identifier_from => identifier_from,
           :identifier_to => identifier_to)
+
+      if self.class.client_version_eq_or_higher?('1.7.2')
+        options[:format] = '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%B%h'
+      end
 
       chunked_git_log(path, options) do |git_log, git_patch_ids|
 

@@ -506,6 +506,21 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_nil @adapter.annotate('README', '1234abcd5678')
     end
 
+    def test_client_version_lower
+      @adapter.class.expects(:client_version).returns([1,7,2])
+      assert_false @adapter.class.client_version_eq_or_higher?('1.8')
+    end
+
+    def test_client_version_equal
+      @adapter.class.expects(:client_version).returns([1,7,2])
+      assert_true @adapter.class.client_version_eq_or_higher?('1.7')
+    end
+
+    def test_client_version_higher
+      @adapter.class.expects(:client_version).returns([1,7,2])
+      assert_true @adapter.class.client_version_eq_or_higher?('1.6')
+    end
+
     private
 
     def test_scm_version_for(scm_command_version, version)

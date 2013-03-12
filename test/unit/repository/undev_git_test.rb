@@ -26,7 +26,7 @@ class UndevGitTest < ActiveSupport::TestCase
     @repository = Repository::UndevGit.create(
         :project       => @project,
         :url           => REPOSITORY_PATH,
-        :path_encoding => 'ISO-8859-1'
+        :path_encoding => 'ISO-8859-1'        
     )
     assert @repository
     @char_1        = CHAR_1_HEX.dup
@@ -668,8 +668,36 @@ class UndevGitTest < ActiveSupport::TestCase
       assert_equal cs[:c10r], cs[:c10].rebased_to
     end
 
+    def test_change_issue_by_project_hook
+      repository = create_test_repository(:use_init_hooks => true, :identifier => 'x')
+      repository.fetch_changesets
+      create_hooks!(:repository_id => repository.id)
+      changeset = repository.changesets.last
+      changeset.comments = 'fix #5'
+      issue = Issue.find(5)
+      assert_equal 0, issue.done_ratio
+      repository.send :parse_comments, changeset
+      issue.reload
+      assert_equal 70, issue.done_ratio
+    end
+
+    def test_change_issue_by_global_hook
+      repository = create_test_repository(:use_init_hooks => true, :identifier => 'x')
+      repository.fetch_changesets
+      create_hooks!(:repository_id => repository.id)
+      changeset = repository.changesets.last
+      changeset.comments = 'closes #5'
+      changeset.branches << 'production'
+      issue = Issue.find(5)
+      assert_equal 0, issue.done_ratio
+      repository.send :parse_comments, changeset
+      issue.reload
+      assert_equal 80, issue.done_ratio
+    end
+
   else
     puts 'Git test repository NOT FOUND. Skipping unit tests !!!'
     def test_fake; assert true end
   end
+
 end

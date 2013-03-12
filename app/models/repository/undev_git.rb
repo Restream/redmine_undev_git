@@ -282,7 +282,7 @@ class Repository::UndevGit < Repository
 
       # change issues by hooks
       parsed[:fix_issues].each do |issue, keywords|
-        hook = all_hooks.first { |h| h.applied_for?(keywords, changeset.branches) }
+        hook = all_hooks.select { |h| h.applied_for?(keywords, changeset.branches) }.first
         hook.apply_for_issue_by_changeset(issue, changeset) if hook
       end
 

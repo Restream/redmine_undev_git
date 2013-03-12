@@ -40,34 +40,6 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
   end
 
-  def test_create_and_update
-    @request.session[:user_id] = 1
-    @project.repository.update_attribute(:url, 'none')
-    assert_difference 'Repository.count' do
-      post :create, :project_id => 'subproject1',
-           :repository_scm => 'UndevGit',
-           :repository => {
-               :url => REPOSITORY_PATH,
-               :is_default => '0',
-               :identifier => 'test-create',
-               :extra_report_last_commit => '1',
-           }
-    end
-    assert_response 302
-    repository = Repository.first(:order => 'id DESC')
-    assert_kind_of Repository::UndevGit, repository
-    assert_equal REPOSITORY_PATH, repository.url
-    assert_equal true, repository.extra_report_last_commit
-
-    put :update, :id => repository.id,
-        :repository => {
-            :extra_report_last_commit => '0'
-        }
-    assert_response 302
-    repo2 = Repository.find(repository.id)
-    assert_equal false, repo2.extra_report_last_commit
-  end
-
   if File.directory?(REPOSITORY_PATH)
     ## Ruby uses ANSI api to fork a process on Windows.
     ## Japanese Shift_JIS and Traditional Chinese Big5 have 0x5c(backslash) problem
@@ -78,6 +50,36 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     WINDOWS_PASS = (Redmine::Platform.mswin? &&
         Redmine::Scm::Adapters::UndevGitAdapter.client_version_above?([1, 7, 10]))
     WINDOWS_SKIP_STR = "TODO: This test fails in Git for Windows above 1.7.10"
+
+    def test_create_and_update
+      @request.session[:user_id] = 1
+      @project.repository.update_attribute(:url, 'none')
+      assert_difference 'Repository.count' do
+        post :create, :project_id => 'subproject1',
+             :repository_scm => 'UndevGit',
+             :repository => {
+                 :url => REPOSITORY_PATH,
+                 :is_default => '0',
+                 :identifier => 'test-create',
+                 :extra_report_last_commit => '1',
+                 :use_init_hooks => '1'
+             }
+      end
+      assert_response 302
+      repository = Repository.first(:order => 'id DESC')
+      assert_kind_of Repository::UndevGit, repository
+      assert_equal REPOSITORY_PATH, repository.url
+      assert_equal true, repository.extra_report_last_commit
+      assert_equal true, repository.use_init_hooks?
+
+      put :update, :id => repository.id,
+          :repository => {
+              :extra_report_last_commit => '0'
+          }
+      assert_response 302
+      repo2 = Repository.find(repository.id)
+      assert_equal false, repo2.extra_report_last_commit
+    end
 
     def test_get_new
       @request.session[:user_id] = 1

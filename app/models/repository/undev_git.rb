@@ -174,7 +174,7 @@ class Repository::UndevGit < Repository
     !!use_init_hooks
   end
 
-  def use_init_hook=(val)
+  def use_init_hooks=(val)
     merge_extra_info(:use_init_hooks => val)
   end
 

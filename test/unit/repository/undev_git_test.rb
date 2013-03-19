@@ -696,6 +696,15 @@ class UndevGitTest < ActiveSupport::TestCase
       assert_equal 80, issue.done_ratio
     end
 
+    def test_remove_repository_folder
+      repository = create_test_repository(:identifier => 'x')
+      repository.fetch_changesets
+      root_url = repository.root_url
+      assert_true Dir.exists?(root_url)
+      repository.destroy
+      assert_false Dir.exists?(root_url)
+    end
+
   else
     puts 'Git test repository NOT FOUND. Skipping unit tests !!!'
     def test_fake; assert true end

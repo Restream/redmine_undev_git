@@ -29,6 +29,8 @@ class Repository::UndevGit < Repository
   validates :url, presence: true, url: true
   validate :url_uniqueness_check
 
+  after_destroy :remove_repository_folder
+
   class << self
 
     def human_attribute_name(attribute_key_name, *args)
@@ -332,5 +334,9 @@ class Repository::UndevGit < Repository
       root_url = File.join(self.repo_storage_dir, project.identifier, id.to_s)
       update_attribute(:root_url, root_url)
     end
+  end
+
+  def remove_repository_folder
+    FileUtils.remove_entry_secure(scm.root_url) if root_url.present?
   end
 end

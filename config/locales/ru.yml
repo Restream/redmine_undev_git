@@ -5,6 +5,7 @@ ru:
   field_new_status: "Новый статус"
   field_repository: "Репозиторий"
   field_use_init_hooks: "При инициализации репозитория учесть ключевые слова, изменяющие статусы задач"
+  field_use_init_refs: "При инициализации репозитория связывать ревизии с тикетами"
 
   label_branches: "Бранчи"
   label_global_hooks: "Глобальные хуки"

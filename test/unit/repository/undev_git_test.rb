@@ -620,7 +620,8 @@ class UndevGitTest < ActiveSupport::TestCase
       bad_urls = [
         'ssh://user@host. xz/path/to/repo.git/',
         'ssh://user@host.xz:port/pa th/to/repo.git/',
-        'ssh:// user@host.xz:port/path/to/repo.git'
+        'ssh:// user@host.xz:port/path/to/repo.git',
+        'ttp://host.xz:port/path/to/repo.git'
       ]
 
       good_urls.each do |good_url|

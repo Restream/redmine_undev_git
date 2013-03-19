@@ -5,6 +5,7 @@ en:
   field_new_status: "New status"
   field_repository: "Repository"
   field_use_init_hooks: "Enable usage of hooks for the repository initialization"
+  field_use_init_refs: "Enable referencing to issues for the repository initialization"
 
   label_branches: "Branches"
   label_global_hooks: "Global hooks"

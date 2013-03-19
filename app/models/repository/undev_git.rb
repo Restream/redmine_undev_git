@@ -4,7 +4,7 @@ class Repository::UndevGit < Repository
 
   class UrlValidator < ActiveModel::EachValidator
     def validate_each(record, attribute, value)
-      regexp = /\A((\w+:\/\/(\S+@)*([\w\d\.]+)(:[\d]+)?\/*(\S*))|(file:\/\/(\S*))|((\S+@)*([\w\d\S]+):(\S*)))\z/
+      regexp = /\A([\w\d\-_\.]+@[\w\d\-_\.]+:[\w\d\-_\.\/]+)|(https?|git|ssh|ftps?):\/\/[\w\d\-_\.\/@:]+\z/
       unless (value =~ regexp) || File.readable_real?(value)
         record.errors.add(attribute, I18n.t(:repository_url_malformed))
       end
@@ -14,7 +14,7 @@ class Repository::UndevGit < Repository
   # root_url stores path to local bare repository
   attr_protected :root_url
 
-  safe_attributes 'use_init_hooks'
+  safe_attributes 'use_init_hooks', 'use_init_refs'
 
   # Storage folder for local copies of remote repositories
   cattr_accessor :repo_storage_dir
@@ -178,6 +178,18 @@ class Repository::UndevGit < Repository
     merge_extra_info(:use_init_hooks => val)
   end
 
+  def use_init_refs
+    extra_info && extra_info[:use_init_refs]
+  end
+
+  def use_init_refs?
+    !!use_init_refs
+  end
+
+  def use_init_refs=(val)
+    merge_extra_info(:use_init_refs => val)
+  end
+
   def initialization_done?
     extra_info && extra_info['heads'].any?
   end
@@ -243,7 +255,7 @@ class Repository::UndevGit < Repository
     )
     rev.paths.each { |change| changeset.create_change(change) }
 
-    parse_comments(changeset) if initialization_done? || use_init_hooks?
+    parse_comments(changeset)
 
     changeset
   end
@@ -267,18 +279,12 @@ class Repository::UndevGit < Repository
     parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)
 
     # make references to issues
-    parsed[:ref_issues].each do |issue|
+    changeset.make_references_to_issues(parsed[:ref_issues]) if initialization_done? || use_init_refs?
 
-      # remove references to old commits that was rebased
-      if changeset.rebased_from
-        issue.changesets.delete(changesets.rebased_from)
-      end
-
-      issue.changesets << changeset
-    end
-
-    # if our commit is rebased one then don't repeat changes
-    unless changeset.rebased_from
+    # update changeset only if
+    # changeset was not rebased
+    # initialization done or using hooks for initialization is allowed
+    if changeset.rebased_from.nil? && (initialization_done? || use_init_hooks?)
 
       # change issues by hooks
       parsed[:fix_issues].each do |issue, keywords|

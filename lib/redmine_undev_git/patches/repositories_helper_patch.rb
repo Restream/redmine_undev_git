@@ -8,7 +8,8 @@ module RedmineUndevGit::Patches
       [
           undev_git_url_tag(form, repository),
           undev_git_extra_report_last_commit_tag(form, repository),
-          undev_git_use_init_hooks_tag(form, repository)
+          undev_git_use_init_hooks_tag(form, repository),
+          undev_git_use_init_refs_tag(form, repository)
       ].compact.join('<br />').html_safe
     end
 
@@ -32,6 +33,13 @@ module RedmineUndevGit::Patches
           :use_init_hooks,
           :disabled => repository.persisted?,
           :label => :field_use_init_hooks))
+    end
+
+    def undev_git_use_init_refs_tag(form, repository)
+      content_tag('p', form.check_box(
+          :use_init_refs,
+          :disabled => repository.persisted?,
+          :label => :field_use_init_refs))
     end
   end
 end

@@ -56,6 +56,19 @@ module RedmineUndevGit::Patches
       ret
     end
 
+    def make_references_to_issues(issues)
+      issues.each do |issue|
+
+        # remove references to old commits that was rebased
+        if rebased_from
+          issue.changesets.delete(rebased_from)
+        end
+
+        issue.changesets << self
+      end
+    end
+
+
     def full_text_tag(ref_project = nil)
       tag = scmid? ? scmid.to_s : "r#{revision}"
 

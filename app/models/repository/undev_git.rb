@@ -313,7 +313,7 @@ class Repository::UndevGit < Repository
     h = {}
     h['extra_report_last_commit'] = v
     merge_extra_info(h)
-    self.save
+    self.save(:validate => false)
   end
 
   def url_uniqueness_check
@@ -340,6 +340,6 @@ class Repository::UndevGit < Repository
   end
 
   def remove_repository_folder
-    FileUtils.remove_entry_secure(root_url) if root_url.present?
+    FileUtils.remove_entry_secure(root_url) if root_url.present? && Dir.exists?(root_url)
   end
 end

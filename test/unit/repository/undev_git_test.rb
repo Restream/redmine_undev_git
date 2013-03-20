@@ -583,11 +583,6 @@ class UndevGitTest < ActiveSupport::TestCase
 
     def test_repository_urls
       good_urls = %w{
-        ssh://user@host.xz/path/to/repo.git/
-        ssh://user@host.xz/path/to/repo.git
-        ssh://user@host.xz:port/path/to/repo.git/
-        ssh://user@host.xz:port/path/to/repo.git
-
         git://host.xz/path/to/repo.git/
         git://host.xz/path/to/repo.git
         git://host.xz:port/path/to/repo.git/
@@ -602,26 +597,32 @@ class UndevGitTest < ActiveSupport::TestCase
         https://host.xz/path/to/repo.git
         https://host.xz:port/path/to/repo.git/
         https://host.xz:port/path/to/repo.git
-
-        ftp://host.xz/path/to/repo.git/
-        ftp://host.xz/path/to/repo.git
-        ftp://host.xz:port/path/to/repo.git/
-        ftp://host.xz:port/path/to/repo.git
-
-        ftp://host.xz/path/to/repo.git/
-        ftp://host.xz/path/to/repo.git
-        ftps://host.xz:port/path/to/repo.git/
-        ftps://host.xz:port/path/to/repo.git
-
-        user@host.xz:path/to/repo.git/
-        user@host.xz:path/to/repo.git
       }
 
       bad_urls = [
         'ssh://user@host. xz/path/to/repo.git/',
         'ssh://user@host.xz:port/pa th/to/repo.git/',
         'ssh:// user@host.xz:port/path/to/repo.git',
-        'ttp://host.xz:port/path/to/repo.git'
+        'ttp://host.xz:port/path/to/repo.git',
+
+        'ftp://host.xz/path/to/repo.git/',
+        'ftp://host.xz/path/to/repo.git',
+        'ftp://host.xz:port/path/to/repo.git/',
+        'ftp://host.xz:port/path/to/repo.git',
+
+        'ftp://host.xz/path/to/repo.git/',
+        'ftp://host.xz/path/to/repo.git',
+        'ftps://host.xz:port/path/to/repo.git/',
+        'ftps://host.xz:port/path/to/repo.git',
+
+        'user@host.xz:path/to/repo.git/',
+        'user@host.xz:path/to/repo.git',
+
+        'ssh://user@host.xz/path/to/repo.git/',
+        'ssh://user@host.xz/path/to/repo.git',
+        'ssh://user@host.xz:port/path/to/repo.git/',
+        'ssh://user@host.xz:port/path/to/repo.git'
+
       ]
 
       good_urls.each do |good_url|

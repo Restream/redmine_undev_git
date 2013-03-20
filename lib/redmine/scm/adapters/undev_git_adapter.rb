@@ -422,7 +422,13 @@ module Redmine::Scm::Adapters
           io.close_write
           git_log = io.read.force_encoding(path_encoding)
         end
-        return nil if git_log.blank?
+
+        begin
+          return nil if git_log.blank?
+
+        rescue ArgumentError #invalid byte sequence in UTF-8
+          git_log = remove_invalid_characters(git_log)
+        end
 
         # get patch_ids for commits
 
@@ -432,6 +438,10 @@ module Redmine::Scm::Adapters
 
         skip += chunk_size
       end
+    end
+
+    def remove_invalid_characters(s)
+      s.chars.select { |c| c.valid_encoding? }.join
     end
 
     # get patch_ids for commits

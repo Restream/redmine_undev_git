@@ -242,7 +242,7 @@ class Repository::UndevGit < Repository
 
     rebased_from = find_original_changeset(rev) if rev.looks_like_rebased?
 
-    changeset = Changeset.create!(
+    changeset = Changeset.create(
         :repository   => self,
         :revision     => rev.identifier,
         :scmid        => rev.scmid,
@@ -255,9 +255,12 @@ class Repository::UndevGit < Repository
         :authored_on  => rev.authored_on,
         :rebased_from => rebased_from
     )
-    rev.paths.each { |change| changeset.create_change(change) }
 
-    parse_comments(changeset)
+    unless changeset.new_record?
+      rev.paths.each { |change| changeset.create_change(change) }
+
+      parse_comments(changeset)
+    end
 
     changeset
   end

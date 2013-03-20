@@ -173,7 +173,7 @@ class Repository::UndevGit < Repository
   end
 
   def use_init_hooks?
-    !!use_init_hooks
+    use_init_hooks && use_init_hooks.to_i == 1
   end
 
   def use_init_hooks=(val)
@@ -185,7 +185,7 @@ class Repository::UndevGit < Repository
   end
 
   def use_init_refs?
-    !!use_init_refs
+    use_init_refs && use_init_refs.to_i == 1
   end
 
   def use_init_refs=(val)

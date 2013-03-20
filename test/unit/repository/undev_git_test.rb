@@ -671,7 +671,7 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_change_issue_by_project_hook
-      repository = create_test_repository(:use_init_hooks => true, :identifier => 'x')
+      repository = create_test_repository(:use_init_hooks => '1', :identifier => 'x')
       repository.fetch_changesets
       create_hooks!(:repository_id => repository.id)
       changeset = repository.changesets.last
@@ -684,7 +684,7 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_change_issue_by_global_hook
-      repository = create_test_repository(:use_init_hooks => true, :identifier => 'x')
+      repository = create_test_repository(:use_init_hooks => '1', :identifier => 'x')
       repository.fetch_changesets
       create_hooks!(:repository_id => repository.id)
       changeset = repository.changesets.last

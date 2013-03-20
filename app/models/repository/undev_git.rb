@@ -340,6 +340,6 @@ class Repository::UndevGit < Repository
   end
 
   def remove_repository_folder
-    FileUtils.remove_entry_secure(scm.root_url) if root_url.present?
+    FileUtils.remove_entry_secure(root_url) if root_url.present?
   end
 end

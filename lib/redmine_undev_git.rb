@@ -14,3 +14,5 @@ require 'redmine_undev_git/patches/projects_helper_patch'
 require 'redmine_undev_git/hooks/view_hooks'
 
 require 'redmine_undev_git/services/migration'
+
+require 'redmine_undev_git/patches/redmine_scm_base_patch'

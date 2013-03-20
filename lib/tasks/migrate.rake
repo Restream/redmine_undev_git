@@ -40,8 +40,8 @@ namespace :undev do
               new_repo.save!
               new_repo.fetch_changesets
             end
-          rescue ScmCommandAborted => e
-            puts "\tScmCommandAborted: #{e.message}"
+          rescue Redmine::Scm::Adapters::CommandFailed => e
+            puts "\tCommandFailed: #{e.message}"
           end
         else
           if Repository::UndevGit.find_by_url(new_url)

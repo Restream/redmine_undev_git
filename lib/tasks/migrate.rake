@@ -17,6 +17,11 @@ namespace :undev do
           puts "found repo with url #{old_url} in project #{old_repo.project}"
           puts "\tmigrating to #{new_url}"
 
+          if same_repo = Repository.find_by_url(new_url)
+            puts "\tWarning! Repo with #{new_url} already created in project #{same_repo.project}"
+            next
+          end
+
           old_repo.fetch_changesets
 
           begin

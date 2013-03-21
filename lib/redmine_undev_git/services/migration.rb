@@ -1,57 +1,163 @@
 module RedmineUndevGit
-  module Service
-    class Migration
-      class << self
+  module Services
 
-        SUPPORTED_TYPES = ["Repository::Git", "Repository::UndevGit"]
+    class Repo < Hashie::Dash
+      property :id
+      property :project, :required => true
+      property :url
+      property :identifier
+      property :is_default
 
-        ##
-        # Reconnect repository
-        #
-        # @param [Repository::Git, Repository::UndevGit] repository source repository
-        # @param [Project] project project in which repository will be created
-        # @return [Repository::UndevGit] reconnected repository
-        def reconnect_repo_as_undev_git_to(repository, project)
-          unless SUPPORTED_TYPES.include? repository.type
-            raise ArgumentError, "#{repository} type isn't supported"
-          end
+      def to_s
+        [id, project.identifier, identifier, url].join(';')
+      end
+    end
 
-          project.enable_module!('repository')
+    class Mapping
+      attr_reader :old_repo, :new_repo, :warnings
 
-          new_repo = Repository::UndevGit.new
-          new_repo.project = project
-          new_repo.url = origin_url_of(repository)
+      def initialize(old_repo, new_url, warnings)
+        @old_repo, @warnings = old_repo, warnings
+        @new_repo = create_new_repo(new_url)
+      end
 
-          new_repo_id = repository.identifier
-          if (project != repository.project)
-            new_repo_id = "#{repository.project.identifier}-#{new_repo_id}"
-          end
+      private
 
-          new_repo.identifier = new_repo_id
-          new_repo.is_default = repository.is_default
-          new_repo.use_init_hooks = false
+      def create_new_repo(new_url)
+        Repo.new(
+            :project => find_project,
+            :url => new_url,
+            :identifier => find_identifier(new_url)
+        )
+      end
 
-          repository.destroy
-          new_repo.save!
-
-          new_repo
+      def find_project
+        prj = old_repo.project
+        while prj.module_enabled?('issue_tracking').nil? && prj.parent
+          prj = prj.parent
         end
+        prj
+      end
 
-        private
-        def origin_url_of(repository)
-          if repository.is_a? Repository::Git
-            origin_url = `git config --file '#{File.join( repository.url, "config" )}' --get remote.origin.url`
-          else # UndevGit
-            origin_url = repository.url
+      def find_identifier(new_url)
+        return old_repo.identifier if old_repo.identifier.present?
+        $1 if new_url =~ /\/([\w\d\-_]+)\.git$/
+      end
+
+      def <=>(b)
+        [new_repo.project.identifier, new_repo.identifier].join <=>
+            [b.new_repo.project.identifier, b.new_repo.identifier].join
+      end
+    end
+
+    class Migration
+
+      def initialize(url_mapping_file)
+        @url_mapping_file = url_mapping_file
+      end
+
+      def mappings
+        @mappings ||= create_mappings
+      end
+
+      def url_mappings
+        @url_mappings ||= read_url_mappings
+      end
+
+      def run_migration
+        mappings.each_with_index do |m, i|
+          puts "#{i}/#{mappings.count} Processing #{m.old_repo}"
+
+          if m.new_repo.url.blank?
+            puts "\tnew_url is not found, skipping"
+            next
           end
 
-          if origin_url.blank?
-            raise RuntimeError, "#{repository.inspect} origin_url is undefined"
+          if same_repo = Repository.find_by_url(m.new_repo.url)
+            puts "\tnew_url already used in project #{same_repo.project.identifier}"
+            next
           end
 
-          origin_url
+          old_repo = Repository::Git.find_by_id(m.old_repo.id)
+          unless old_repo
+            puts "\trepository not found. Already deleted?"
+            next
+          end
+
+          begin
+            puts "\tfetching changesets for old repository..."
+            old_repo.fetch_changesets
+          rescue Exception => e
+            puts "\tcan't fetch changesets: #{e.class}: #{e.message}"
+          end
+
+          begin
+            ActiveRecord::Base.transaction do
+              puts "\tBegin transaction..."
+
+              m.new_repo.project.enable_module!('hooks')
+
+              new_repo = Repository::UndevGit.new(
+                  :project => m.new_repo.project,
+                  :identifier => m.new_repo.identifier,
+                  :url => m.new_repo.url,
+                  :use_init_hooks => 0,
+                  :use_init_refs => 1
+              )
+              new_repo.merge_extra_info(
+                  'extra_report_last_commit' => old_repo.report_last_commit
+              )
+              old_repo.destroy
+              new_repo.save!
+              puts "\tNew repository created #{m.new_repo}"
+              puts "\tClonning and fetching changesets..."
+              new_repo.fetch_changesets
+            end
+            puts "\tDone. Transaction committed."
+          rescue Redmine::Scm::Adapters::CommandFailed => e
+            puts "\tCommandFailed: #{e.message}"
+          rescue Exception => e
+            puts "\tError: unhandled exception #{e.class}: #{e.message}"
+          end
         end
       end
+
+      private
+
+      def create_mappings
+        new_urls = []
+        Repository::Git.order(:id).all.map do |r|
+          old_repo = Repo.new(
+              :id => r.id,
+              :project => r.project,
+              :url => r.url,
+              :identifier => r.identifier,
+              :is_default => r.is_default
+          )
+          new_url = url_mappings[old_repo.url]
+
+          warnings = []
+          warnings << 'new_url duplicated' if new_urls.include?(new_url)
+          warnings << 'new_url is blank' if new_url.blank?
+
+          new_urls << new_url unless new_url.blank?
+
+          Mapping.new(old_repo, new_url, warnings)
+        end
+      end
+
+      def read_url_mappings
+        maps = {}
+
+        File.open(@url_mapping_file, 'r') do |mapfile|
+          mapfile.each do |line|
+            old_url, new_url = *(line.split(';').map(&:strip))
+            maps[old_url] = new_url if old_url.present? && new_url.present?
+          end
+        end
+        maps
+      end
+
     end
   end
 end

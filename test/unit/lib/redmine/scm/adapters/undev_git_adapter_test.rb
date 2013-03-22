@@ -39,13 +39,14 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
       @adapter = Redmine::Scm::Adapters::UndevGitAdapter.new(
                     REPOSITORY_PATH,
-                    @temp_storage_dir,
+                    get_temp_dir,
                     nil,
                     nil,
                     'ISO-8859-1'
                     #'UTF-8'
                  )
       assert @adapter
+      @adapter.clone_repository
       @char_1 = CHAR_1_HEX.dup
       if @char_1.respond_to?(:force_encoding)
         @char_1.force_encoding('UTF-8')
@@ -390,11 +391,12 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
     def test_entries_wrong_path_encoding
       adpt = Redmine::Scm::Adapters::UndevGitAdapter.new(
                     REPOSITORY_PATH,
-                    @temp_storage_dir,
+                    get_temp_dir,
                     nil,
                     nil,
                     'EUC-JP'
                  )
+      adpt.clone_repository
       entries1 = adpt.entries('latin-1-dir', '64f1f3e8')
       assert entries1
       assert_equal 3, entries1.size
@@ -465,12 +467,12 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
     def test_path_encoding_default_utf8
       adpt1 = Redmine::Scm::Adapters::UndevGitAdapter.new(
                                 REPOSITORY_PATH,
-                                @temp_storage_dir
+                                get_temp_dir
                               )
       assert_equal "UTF-8", adpt1.path_encoding
       adpt2 = Redmine::Scm::Adapters::UndevGitAdapter.new(
                                 REPOSITORY_PATH,
-                                @temp_storage_dir,
+                                get_temp_dir,
                                 nil,
                                 nil,
                                 ""
@@ -526,6 +528,12 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
     def test_scm_version_for(scm_command_version, version)
       @adapter.class.expects(:scm_version_from_command_line).returns(scm_command_version)
       assert_equal version, @adapter.class.scm_command_version
+    end
+
+    def get_temp_dir
+      @temp_dir_no ||= 0
+      @temp_dir_no += 1
+      File.join(@temp_storage_dir, @temp_dir_no.to_s)
     end
 
   else

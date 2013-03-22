@@ -56,7 +56,6 @@ module Redmine::Scm::Adapters
       raise 'root_url must be provided' if root_url.blank?
       super
       @path_encoding = path_encoding.blank? ? 'UTF-8' : path_encoding
-      clone unless cloned?
     end
 
     def path_encoding
@@ -386,6 +385,34 @@ module Redmine::Scm::Adapters
       git_cmd(args)
     end
 
+    def cloned?
+      return false unless Dir.exists?(root_url)
+
+      args = ['--git-dir', root_url, 'rev-parse']
+      args = args.map { |arg| shell_quote(arg.to_s) }.join(' ')
+      cmd = [self.class.sq_bin, args].join(' ')
+
+      shellout(cmd)
+
+      $?.exitstatus == 0
+    rescue CommandFailed
+      false
+    end
+
+    def clone_repository
+      FileUtils.mkdir_p(root_url)
+
+      args = ['clone', url, root_url, '--mirror', '--quiet']
+      args = args.map { |arg| shell_quote(arg.to_s) }.join(' ')
+      cmd = [self.class.sq_bin, args].join(' ')
+
+      shellout(cmd)
+
+      if $? && $?.exitstatus != 0
+        raise ScmCommandAborted, "can't clone repository git exited with non-zero status: #{$?.exitstatus}"
+      end
+    end
+
     private
 
     # execute git command and yield block for every chunk
@@ -514,34 +541,5 @@ module Redmine::Scm::Adapters
       end
       ret
     end
-
-    def cloned?
-      return false unless Dir.exists?(root_url)
-
-      args = ['--git-dir', root_url, 'rev-parse']
-      args = args.map { |arg| shell_quote(arg.to_s) }.join(' ')
-      cmd = [self.class.sq_bin, args].join(' ')
-
-      shellout(cmd)
-
-      $?.exitstatus == 0
-    rescue CommandFailed
-      false
-    end
-
-    def clone
-      FileUtils.mkdir_p(root_url)
-
-      args = ['clone', url, root_url, '--mirror', '--quiet']
-      args = args.map { |arg| shell_quote(arg.to_s) }.join(' ')
-      cmd = [self.class.sq_bin, args].join(' ')
-
-      shellout(cmd)
-
-      if $? && $?.exitstatus != 0
-        raise ScmCommandAborted, "can't clone repository git exited with non-zero status: #{$?.exitstatus}"
-      end
-    end
-
   end
 end

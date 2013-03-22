@@ -64,6 +64,17 @@ class Repository::UndevGit < Repository
   def scm
     initialize_root_url
     super
+
+    unless @scm.cloned?
+
+      #try to clone twice
+      begin
+        @scm.clone_repository
+      rescue Redmine::Scm::Adapters::CommandFailed
+        @scm.clone_repository
+      end
+    end
+    @scm
   end
 
   def report_last_commit

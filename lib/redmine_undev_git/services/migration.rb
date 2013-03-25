@@ -92,6 +92,7 @@ module RedmineUndevGit
           end
 
           begin
+            new_repo = nil
             ActiveRecord::Base.transaction do
               puts "\tBegin transaction..."
 
@@ -110,10 +111,12 @@ module RedmineUndevGit
               old_repo.destroy
               new_repo.save!
               puts "\tNew repository created #{m.new_repo}"
-              puts "\tClonning and fetching changesets..."
-              new_repo.fetch_changesets
+              puts "\tClonning..."
+              puts "\tOk." if new_repo.scm.cloned?
             end
-            puts "\tDone. Transaction committed."
+            puts "\tTransaction committed. Fetching changesets..."
+            new_repo.fetch_changesets
+            puts "\tDone. #{new_repo.changesets.count} changesets fetched."
           rescue Redmine::Scm::Adapters::CommandFailed => e
             puts "\tCommandFailed: #{e.message}"
           rescue Exception => e

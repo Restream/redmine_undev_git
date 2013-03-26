@@ -1,6 +1,7 @@
 module RedmineUndevGit::Helpers
   module UndevGitHelper
     def changeset_branches(changeset, max_branches = nil)
+      return '' unless changeset.repository.is_a? Repository::UndevGit
       max = max_branches.to_i
       brs = max > 0 ? changeset.branches[0...max] : changeset.branches
       links = brs.map do |branch|

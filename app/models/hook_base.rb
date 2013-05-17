@@ -8,12 +8,6 @@ class HookBase < ActiveRecord::Base
   validates :branches, :presence => true
   validates :keywords, :presence => true
 
-  validate do
-    if new_status.nil? && new_done_ratio.nil?
-      errors[:base] << I18n.t(:text_hook_cannot_be_empty)
-    end
-  end
-
   belongs_to :new_status, :class_name => 'IssueStatus'
 
   scope :by_position, order("#{table_name}.position")

@@ -13,8 +13,8 @@ Redmine::Plugin.register :redmine_undev_git do
   name        'Redmine UndevGit plugin'
   description 'Git repository with remote repositories and hooks support'
   author      'Denis Diachkov, Vladimir Kiselev, Danil Tashkinov'
-  version     '0.1.0'
-  url         'https://bitbucket.org/nodecarter/redmine_undev_git'
+  version     '0.1.1'
+  url         'https://github.com/Undev/redmine_undev_git'
 
   requires_redmine :version_or_higher => '2.1'
 

@@ -1,20 +1,12 @@
-<table class="list">
-  <thead>
-    <tr>
-      <th><%= l( :field_branches ) %></th>
-      <th><%= l( :field_keywords ) %></th>
-      <th><%= l( :field_new_status ) %></th>
-      <th><%= l( :field_new_done_ratio ) %></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% hooks.each do |hook| %>
-      <tr>
-        <td align="center"><%= hook.branches.join(', ') %></td>
-        <td align="center"><%= hook.keywords.join(', ') %></td>
-        <td align="center"><%= hook.new_status ? hook.new_status.name : nil %></td>
-        <td align="center"><%= hook.new_done_ratio %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<%= render :partial => 'project_hooks/header' %>
+<% hooks.each do |hook| %>
+  <tr>
+    <td></td>
+    <td align="center"><%= hook.branches.join(', ') %></td>
+    <td align="center"><%= hook.keywords.join(', ') %></td>
+    <td align="center"><%= hook.new_status ? hook.new_status.name : nil %></td>
+    <td align="center"><%= hook.new_done_ratio %></td>
+    <td></td>
+    <td></td>
+  </tr>
+<% end %>

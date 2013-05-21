@@ -17,3 +17,9 @@ h2 em.rebased-to {
 h2 em.rebased-from {
   background-color: #f0fff0;
 }
+
+tr.hooks-header {
+  border-top-style: solid;
+  border-top-width: 1px;
+  background-color: #FEFEF0;
+}

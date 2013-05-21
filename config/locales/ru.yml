@@ -20,7 +20,7 @@ ru:
 
   project_hooks: "Хуки проекта"
 
-  repository_hooks: "Хуки для %{repository}"
+  repository_hooks: "Хуки для репозитория: %{repository}"
   repository_taken: "уже используется как %{identifier} в %{project}"
   repository_taken_without_id: "уже используется в %{project}"
   repository_url_malformed: "указан неправильно, используйте git://, http(s):// или путь к локальному репозиторию"

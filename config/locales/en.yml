@@ -20,7 +20,7 @@ en:
 
   project_hooks: "Project hooks"
 
-  repository_hooks: "Hooks for %{repository}"
+  repository_hooks: "Hooks for repository: %{repository}"
   repository_taken: "has already been taken by %{identifier} in %{project}"
   repository_taken_without_id: "has already been taken in %{project}"
   repository_url_malformed: "malformed, use git://, http(s):// or local path"

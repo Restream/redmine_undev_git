@@ -6,6 +6,10 @@ namespace :test do
         extract_repo('undev_git_repository')
         extract_repo('rebase_test_before.git')
         extract_repo('rebase_test_after.git')
+        extract_repo('hooks_every_branch_r1')
+        extract_repo('hooks_every_branch_r2')
+        extract_repo('hooks_every_branch_r3')
+        extract_repo('hooks_every_branch_r4')
       end
 
       private

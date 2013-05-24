@@ -46,7 +46,7 @@ class HookBase < ActiveRecord::Base
     issue.status = new_status if new_status
     issue.done_ratio = new_done_ratio if new_done_ratio
     Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
-                            { :changeset => changeset, :issue => issue })
+                            { :changeset => changeset, :issue => issue, :hook => self })
     unless issue.save
       logger.warn("Issue ##{issue.id} could not be saved by changeset #{changeset.id}: #{issue.errors.full_messages}") if logger
     end

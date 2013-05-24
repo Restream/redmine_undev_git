@@ -79,17 +79,17 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     attr_reader :hook_ids
 
     def model_changeset_scan_commit_for_issue_ids_pre_issue_update(context)
-      @hook_ids ||= {}
-      @hook_ids[@context.issue.id] ||= []
-      @hook_ids[@context.issue.id] << context.hook.id
+      return unless context.has_key? :hook
+      @hook_ids ||= []
+      @hook_ids << context[:hook].id
     end
 
     def clear_hook_ids
-      @hook_ids = {}
+      @hook_ids = []
     end
 
     def initialize(*args, &block)
-      @hook_ids = {}
+      @hook_ids = []
       super
     end
   end
@@ -97,6 +97,7 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
   def setup
     make_temp_dir
     @project = Project.find(3)
+    HookBase.delete_all
   end
 
   def teardown
@@ -138,18 +139,18 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     listener = HookListener.instance
     repo = Repository::UndevGit.create(:project => @project, :url => RD1)
     repo.fetch_changesets
-    @hook_ids1 = listener.hook_ids[5] || []
+    @hook_ids1 = listener.hook_ids || []
     listener.clear_hook_ids
     repo.url = RD2
     repo.fetch_changesets
-    @hook_ids2 = listener.hook_ids[5] || []
+    @hook_ids2 = listener.hook_ids || []
     listener.clear_hook_ids
     repo.url = RD3
     repo.fetch_changesets
-    @hook_ids3 = listener.hook_ids[5] || []
+    @hook_ids3 = listener.hook_ids || []
     listener.clear_hook_ids
     repo.url = RD4
     repo.fetch_changesets
-    @hook_ids4 = listener.hook_ids[5] || []
+    @hook_ids4 = listener.hook_ids || []
   end
 end

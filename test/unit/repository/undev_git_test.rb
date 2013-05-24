@@ -678,7 +678,8 @@ class UndevGitTest < ActiveSupport::TestCase
       changeset.comments = 'fix #5'
       issue = Issue.find(5)
       assert_equal 0, issue.done_ratio
-      repository.send :parse_comments, changeset
+      repository.send :initial_parse_comments, changeset
+      repository.send :apply_hooks_for_every_branch, changeset, changeset.branches
       issue.reload
       assert_equal 70, issue.done_ratio
     end
@@ -692,7 +693,8 @@ class UndevGitTest < ActiveSupport::TestCase
       changeset.branches << 'production'
       issue = Issue.find(5)
       assert_equal 0, issue.done_ratio
-      repository.send :parse_comments, changeset
+      repository.send :initial_parse_comments, changeset
+      repository.send :apply_hooks_for_every_branch, changeset, changeset.branches
       issue.reload
       assert_equal 80, issue.done_ratio
     end

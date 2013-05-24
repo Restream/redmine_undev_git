@@ -270,7 +270,9 @@ class Repository::UndevGit < Repository
     unless changeset.new_record?
       rev.paths.each { |change| changeset.create_change(change) }
 
-      parse_comments(changeset)
+      initial_parse_comments(changeset)
+
+      apply_hooks_for_every_branch(changeset, changeset.branches)
     end
 
     changeset
@@ -287,7 +289,7 @@ class Repository::UndevGit < Repository
     ).first
   end
 
-  def parse_comments(changeset)
+  def initial_parse_comments(changeset)
     ref_keywords = Setting.commit_ref_keywords
     all_hooks = hooks.by_position + project.hooks.global.by_position + GlobalHook.by_position
     fix_keywords = all_hooks.map(&:keywords).join(',')
@@ -308,7 +310,7 @@ class Repository::UndevGit < Repository
         # ignore closed issues
         next if issue.closed?
 
-        hook = all_hooks.select { |h| h.applied_for?(keywords, changeset.branches) }.first
+        hook = all_hooks.select { |h| h.any_branch? && h.applied_for?(keywords, changeset.branches) }.first
         hook.apply_for_issue_by_changeset(issue, changeset) if hook
       end
 
@@ -316,6 +318,34 @@ class Repository::UndevGit < Repository
       if Setting.commit_logtime_enabled?
         parsed[:log_time].each do |issue, hours|
           changeset.log_time(issue, hours)
+        end
+      end
+    end
+  end
+
+  def apply_hooks_for_every_branch(changeset, branches)
+    ref_keywords = Setting.commit_ref_keywords
+    all_hooks = hooks.by_position + project.hooks.global.by_position + GlobalHook.by_position
+    fix_keywords = all_hooks.map(&:keywords).join(',')
+
+    parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)
+
+    # update changeset only if
+    # changeset was not rebased
+    # initialization done or using hooks for initialization is allowed
+    if changeset.rebased_from.nil? && (initialization_done? || use_init_hooks?)
+
+      # change issues by hooks
+      parsed[:fix_issues].each do |issue, keywords|
+
+        # ignore closed issues
+        next if issue.closed?
+
+        branches.each do |branch|
+          hook = all_hooks.select do |h|
+            !h.any_branch? && h.applied_for?(keywords, [branch])
+          end.first
+          hook.apply_for_issue_by_changeset(issue, changeset) if hook
         end
       end
     end

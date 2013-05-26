@@ -18,7 +18,10 @@ class Repository::UndevGit < Repository
 
   # Storage folder for local copies of remote repositories
   cattr_accessor :repo_storage_dir
-  self.repo_storage_dir = Redmine::Configuration['scm_repo_storage_dir'] || Rails.root.join('repos')
+  self.repo_storage_dir = Redmine::Configuration['scm_repo_storage_dir'] || begin
+    rpath = Rails.root.join('repos')
+    rpath.symlink? ? File.readlink(rpath) : rpath
+  end
 
   has_many :hooks,
            :class_name => 'ProjectHook',

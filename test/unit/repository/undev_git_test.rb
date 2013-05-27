@@ -26,7 +26,7 @@ class UndevGitTest < ActiveSupport::TestCase
     @repository = Repository::UndevGit.create(
         :project       => @project,
         :url           => REPOSITORY_PATH,
-        :path_encoding => 'ISO-8859-1'        
+        :path_encoding => 'ISO-8859-1'
     )
     assert @repository
     @char_1        = CHAR_1_HEX.dup
@@ -255,14 +255,6 @@ class UndevGitTest < ActiveSupport::TestCase
       assert_equal "7e61ac704deecde634b51e59daa8110435dcb3da", r4[1]
     end
 
-    def test_db_consistent_ordering_init
-      assert_nil @repository.extra_info
-      assert_equal 0, @repository.changesets.count
-      @repository.fetch_changesets
-      @project.reload
-      assert_equal 1, @repository.extra_info["db_consistent"]["ordering"]
-    end
-
     def test_db_consistent_ordering_before_1_2
       assert_nil @repository.extra_info
       assert_equal 0, @repository.changesets.count
@@ -273,13 +265,11 @@ class UndevGitTest < ActiveSupport::TestCase
       h = {}
       h["heads"] = []
       h["branches"] = {}
-      h["db_consistent"] = {}
       @repository.merge_extra_info(h)
       @repository.save
       assert_equal NUM_REV, @repository.changesets.count
       @repository.fetch_changesets
       @project.reload
-      assert_equal 0, @repository.extra_info["db_consistent"]["ordering"]
 
       extra_info_heads = @repository.extra_info["heads"].dup
       extra_info_heads.delete_if { |x| x == "83ca5fd546063a3c7dc2e568ba3355661a9e2b2c" }
@@ -297,7 +287,6 @@ class UndevGitTest < ActiveSupport::TestCase
       @project.reload
       cs1 = @repository.changesets
       assert_equal NUM_REV - 6, cs1.count
-      assert_equal 0, @repository.extra_info["db_consistent"]["ordering"]
 
       extra_info_heads << "4a07fe31bffcf2888791f3e6cbc9c4545cefe3e8"
       h = {}
@@ -310,24 +299,6 @@ class UndevGitTest < ActiveSupport::TestCase
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
       assert_equal NUM_HEAD, @repository.extra_info["heads"].size
-
-      assert_equal 0, @repository.extra_info["db_consistent"]["ordering"]
-    end
-
-    def test_heads_from_branches_hash
-      assert_nil @repository.extra_info
-      assert_equal 0, @repository.changesets.count
-      assert_equal [], @repository.heads_from_branches_hash
-      h = {}
-      h["branches"] = {}
-      h["branches"]["test1"] = {}
-      h["branches"]["test1"]["last_scmid"] = "1234abcd"
-      h["branches"]["test2"] = {}
-      h["branches"]["test2"]["last_scmid"] = "abcd1234"
-      @repository.merge_extra_info(h)
-      @repository.save
-      @project.reload
-      assert_equal ["1234abcd", "abcd1234"], @repository.heads_from_branches_hash.sort
     end
 
     def test_latest_changesets
@@ -679,7 +650,7 @@ class UndevGitTest < ActiveSupport::TestCase
       issue = Issue.find(5)
       assert_equal 0, issue.done_ratio
       repository.send :initial_parse_comments, changeset
-      repository.send :apply_hooks_for_every_branch, changeset, changeset.branches
+      repository.send :apply_hooks_for_branch, changeset, 'master'
       issue.reload
       assert_equal 70, issue.done_ratio
     end
@@ -694,7 +665,7 @@ class UndevGitTest < ActiveSupport::TestCase
       issue = Issue.find(5)
       assert_equal 0, issue.done_ratio
       repository.send :initial_parse_comments, changeset
-      repository.send :apply_hooks_for_every_branch, changeset, changeset.branches
+      repository.send :apply_hooks_for_branch, changeset, 'production'
       issue.reload
       assert_equal 80, issue.done_ratio
     end

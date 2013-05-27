@@ -132,37 +132,16 @@ class Repository::UndevGit < Repository
     @scm = nil
     scm.fetch!
 
-    scm_brs = branches
-    return if scm_brs.nil? || scm_brs.empty?
+    repo_branches = branches
+    return if repo_branches.nil? || repo_branches.empty?
+    prev_branches = previous_branches
 
-    h1 = extra_info || {}
-    h  = h1.dup
-    repo_heads = scm_brs.map{ |br| br.scmid }
-    h['heads'] ||= []
-    prev_db_heads = h['heads'].dup
-    if prev_db_heads.empty?
-      prev_db_heads += heads_from_branches_hash
-    end
-    return if prev_db_heads.sort == repo_heads.sort
+    repo_heads = repo_branches.map{ |br| br.scmid }
+    prev_heads = previous_heads
+    return if prev_heads.sort == repo_heads.sort
 
-    h['db_consistent']  ||= {}
-    if changesets.count == 0
-      h['db_consistent']['ordering'] = 1
-      merge_extra_info(h)
-      self.save
-    elsif ! h['db_consistent'].has_key?('ordering')
-      h['db_consistent']['ordering'] = 0
-      merge_extra_info(h)
-      self.save
-    end
-    save_revisions(prev_db_heads, repo_heads)
-  end
-
-  def heads_from_branches_hash
-    h1 = extra_info || {}
-    h  = h1.dup
-    h['branches'] ||= {}
-    h['branches'].map { |br, hs| hs['last_scmid'] }
+    save_revisions(prev_heads, repo_heads)
+    apply_hooks_for_every_branches(prev_branches, repo_branches)
   end
 
   def latest_changesets(path,rev,limit=10)
@@ -204,10 +183,22 @@ class Repository::UndevGit < Repository
   end
 
   def initialization_done?
-    extra_info && extra_info['heads'].any?
+    extra_info && extra_info['heads'] && extra_info['heads'].any?
   end
 
   private
+
+  def previous_branches
+    h1 = extra_info || {}
+    h  = h1.dup
+    h['branches'] ||= {}
+  end
+
+  def previous_heads
+    h1 = extra_info || {}
+    h  = h1.dup
+    h['heads'] ||= []
+  end
 
   def save_revisions(prev_db_heads, repo_heads)
     h = {}
@@ -271,8 +262,6 @@ class Repository::UndevGit < Repository
       rev.paths.each { |change| changeset.create_change(change) }
 
       initial_parse_comments(changeset)
-
-      apply_hooks_for_every_branch(changeset, changeset.branches)
     end
 
     changeset
@@ -291,7 +280,7 @@ class Repository::UndevGit < Repository
 
   def initial_parse_comments(changeset)
     ref_keywords = Setting.commit_ref_keywords
-    all_hooks = hooks.by_position + project.hooks.global.by_position + GlobalHook.by_position
+    all_hooks = all_applicable_hooks
     fix_keywords = all_hooks.map(&:keywords).join(',')
 
     parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)
@@ -323,9 +312,46 @@ class Repository::UndevGit < Repository
     end
   end
 
-  def apply_hooks_for_every_branch(changeset, branches)
+  def apply_hooks_for_every_branches(prev_branches, repo_branches)
+    all_hooks = all_applicable_hooks.find_all { |b| !b.any_branch? }
+    hook_branches = all_hooks.map(&:branches).flatten.uniq
+    hook_branches.each do |hook_branch|
+
+      repo_branch = repo_branches.find { |b| b.to_s == hook_branch }
+      prev_branch = prev_branches[hook_branch]
+      next unless repo_branch
+
+      opts = {}
+      opts[:reverse]  = true
+      opts[:excludes] = [prev_branch] if prev_branch.present?
+      opts[:includes] = [repo_branch.scmid]
+
+      revisions = scm.revisions('', nil, nil, opts)
+      next if revisions.blank?
+
+      limit = 300
+      offset = 0
+      while offset < revisions.size
+        scmids = revisions.slice(offset, limit).map { |r| r.scmid }
+        cs = changesets.where('scmid IN (?)', scmids).order('committed_on DESC')
+        cs.each do |changeset|
+          apply_hooks_for_branch(changeset, hook_branch)
+        end
+        offset += limit
+      end
+    end
+    h = { 'branches' => repo_branches.map { |b| { b.to_s => b.scmid } } }
+    merge_extra_info(h)
+    self.save
+  end
+
+  def all_applicable_hooks
+    hooks.by_position + project.hooks.global.by_position + GlobalHook.by_position
+  end
+
+  def apply_hooks_for_branch(changeset, branch)
     ref_keywords = Setting.commit_ref_keywords
-    all_hooks = hooks.by_position + project.hooks.global.by_position + GlobalHook.by_position
+    all_hooks = all_applicable_hooks
     fix_keywords = all_hooks.map(&:keywords).join(',')
 
     parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)
@@ -341,12 +367,10 @@ class Repository::UndevGit < Repository
         # ignore closed issues
         next if issue.closed?
 
-        branches.each do |branch|
-          hook = all_hooks.select do |h|
-            !h.any_branch? && h.applied_for?(keywords, [branch])
-          end.first
-          hook.apply_for_issue_by_changeset(issue, changeset) if hook
-        end
+        hook = all_hooks.select do |h|
+          !h.any_branch? && h.applied_for?(keywords, [branch])
+        end.first
+        hook.apply_for_issue_by_changeset(issue, changeset) if hook
       end
     end
   end

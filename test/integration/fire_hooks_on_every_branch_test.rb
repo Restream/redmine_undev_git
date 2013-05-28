@@ -97,7 +97,6 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
   def setup
     make_temp_dir
     @project = Project.find(3)
-    HookBase.delete_all
   end
 
   def teardown
@@ -137,18 +136,22 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
 
   def fetch_changesets_by_step
     listener = HookListener.instance
-    repo = Repository::UndevGit.create(:project => @project, :url => RD1)
+    listener.clear_hook_ids
+    repo = Repository::UndevGit.create(:project => @project, :url => RD1, :use_init_hooks => 1)
     repo.fetch_changesets
     @hook_ids1 = listener.hook_ids || []
     listener.clear_hook_ids
+    repo.send :remove_repository_folder
     repo.url = RD2
     repo.fetch_changesets
     @hook_ids2 = listener.hook_ids || []
     listener.clear_hook_ids
+    repo.send :remove_repository_folder
     repo.url = RD3
     repo.fetch_changesets
     @hook_ids3 = listener.hook_ids || []
     listener.clear_hook_ids
+    repo.send :remove_repository_folder
     repo.url = RD4
     repo.fetch_changesets
     @hook_ids4 = listener.hook_ids || []

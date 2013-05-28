@@ -153,56 +153,6 @@ class UndevGitTest < ActiveSupport::TestCase
       assert @repository.extra_info["heads"].index("83ca5fd546063a3c7dc2e568ba3355661a9e2b2c")
     end
 
-    def test_fetch_changesets_history_editing
-      assert_equal 0, @repository.changesets.count
-      @repository.fetch_changesets
-      @project.reload
-      assert_equal NUM_REV, @repository.changesets.count
-      extra_info_heads = @repository.extra_info["heads"].dup
-      assert_equal NUM_HEAD, extra_info_heads.size
-      extra_info_heads.delete_if { |x| x == "83ca5fd546063a3c7dc2e568ba3355661a9e2b2c" }
-      assert_equal 4, extra_info_heads.size
-
-      del_revs = [
-          "83ca5fd546063a3c7dc2e568ba3355661a9e2b2c",
-          "ed5bb786bbda2dee66a2d50faf51429dbc043a7b",
-          "4f26664364207fa8b1af9f8722647ab2d4ac5d43",
-          "deff712f05a90d96edbd70facc47d944be5897e3",
-          "32ae898b720c2f7eec2723d5bdd558b4cb2d3ddf",
-          "7e61ac704deecde634b51e59daa8110435dcb3da",
-      ]
-      @repository.changesets.each do |rev|
-        rev.destroy if del_revs.detect {|r| r == rev.scmid.to_s }
-      end
-      @project.reload
-      assert_equal NUM_REV - 6, @repository.changesets.count
-
-      c = Changeset.new(:repository   => @repository,
-                        :committed_on => Time.now,
-                        :revision     => "abcd1234efgh",
-                        :scmid        => "abcd1234efgh",
-                        :comments     => 'test')
-      assert c.save
-      @project.reload
-      assert_equal NUM_REV - 5, @repository.changesets.count
-
-      extra_info_heads << "1234abcd5678"
-      h = {}
-      h["heads"] = extra_info_heads
-      @repository.merge_extra_info(h)
-      @repository.save
-      @project.reload
-      h1 = @repository.extra_info["heads"].dup
-      assert h1.index("1234abcd5678")
-      assert_equal 5, h1.size
-
-      @repository.fetch_changesets
-      @project.reload
-      assert_equal NUM_REV - 5, @repository.changesets.count
-      h2 = @repository.extra_info["heads"].dup
-      assert_equal h1, h2
-    end
-
     def test_keep_extra_report_last_commit_in_clear_changesets
       assert_nil @repository.extra_info
       h = {}
@@ -677,6 +627,17 @@ class UndevGitTest < ActiveSupport::TestCase
       assert_true Dir.exists?(root_url)
       repository.destroy
       assert_false Dir.exists?(root_url)
+    end
+
+    def test_previous_branches
+      repository = create_test_repository(:identifier => 'x')
+      repository.fetch_changesets
+      exp_branches = {}
+      repository.branches.each do |branch|
+        exp_branches[branch.to_s] = branch.scmid
+      end
+      branches = repository.send :previous_branches
+      assert_equal exp_branches.sort, branches.sort
     end
 
   else

@@ -142,6 +142,14 @@ class Repository::UndevGit < Repository
 
     save_revisions(prev_heads, repo_heads)
     apply_hooks_for_every_branches(prev_branches, repo_branches)
+
+    h1 = extra_info || {}
+    h  = h1.dup
+    h['heads'] = repo_heads.dup
+    h['branches'] ||= {}
+    repo_branches.each { |b| h['branches'][b.to_s] = b.scmid }
+    merge_extra_info(h)
+    self.save
   end
 
   def latest_changesets(path,rev,limit=10)
@@ -234,9 +242,6 @@ class Repository::UndevGit < Repository
         save_revision(rev)
       end
     end
-    h['heads'] = repo_heads.dup
-    merge_extra_info(h)
-    self.save
   end
 
   def save_revision(rev)
@@ -313,6 +318,8 @@ class Repository::UndevGit < Repository
   end
 
   def apply_hooks_for_every_branches(prev_branches, repo_branches)
+    return unless initialization_done? || use_init_hooks?
+
     all_hooks = all_applicable_hooks.find_all { |b| !b.any_branch? }
     hook_branches = all_hooks.map(&:branches).flatten.uniq
     hook_branches.each do |hook_branch|
@@ -340,9 +347,6 @@ class Repository::UndevGit < Repository
         offset += limit
       end
     end
-    h = { 'branches' => repo_branches.map { |b| { b.to_s => b.scmid } } }
-    merge_extra_info(h)
-    self.save
   end
 
   def all_applicable_hooks

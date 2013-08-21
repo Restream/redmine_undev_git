@@ -4,7 +4,7 @@ class Repository::UndevGit < Repository
 
   class UrlValidator < ActiveModel::EachValidator
     def validate_each(record, attribute, value)
-      regexp = /\A(https?|git):\/\/[\w\d\-_\.\/@:]+\z/
+      regexp = /\A([\w\d\-_\.]+@[\w\d\-_\.]+:[\w\d\-_\.\/]+)|(https?|git|ssh):\/\/[\w\d\-_\.\/@:]+\z/
       unless (value =~ regexp) || File.readable_real?(value)
         record.errors.add(attribute, I18n.t(:repository_url_malformed))
       end

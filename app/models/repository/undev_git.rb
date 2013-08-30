@@ -144,7 +144,15 @@ class Repository::UndevGit < Repository
     return if prev_heads.sort == repo_heads.sort
 
     save_revisions(prev_heads, repo_heads)
-    apply_hooks_for_every_branches(prev_branches, repo_branches)
+
+    # don't apply hooks for already prepared changesets in first fetch
+    exclude_branches = {}
+    if prev_branches.empty?
+      repo_branches.each { |b| exclude_branches[b.to_s] = b.scmid }
+    else
+      exclude_branches = prev_branches
+    end
+    apply_hooks_for_merged_commits(exclude_branches, repo_branches)
 
     h1 = extra_info || {}
     h  = h1.dup
@@ -307,8 +315,7 @@ class Repository::UndevGit < Repository
         # ignore closed issues
         next if issue.closed?
 
-        hook = all_hooks.select { |h| h.any_branch? && h.applied_for?(keywords, changeset.branches) }.first
-        hook.apply_for_issue_by_changeset(issue, changeset) if hook
+        initial_apply_hooks(changeset, issue, keywords)
       end
 
       # log time for issues
@@ -320,7 +327,29 @@ class Repository::UndevGit < Repository
     end
   end
 
-  def apply_hooks_for_every_branches(prev_branches, repo_branches)
+  def initial_apply_hooks(changeset, issue, keywords)
+    all_hooks = all_applicable_hooks
+
+    hooks = []
+
+    # hook for any branch have the less priority then hook for specific branch
+    hook_for_any_branch = all_hooks.detect { |h| h.any_branch? && h.applied_for?(keywords, changeset.branches) }
+
+    # find hook for every branch
+    changeset.branches.each do |branch|
+      specific_hook = all_hooks.detect { |h| !h.any_branch? && h.applied_for?(keywords, [branch]) }
+      hooks << specific_hook if specific_hook
+    end
+
+    # execute hook for any branch only if specific hooks not found
+    hooks << hook_for_any_branch if hook_for_any_branch && hooks.empty?
+
+    hooks.each do |hook|
+      hook.apply_for_issue_by_changeset(issue, changeset)
+    end
+  end
+
+  def apply_hooks_for_merged_commits(prev_branches, repo_branches)
     return unless initialization_done? || use_init_hooks?
 
     all_hooks = all_applicable_hooks.find_all { |b| !b.any_branch? }
@@ -374,9 +403,9 @@ class Repository::UndevGit < Repository
         # ignore closed issues
         next if issue.closed?
 
-        hook = all_hooks.select do |h|
+        hook = all_hooks.detect do |h|
           !h.any_branch? && h.applied_for?(keywords, [branch])
-        end.first
+        end
         hook.apply_for_issue_by_changeset(issue, changeset) if hook
       end
     end

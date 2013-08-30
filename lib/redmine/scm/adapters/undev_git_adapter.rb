@@ -519,9 +519,11 @@ module Redmine::Scm::Adapters
     end
 
     # extract branches from git log format: (HEAD, master)
+    # reject tags from branches
     def extract_branches(decorate, remove_head = true)
       return [] if decorate.blank?
-      decorate.strip[1...-1].split(', ').reject { |b| remove_head && b == 'HEAD' }
+      decorate.strip[1...-1].split(', ').
+          reject { |b| remove_head && b == 'HEAD' || b =~ /^tag:\s/ }
     end
 
     def git_cmd(args, options = {}, &block)

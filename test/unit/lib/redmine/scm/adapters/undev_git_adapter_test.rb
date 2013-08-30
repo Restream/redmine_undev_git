@@ -524,9 +524,15 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
     end
 
     def test_patch_ids
-      repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
-                                    :path_encoding => 'UTF-8')
-      repo.fetch_changesets
+      adapt = Redmine::Scm::Adapters::UndevGitAdapter.new(
+          R_BEFORE_REBASE_PATH,
+          get_temp_dir,
+          nil,
+          nil,
+          'UTF-8'
+      )
+      #repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
+      #                              :path_encoding => 'UTF-8')
       patch_ids = {
         '2b91d81c6448716a5fcfef1292c45d6d7cfea3d6' => 'c7170bbd4448cbf3b34b99abd37dec3e1de16b8a',
         'ad445deb690a213ec8625c22e5e2bd4911c3e035' => '064976b3ad63557b9ab0b209bbca27978f593ef4',
@@ -538,11 +544,19 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
         'ac7080c5e9fa6e1b49c7b2fcdf8f7dd23b31ed8a' => 'aaabff51c84c2d129ca270a2b2599ec253c30611',
         '21d88b7b22d1d65fb295bf80b498626c39b44a1a' => '3b55a4a49664e13cffc1408397e05d089d7097b3'
       }
-      patch_ids.each do |scmid, patch_id|
-        cs = repo.find_changeset_by_name(scmid)
-        assert cs
-        assert_equal patch_id, cs.patch_id
+      revs = adapt.revisions('', nil, nil)
+      revs.each do |rev|
+        patch_id = patch_ids[rev.scmid]
+        assert patch_id
+        assert_equal patch_id, rev.patch_id
       end
+    end
+
+    def test_ignore_tags_in_branches
+      revs = @adapter.revisions('', nil, 'tag00.lightweight',{})
+      assert_equal 1, revs.length
+      assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs[0].identifier
+      assert_equal [], revs[0].branches
     end
 
     private

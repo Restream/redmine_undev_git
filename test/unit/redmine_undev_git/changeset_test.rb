@@ -1,7 +1,20 @@
-require File.expand_path('../../test_helper', __FILE__)
+require File.expand_path('../../../test_helper', __FILE__)
 
-class ChangesetTest < ActiveSupport::TestCase
-  fixtures :projects, :repositories, :enabled_modules, :users, :roles
+class RedmineUndevGit::ChangesetTest < ActiveSupport::TestCase
+  fixtures :projects,
+           :users,
+           :roles,
+           :members,
+           :member_roles,
+           :issues,
+           :issue_statuses,
+           :versions,
+           :trackers,
+           :projects_trackers,
+           :issue_categories,
+           :enabled_modules,
+           :enumerations,
+           :repositories
 
   def setup
     make_temp_dir
@@ -45,6 +58,15 @@ class ChangesetTest < ActiveSupport::TestCase
             :ref_issues => [5, 10, 13, 14],
             :fix_issues => { 5 => %w{fixes}, 10 => %w{closes} , 13 => %w{fixes} },
             :log_time => { 14 => %w{3m 2h} }
+        },
+        {
+            :comment => 'some text closes #5 and fixes #5',
+            :ref_keywords => '*',
+            :fix_keywords => 'fixes, closes',
+            :cross_project_ref => true,
+            :ref_issues => [5],
+            :fix_issues => { 5 => %w{fixes closes} },
+            :log_time => { }
         }
     ]
     samples.each do |sample|

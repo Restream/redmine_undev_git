@@ -309,11 +309,11 @@ module Redmine::Scm::Adapters
 
         chunk, refs = UndevGitRevisions.new(), []
         revision, wait_for = nil
-        patch_ids = {}
+        patch_ids_map = {}
 
         git_patch_ids.each_line do |line|
           m = line.split(' ')
-          patch_ids[m[1]] = m[0]
+          patch_ids_map[m[1]] = m[0]
         end
 
         git_log.each_line do |line|
@@ -331,7 +331,7 @@ module Redmine::Scm::Adapters
                 :authored_on => atime,
                 :message     => '',
                 :paths       => [],
-                :patch_id    => patch_ids[md[:h]],
+                :patch_id    => patch_ids_map[md[:h]],
                 :parents     => parents,
                 :branches    => branches,
                 :branch      => branches.first})
@@ -477,7 +477,7 @@ module Redmine::Scm::Adapters
       git_cmd(%w{patch-id}, {:write_stdin => true}) do |io_patch_id|
         io_patch_id.binmode
 
-        cmd_args = %w{log -p --no-color}
+        cmd_args = %w{log -p --no-color --date-order --format=%H}
         cmd_args << '--all' if revisions.empty?
         cmd_args << "--encoding=#{path_encoding}"
         cmd_args << "--skip=#{skip}" << "--max-count=#{limit}"

@@ -523,6 +523,28 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_true @adapter.class.client_version_eq_or_higher?('1.6')
     end
 
+    def test_patch_ids
+      repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
+                                    :path_encoding => 'UTF-8')
+      repo.fetch_changesets
+      patch_ids = {
+        '2b91d81c6448716a5fcfef1292c45d6d7cfea3d6' => 'c7170bbd4448cbf3b34b99abd37dec3e1de16b8a',
+        'ad445deb690a213ec8625c22e5e2bd4911c3e035' => '064976b3ad63557b9ab0b209bbca27978f593ef4',
+        'd2815cbf826c451dfb1a9cd7a90dd9fda220efee' => '0e3edb88938668e3e2c5bb74f78eaa1efea5dbac',
+        'b278ae21e9c85a1300dae2d1c995dfbf7ea0d859' => '720211a3c6cdc15a4a4314b6c870dc573c222003',
+        '43784cc1dcf240442eaf06775b75212201dd5770' => '7d531ff563dfdf9861421c2b2a6e5b3eed5f5f63',
+        '40a5965716b3c46e638ada5ddab6340e65b1c1b1' => '5c766d4796d44fad6ba8152c8a6220c4cdc2b4e7',
+        '8455e27046da069ff7476c3ec8440e5c37a56cd6' => '0bdf90be6e1205b662d4a0424c564bed11f7945b',
+        'ac7080c5e9fa6e1b49c7b2fcdf8f7dd23b31ed8a' => 'aaabff51c84c2d129ca270a2b2599ec253c30611',
+        '21d88b7b22d1d65fb295bf80b498626c39b44a1a' => '3b55a4a49664e13cffc1408397e05d089d7097b3'
+      }
+      patch_ids.each do |scmid, patch_id|
+        cs = repo.find_changeset_by_name(scmid)
+        assert cs
+        assert_equal patch_id, cs.patch_id
+      end
+    end
+
     private
 
     def test_scm_version_for(scm_command_version, version)

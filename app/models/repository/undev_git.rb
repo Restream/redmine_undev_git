@@ -146,13 +146,7 @@ class Repository::UndevGit < Repository
     save_revisions(prev_heads, repo_heads)
 
     # don't apply hooks for already prepared changesets in first fetch
-    exclude_branches = {}
-    if prev_branches.empty?
-      repo_branches.each { |b| exclude_branches[b.to_s] = b.scmid }
-    else
-      exclude_branches = prev_branches
-    end
-    apply_hooks_for_merged_commits(exclude_branches, repo_branches)
+    apply_hooks_for_merged_commits(prev_branches, repo_branches) unless prev_branches.empty?
 
     h1 = extra_info || {}
     h  = h1.dup
@@ -374,6 +368,11 @@ class Repository::UndevGit < Repository
         scmids = revisions.slice(offset, limit).map { |r| r.scmid }
         cs = changesets.where('scmid IN (?)', scmids).order('committed_on DESC')
         cs.each do |changeset|
+
+          # branches added to changeset at the first save
+          # for all these branches hooks was already applied
+          next if changeset.branches.include?(hook_branch)
+
           apply_hooks_for_branch(changeset, hook_branch)
         end
         offset += limit

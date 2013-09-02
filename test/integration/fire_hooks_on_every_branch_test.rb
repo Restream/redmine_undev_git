@@ -188,6 +188,22 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     assert_equal [],                           @hook_ids4
   end
 
+  def test_hooks_for_merged_commits
+    hook_feature = GlobalHook.create!(
+        :keywords => 'hook6, hook7', :branches => 'feature', :new_done_ratio => '11%')
+    hook_staging = GlobalHook.create!(
+        :keywords => 'hook6, hook7', :branches => 'staging', :new_done_ratio => '12%')
+
+    @repo.reload
+
+    fetch_changesets_by_step
+
+    assert_equal [],                                 @hook_ids1
+    assert_equal [hook_feature.id, hook_staging.id], @hook_ids2
+    assert_equal [],                                 @hook_ids3
+    assert_equal [],                                 @hook_ids4
+ end
+
   def create_global_hooks
     [
       GlobalHook.create!(

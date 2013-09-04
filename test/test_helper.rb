@@ -32,37 +32,37 @@ class ActiveSupport::TestCase
     GlobalHook.create!(
         :branches => 'master',
         :keywords => 'close,fix',
-        :new_status_id => 1,
-        :new_done_ratio => '90%'
+        :status_id => 1,
+        :done_ratio => '90%'
     )
     GlobalHook.create!(
         :branches => 'production',
         :keywords => 'close,fix,closes',
-        :new_status_id => 2,
-        :new_done_ratio => '80%'
+        :status_id => 2,
+        :done_ratio => '80%'
     )
     ProjectHook.create!(
         :project_id => 3,
         :repository_id => repository_id,
         :branches => 'master',
         :keywords => 'close,fix',
-        :new_status_id => 1,
-        :new_done_ratio => '70%'
+        :status_id => 1,
+        :done_ratio => '70%'
     )
     ProjectHook.create!(
         :project_id => 3,
         :repository_id => repository_id,
         :branches => 'production',
         :keywords => 'close,fix',
-        :new_status_id => 2,
-        :new_done_ratio => '60%'
+        :status_id => 2,
+        :done_ratio => '60%'
     )
     ProjectHook.create!(
         :project_id => 3,
         :branches => 'production',
         :keywords => 'fix',
-        :new_status_id => 3,
-        :new_done_ratio => '50%'
+        :status_id => 3,
+        :done_ratio => '50%'
     )
   end
 

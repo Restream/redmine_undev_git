@@ -4,8 +4,9 @@
     <td></td>
     <td align="center"><%= hook.branches.join(', ') %></td>
     <td align="center"><%= hook.keywords.join(', ') %></td>
-    <td align="center"><%= hook.new_status ? hook.new_status.name : nil %></td>
-    <td align="center"><%= hook.new_done_ratio %></td>
+    <td align="center"><%= hook.status ? hook.status.name : nil %></td>
+    <td align="center"><%= hook.done_ratio %></td>
+    <td align="center"><%= hook.assigned_to %></td>
     <td></td>
     <td></td>
   </tr>

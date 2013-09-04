@@ -3,14 +3,28 @@ class HookBase < ActiveRecord::Base
 
   include Redmine::SafeAttributes
 
-  safe_attributes %w{branches keywords new_status_id new_done_ratio}
+  acts_as_customizable
+
+  serialize :custom_field_values, Hash
+
+  safe_attributes %w{branches keywords status_id done_ratio assigned_to_id custom_field_values}
+
+  belongs_to :status, :class_name => 'IssueStatus'
+  belongs_to :assigned_to, :class_name => 'Principal'
 
   validates :branches, :presence => true
   validates :keywords, :presence => true
 
-  belongs_to :new_status, :class_name => 'IssueStatus'
-
   scope :by_position, order("#{table_name}.position")
+
+  def available_custom_fields
+    CustomField.where('type = ?', 'IssueCustomField').order('position')
+  end
+
+  # disable validation for custom fields
+  def validate_custom_field_values
+    true
+  end
 
   def branches
     @branches ||= read_attribute(:branches).to_s.split_by_comma
@@ -36,15 +50,15 @@ class HookBase < ActiveRecord::Base
     issue.reload
 
     # do not update if there are no actual changes
-    return if (new_status.nil? || issue.status == new_status) &&
-              (new_done_ratio.nil? || issue.done_ratio == new_done_ratio)
+    return if (status.nil? || issue.status == status) &&
+              (done_ratio.nil? || issue.done_ratio == done_ratio)
 
     issue.init_journal(
         changeset.user || User.anonymous,
         ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
     )
-    issue.status = new_status if new_status
-    issue.done_ratio = new_done_ratio if new_done_ratio
+    issue.status = status if status
+    issue.done_ratio = done_ratio if done_ratio
     Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
                             { :changeset => changeset, :issue => issue, :hook => self })
     unless issue.save

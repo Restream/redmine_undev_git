@@ -5,7 +5,7 @@
 
       <% if GlobalHook.any? %>
         <tr class="hooks-header">
-          <td colspan="7"><h3><%= l( :label_global_hooks ) %></h3></td>
+          <td colspan="8"><h3><%= l( :label_global_hooks ) %></h3></td>
         </tr>
         <%= render :partial => 'project_hooks/global_hooks',
                    :locals => { :hooks => GlobalHook.by_position } %>
@@ -13,7 +13,7 @@
 
       <% if @project.hooks.global.any? %>
         <tr class="hooks-header">
-          <td colspan="7"><h3><%= l( :project_hooks ) %></h3></td>
+          <td colspan="8"><h3><%= l( :project_hooks ) %></h3></td>
         </tr>
         <%= render :partial => 'project_hooks/hooks',
                    :locals => { :project => @project, :hooks => @project.hooks.global.by_position } %>
@@ -22,7 +22,7 @@
       <% @project.repositories.each do |repository| %>
         <% if repository.respond_to?( :hooks ) && repository.hooks.any? %>
           <tr class="hooks-header">
-            <td colspan="7"><h3><%= l(:repository_hooks, :repository => ( repository.name || repository.url )) %></h3></td>
+            <td colspan="8"><h3><%= l(:repository_hooks, :repository => ( repository.name || repository.url )) %></h3></td>
           </tr>
           <%= render :partial => 'project_hooks/hooks',
                      :locals => { :project => @project, :hooks => repository.hooks.by_position } %>

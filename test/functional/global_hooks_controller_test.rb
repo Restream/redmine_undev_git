@@ -48,7 +48,7 @@ class GlobalHooksControllerTest < ActionController::TestCase
       post :create, :global_hook => {
           :branches => 'Master',
           :keywords => 'closes',
-          :new_done_ratio => '50%' }
+          :done_ratio => '50%' }
     end
 
     assert_redirected_to '/hooks'

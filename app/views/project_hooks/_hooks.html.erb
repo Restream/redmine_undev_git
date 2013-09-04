@@ -4,8 +4,9 @@
     <td align="center"><%= hook.repository.try(:name) %> </td>
     <td align="center"><%= hook.branches.join(', ') %></td>
     <td align="center"><%= hook.keywords.join(', ') %></td>
-    <td align="center"><%= hook.new_status ? hook.new_status.name : nil %></td>
-    <td align="center"><%= hook.new_done_ratio %></td>
+    <td align="center"><%= hook.status ? hook.status.name : nil %></td>
+    <td align="center"><%= hook.done_ratio %></td>
+    <td align="center"><%= hook.assigned_to %></td>
     <td align="center">
       <%= reorder_links('project_hook', {
           :controller => 'project_hooks',

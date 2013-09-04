@@ -1,8 +1,6 @@
 en:
   field_branches: "Branches"
   field_keywords: "Keywords"
-  field_new_done_ratio: "New % done"
-  field_new_status: "New status"
   field_repository: "Repository"
   field_use_init_hooks: "Enable usage of hooks for the repository initialization"
   field_use_init_refs: "Enable referencing to issues for the repository initialization"
@@ -15,6 +13,8 @@ en:
   label_hooks_plural: "Hooks"
   label_not_for_undev_git: "Those settings aren't supported by the UndevGit repository"
   label_project_hooks_plural: "Hooks"
+  label_hook_filter: "Find commits by"
+  label_hook_new_values: "New values that will be applied by hook"
 
   new_hook: "New hook"
 

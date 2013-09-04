@@ -11,4 +11,9 @@ class ProjectHook < HookBase
 
   # project hooks for all repos
   scope :global, where(:repository_id => nil)
+
+  # Users/groups issues can be assigned to
+  def assignable_users
+    project.assignable_users
+  end
 end

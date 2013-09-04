@@ -57,7 +57,7 @@ class ProjectHooksControllerTest < ActionController::TestCase
            :project_hook => {
                :branches => 'Master',
                :keywords => 'closes',
-               :new_done_ratio => '50'
+               :done_ratio => '50'
            }
     end
 

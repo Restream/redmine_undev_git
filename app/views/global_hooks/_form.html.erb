@@ -1,24 +1,38 @@
 <%= error_messages_for 'hook' %>
+<em><%= l(:label_hooks_for_undev_git) %></em>
 
-<div class="box">
-  <p>
-    <em><%= l(:label_hooks_for_undev_git) %></em>
-  </p>
-  <p>
-    <%= f.text_field :branches, :required => true %><br />
-    <em><%= raw(l(:text_branches)) %></em>
-  </p>
+<div class="box tabular">
+  <fieldset>
+    <legend><%= l(:label_hook_filter) %></legend>
 
-  <p>
-    <%= f.text_field :keywords, :required => true %><br />
-    <em><%= l(:text_comma_separated) %></em>
-  </p>
+    <p>
+      <%= f.text_field :branches, :required => true %><br />
+      <em><%= raw(l(:text_branches)) %></em>
+    </p>
 
-  <p>
-    <%= f.select :new_status_id, [['', nil]] + IssueStatus.all.map { |status| [ status.name, status.id ] } %>
-  </p>
+    <p>
+      <%= f.text_field :keywords, :required => true %><br />
+      <em><%= l(:text_comma_separated) %></em>
+    </p>
+  </fieldset>
 
-  <p>
-    <%= f.select :new_done_ratio, [['', nil]] + (0 .. 10).to_a.map { |r| [ "#{r * 10} %", r * 10 ] } %>
-  </p>
+  <fieldset>
+    <legend><%= l(:label_hook_new_values) %></legend>
+
+    <p>
+      <%= f.select :status_id, [['', nil]] + IssueStatus.all.map { |status| [ status.name, status.id ] } %>
+    </p>
+
+    <p>
+      <%= f.select :done_ratio, [['', nil]] + (0 .. 10).to_a.map { |r| [ "#{r * 10} %", r * 10 ] } %>
+    </p>
+
+    <p><%= f.select :assigned_to_id,
+                    principals_options_for_select(hook.assignable_users, hook.assigned_to),
+                    :include_blank => true %></p>
+
+    <% hook.custom_field_values.each do |value| %>
+      <p><%= hook_custom_field_value_tag_with_label :global_hook, value %></p>
+    <% end -%>
+  </fieldset>
 </div>

@@ -1,8 +1,6 @@
 ru:
   field_branches: "Ветки"
   field_keywords: "Кл. слова"
-  field_new_done_ratio: "Новый % готовности"
-  field_new_status: "Новый статус"
   field_repository: "Репозиторий"
   field_use_init_hooks: "При инициализации репозитория учесть ключевые слова, изменяющие статусы задач"
   field_use_init_refs: "При инициализации репозитория связывать ревизии с тикетами"
@@ -15,6 +13,8 @@ ru:
   label_hooks_plural: "Хуки"
   label_not_for_undev_git: "Эти настройки не работают для UndevGit репозитория"
   label_project_hooks_plural: "Хуки"
+  label_hook_filter: "Фильтр коммитов"
+  label_hook_new_values: "Новые значения устанавливаемые хуком"
 
   new_hook: "Новый хук"
 

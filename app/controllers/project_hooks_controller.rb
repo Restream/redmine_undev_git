@@ -5,6 +5,7 @@ class ProjectHooksController < ApplicationController
 
   helper :sort
   include SortHelper
+  helper :hooks
 
   def new
     @hook = @project.hooks.build

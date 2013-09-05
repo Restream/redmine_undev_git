@@ -16,7 +16,8 @@ module RedmineUndevGit::Helpers
           :controller => 'repositories',
           :action => 'show',
           :id => repository.project,
-          :repository_id => repository.identifier_param,
+          :repository_id => repository.identifier_param.present? ?
+              repository.identifier_param : nil,
           :path => nil,
           :params => {
               :branch => branch,

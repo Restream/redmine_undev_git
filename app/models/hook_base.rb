@@ -78,7 +78,7 @@ class HookBase < ActiveRecord::Base
   def has_custom_field_changes_for_issue?(issue)
     issue.custom_field_values.inject(false) do |has_changes, cfvalue|
       hook_value = custom_value_for(cfvalue.custom_field)
-      has_changes || (hook_value.value.present? && cfvalue.value != hook_value.value)
+      has_changes || (hook_value.try(:value).present? && cfvalue.value != hook_value.value)
     end
   end
 

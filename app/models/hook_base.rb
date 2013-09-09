@@ -90,7 +90,7 @@ class HookBase < ActiveRecord::Base
     cfvalues = {}
     issue.custom_field_values.each do |cfvalue|
       hook_value = custom_value_for(cfvalue.custom_field)
-      cfvalues[cfvalue.custom_field_id] = hook_value.value if hook_value.value.present?
+      cfvalues[cfvalue.custom_field_id] = hook_value.value if hook_value.try(:value).present?
     end
     issue.custom_field_values = cfvalues unless cfvalues.empty?
   end

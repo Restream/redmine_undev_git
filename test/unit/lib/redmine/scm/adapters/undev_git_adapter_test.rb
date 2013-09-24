@@ -26,6 +26,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
     WINDOWS_PASS = (Redmine::Platform.mswin? &&
                     Redmine::Scm::Adapters::UndevGitAdapter.client_version_above?([1, 7, 10]))
     WINDOWS_SKIP_STR = "TODO: This test fails in Git for Windows above 1.7.10"
+    TAG_PASS = Redmine::Scm::Adapters::UndevGitAdapter.client_version_above?([1, 8, 1])
 
     def setup
       @temp_storage_dir = Dir.mktmpdir('repo')
@@ -552,11 +553,13 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       end
     end
 
-    def test_ignore_tags_in_branches
-      revs = @adapter.revisions('', nil, 'tag00.lightweight',{})
-      assert_equal 1, revs.length
-      assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs[0].identifier
-      assert_equal [], revs[0].branches
+    if TAG_PASS
+      def test_ignore_tags_in_branches
+        revs = @adapter.revisions('', nil, 'tag00.lightweight',{})
+        assert_equal 1, revs.length
+        assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs[0].identifier
+        assert_equal [], revs[0].branches
+      end
     end
 
     private

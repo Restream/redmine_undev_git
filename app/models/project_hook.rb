@@ -16,4 +16,8 @@ class ProjectHook < HookBase
   def assignable_users
     project.assignable_users
   end
+
+  def available_custom_fields
+    project ? project.all_issue_custom_fields : []
+  end
 end

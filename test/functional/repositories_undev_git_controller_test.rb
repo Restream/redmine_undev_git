@@ -69,8 +69,8 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       repository = Repository.first(:order => 'id DESC')
       assert_kind_of Repository::UndevGit, repository
       assert_equal REPOSITORY_PATH, repository.url
-      assert_equal true, repository.extra_report_last_commit
-      assert_equal true, repository.use_init_hooks?
+      assert repository.extra_report_last_commit
+      assert repository.use_init_hooks?
 
       put :update, :id => repository.id,
           :repository => {
@@ -78,7 +78,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
           }
       assert_response 302
       repo2 = Repository.find(repository.id)
-      assert_equal false, repo2.extra_report_last_commit
+      refute repo2.extra_report_last_commit
     end
 
     def test_get_new
@@ -249,7 +249,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_diff
-      assert_equal true, @repository.is_default
+      assert @repository.is_default
       assert_nil @repository.identifier
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets
@@ -365,7 +365,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
           :path_encoding => 'ISO-8859-1'
       )
       assert repo
-      assert_equal false, repo.is_default
+      refute repo.is_default
       assert_equal 'test-diff-path', repo.identifier
       get :diff,
           :id     => PRJ_ID,

@@ -1,10 +1,6 @@
 require File.expand_path('../../../../../../test_helper', __FILE__)
 require 'mocha'
 
-if defined?(MiniTest)
-  raise 'This tests is not compatible with minitest'
-end
-
 class UndevGitAdapterTest < ActiveSupport::TestCase
   REPOSITORY_PATH = File.join(Rails.root, 'tmp', 'test', 'undev_git_repository')
 
@@ -34,9 +30,9 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       adapter_class = Redmine::Scm::Adapters::UndevGitAdapter
       assert adapter_class
       assert adapter_class.client_command
-      assert_equal true, adapter_class.client_available
-      assert_equal true, adapter_class.client_version_above?([1])
-      assert_equal true, adapter_class.client_version_above?([1, 0])
+      assert adapter_class.client_available
+      assert adapter_class.client_version_above?([1])
+      assert adapter_class.client_version_above?([1, 0])
 
       @adapter = Redmine::Scm::Adapters::UndevGitAdapter.new(
                     REPOSITORY_PATH,
@@ -77,32 +73,32 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_equal 'issue-8857', br_issue_8857.to_s
       assert_equal '2a682156a3b6e77a8bf9cd4590e8db757f3c6c78', br_issue_8857.revision
       assert_equal br_issue_8857.scmid, br_issue_8857.revision
-      assert_equal false, br_issue_8857.is_default
+      refute br_issue_8857.is_default
       br_latin_1_path = brs[1]
       assert_equal 'latin-1-path-encoding', br_latin_1_path.to_s
       assert_equal '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127', br_latin_1_path.revision
       assert_equal br_latin_1_path.scmid, br_latin_1_path.revision
-      assert_equal false, br_latin_1_path.is_default
+      refute br_latin_1_path.is_default
       br_master = brs[2]
       assert_equal 'master', br_master.to_s
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', br_master.revision
       assert_equal br_master.scmid, br_master.revision
-      assert_equal true, br_master.is_default
+      assert br_master.is_default
       br_master_20120212 = brs[3]
       assert_equal 'master-20120212', br_master_20120212.to_s
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', br_master_20120212.revision
       assert_equal br_master_20120212.scmid, br_master_20120212.revision
-      assert_equal false, br_master_20120212.is_default
+      refute br_master_20120212.is_default
       br_latin_1 = brs[-2]
       assert_equal 'test-latin-1', br_latin_1.to_s
       assert_equal '67e7792ce20ccae2e4bb73eed09bb397819c8834', br_latin_1.revision
       assert_equal br_latin_1.scmid, br_latin_1.revision
-      assert_equal false, br_latin_1.is_default
+      refute br_latin_1.is_default
       br_test = brs[-1]
       assert_equal 'test_branch', br_test.to_s
       assert_equal 'fba357b886984ee71185ad2065e65fc0417d9b92', br_test.revision
       assert_equal br_test.scmid, br_test.revision
-      assert_equal false, br_test.is_default
+      refute br_test.is_default
     end
 
     def test_default_branch
@@ -511,17 +507,17 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_client_version_lower
       @adapter.class.expects(:client_version).returns([1,7,2])
-      assert_false @adapter.class.client_version_eq_or_higher?('1.8')
+      refute @adapter.class.client_version_eq_or_higher?('1.8')
     end
 
     def test_client_version_equal
       @adapter.class.expects(:client_version).returns([1,7,2])
-      assert_true @adapter.class.client_version_eq_or_higher?('1.7')
+      assert @adapter.class.client_version_eq_or_higher?('1.7')
     end
 
     def test_client_version_higher
       @adapter.class.expects(:client_version).returns([1,7,2])
-      assert_true @adapter.class.client_version_eq_or_higher?('1.6')
+      assert @adapter.class.client_version_eq_or_higher?('1.6')
     end
 
     def test_patch_ids

@@ -206,7 +206,7 @@ module Redmine::Scm::Adapters
 
     def annotate(path, identifier = nil)
       identifier = 'HEAD' if identifier.blank?
-      cmd_args = %w{blame}
+      cmd_args = %w{blame --encoding=UTF-8}
       cmd_args << '-p' << identifier << '--' << scm_iconv(path_encoding, 'UTF-8', path)
       blame = Annotate.new
       content = nil

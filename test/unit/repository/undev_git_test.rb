@@ -80,7 +80,7 @@ class UndevGitTest < ActiveSupport::TestCase
       assert_equal 'UndevGit', klass.scm_name
       assert klass.scm_adapter_class
       assert_not_equal '', klass.scm_command
-      assert_equal true, klass.scm_available
+      assert klass.scm_available
     end
 
     def test_entries
@@ -441,6 +441,12 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_log_utf8
+      @repository.destroy
+      @repository = Repository::UndevGit.create(
+          :project       => @project,
+          :url           => REPOSITORY_PATH,
+          :path_encoding => 'UTF-8'
+      )
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets
       @project.reload
@@ -551,7 +557,7 @@ class UndevGitTest < ActiveSupport::TestCase
             :is_default => false,
             :url => good_url
         )
-        assert_true repo.valid?, "#{good_url} should be valid"
+        assert repo.valid?, "#{good_url} should be valid"
       end
 
       bad_urls.each do |bad_url|
@@ -561,7 +567,7 @@ class UndevGitTest < ActiveSupport::TestCase
             :is_default => false,
             :url => bad_url
         )
-        assert_false repo.valid?, "#{bad_url} should not be valid"
+        refute repo.valid?, "#{bad_url} should not be valid"
       end
     end
 
@@ -622,9 +628,9 @@ class UndevGitTest < ActiveSupport::TestCase
       repository = create_test_repository(:identifier => 'x')
       repository.fetch_changesets
       root_url = repository.root_url
-      assert_true Dir.exists?(root_url)
+      assert Dir.exists?(root_url)
       repository.destroy
-      assert_false Dir.exists?(root_url)
+      refute Dir.exists?(root_url)
     end
 
     def test_previous_branches

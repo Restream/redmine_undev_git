@@ -426,9 +426,9 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       assert_response :success
       assert_template 'diff'
       # modified file
-      assert_select 'th.filename', :text => 'sources/watchers_controller.rb'
+      assert_select 'th.filename', :text => /sources\/watchers_controller\.rb/
       # deleted file
-      assert_select 'th.filename', :text => 'test.txt'
+      assert_select 'th.filename', :text => /test\.txt/
     end
 
     def test_save_diff_type

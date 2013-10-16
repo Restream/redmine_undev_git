@@ -1,7 +1,7 @@
 Deface::Override.new(
     :virtual_path => 'repositories/revision',
     :name => 'revision_rebased_to',
-    :insert_after => 'h2 erb:contains(\'format_revision(@changeset)\')',
+    :insert_after => 'h2 code:contains(\'format_revision(@changeset)\')',
     :text => <<-REBASE_INFO
 
 <% if @changeset.rebased_to %>

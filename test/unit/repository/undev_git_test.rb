@@ -427,7 +427,7 @@ class UndevGitTest < ActiveSupport::TestCase
       assert_equal NUM_REV, @repository.changesets.count
       c = @repository.changesets.find_by_revision(
           '7234cb2750b63f47bff735edc50a1c0a433c2518')
-      assert_equal '7234cb27', c.format_identifier
+      assert_equal '7234cb275', c.format_identifier
     end
 
     def test_activities
@@ -436,7 +436,7 @@ class UndevGitTest < ActiveSupport::TestCase
                         :revision => 'abc7234cb2750b63f47bff735edc50a1c0a433c2',
                         :scmid    => 'abc7234cb2750b63f47bff735edc50a1c0a433c2',
                         :comments => 'test')
-      assert c.event_title.include?('abc7234c:')
+      assert c.event_title.include?('abc7234cb:')
       assert_equal 'abc7234cb2750b63f47bff735edc50a1c0a433c2', c.event_url[:rev]
     end
 

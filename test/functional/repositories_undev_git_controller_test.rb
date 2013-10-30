@@ -340,7 +340,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
         assert_template 'diff'
         diff = assigns(:diff)
         assert_not_nil diff
-        assert_tag :tag => 'h2', :content => /2f9c0091:61b685fb/
+        assert_tag :tag => 'h2', :content => /2f9c0091c:61b685fbe/
         assert_tag :tag => "form",
                    :attributes => {
                        :action => "/projects/subproject1/repository/revisions/" +

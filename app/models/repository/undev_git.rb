@@ -59,7 +59,7 @@ class Repository::UndevGit < Repository
 
     # Returns the readable identifier for the given git changeset
     def format_changeset_identifier(changeset)
-      changeset.revision[0, 8]
+      changeset.revision[0, 9]
     end
 
   end

@@ -47,4 +47,47 @@ module HooksHelper
     hook_custom_field_label_tag(name, custom_value, options) +
         hook_custom_field_value_tag(name, custom_value)
   end
+
+  def hook_column_content(column_name, hook)
+    value = hook.send column_name
+    if value.is_a?(Array)
+      value.collect {|v| hook_column_value(column_name, v)}.compact.join(', ').html_safe
+    else
+      hook_column_value(column_name, value)
+    end
+  end
+
+  def hook_column_value(column_name, value)
+    case value.class.name
+      when 'String'
+        h(value)
+      when 'Time'
+        format_time(value)
+      when 'Date'
+        format_date(value)
+      when 'Fixnum'
+        if column_name == :done_ratio
+          progress_bar(value, :width => '100%') + "#{value.to_s}%"
+        else
+          value.to_s
+        end
+      when 'Float'
+        sprintf "%.2f", value
+      when 'User'
+        link_to_user value
+      when 'Project'
+        link_to_project value
+      when 'Version'
+        link_to(h(value), :controller => 'versions', :action => 'show', :id => value)
+      when 'TrueClass'
+        l(:general_text_Yes)
+      when 'FalseClass'
+        l(:general_text_No)
+      when 'IssueStatus'
+        h(value.name)
+      else
+        h(value)
+    end
+  end
+
 end

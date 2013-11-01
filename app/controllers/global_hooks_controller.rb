@@ -7,6 +7,7 @@ class GlobalHooksController < ApplicationController
   helper :sort
   include SortHelper
   helper :hooks
+  helper :custom_fields
 
   def index
     @hooks = GlobalHook.by_position

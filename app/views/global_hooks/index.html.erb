@@ -13,18 +13,27 @@
         <th><%= l( :field_status ) %></th>
         <th><%= l( :field_done_ratio ) %></th>
         <th><%= l( :field_assigned_to ) %></th>
+        <th><%= l( :label_custom_field_plural ) %></th>
         <th><%= l( :button_sort ) %></th>
         <th width="10%"></th>
       </tr>
     </thead>
     <tbody>
       <% @hooks.each do |hook| %>
-        <tr>
-          <td align="center"><%= hook.branches.join( ", " ) %></td>
-          <td align="center"><%= hook.keywords.join( ", " ) %></td>
-          <td align="center"><%= hook.status ? hook.status.name : nil %></td>
-          <td align="center"><%= hook.done_ratio %></td>
-          <td align="center"><%= hook.assigned_to %></td>
+        <tr class="<%= cycle('odd', 'even') %>">
+          <td align="center"><%= hook_column_content(:branches, hook) %></td>
+          <td align="center"><%= hook_column_content(:keywords, hook) %></td>
+          <td align="center"><%= hook_column_content(:status, hook) %></td>
+          <td align="center"><%= hook_column_content(:done_ratio, hook) %></td>
+          <td align="center"><%= hook_column_content(:assigned_to, hook) %></td>
+          <td align="left">
+            <% hook.custom_field_values.each do |value| %>
+              <% next if value.value_blank? %>
+              <p><%= h(value.custom_field.name) %>:
+                <span class="hook-field-value"><%= show_value(value) %></span>
+              </p>
+            <% end -%>
+          </td>
           <td align="center">
             <%= reorder_links('global_hook', {
                 :controller => 'global_hooks',

@@ -23,3 +23,7 @@ tr.hooks-header {
   border-top-width: 1px;
   background-color: #FEFEF0;
 }
+
+.hook-field-value {
+  font-weight: bolder;
+}

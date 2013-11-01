@@ -6,6 +6,7 @@ class ProjectHooksController < ApplicationController
   helper :sort
   include SortHelper
   helper :hooks
+  helper :custom_fields
 
   def new
     @hook = @project.hooks.build

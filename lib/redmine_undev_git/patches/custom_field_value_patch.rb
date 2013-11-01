@@ -3,7 +3,11 @@ module RedmineUndevGit::Patches
     extend ActiveSupport::Concern
 
     def value_blank?
-      value.is_a?(Array) ? value.compact.blank? : value.blank?
+      if value.is_a?(Array)
+        value.empty? || value.map(&:blank?).inject(:&)
+      else
+        value.blank?
+      end
     end
   end
 end

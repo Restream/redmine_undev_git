@@ -67,12 +67,12 @@ module HooksHelper
         format_date(value)
       when 'Fixnum'
         if column_name == :done_ratio
-          progress_bar(value, :width => '100%') + "#{value.to_s}%"
+          "#{value.to_s}%"
         else
           value.to_s
         end
       when 'Float'
-        sprintf "%.2f", value
+        sprintf '%.2f', value
       when 'User'
         link_to_user value
       when 'Project'

@@ -14,7 +14,11 @@ class ProjectHooksController < ApplicationController
 
   def create
     @hook = @project.hooks.build(params[:project_hook])
-
+    cfv = params[:project_hook][:custom_field_values]
+    if cfv
+      @hook.reset_custom_values!
+      @hook.custom_field_values = cfv
+    end
     if @hook.save
       flash[:notice] = l(:notice_successful_create)
       redirect_to_settings_in_projects

@@ -95,10 +95,6 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_equal br_test.scmid, br_test.revision
     end
 
-    def test_default_branch
-      assert_equal 'master', @adapter.default_branch
-    end
-
     def test_tags
       assert_equal %w{tag00.lightweight tag01.annotated}, @adapter.tags
     end

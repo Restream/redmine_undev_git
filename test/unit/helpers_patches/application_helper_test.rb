@@ -26,6 +26,14 @@ class ApplicationHelperTest < ActionView::TestCase
     remove_temp_dir
   end
 
+  def test_link_to_repository
+    @project = Project.find(2)
+    link = "<a href=\"/projects/#{@repository.project.identifier}/repository/\" class=\"repository\">#{@repository.name}</a>"
+    link_named = "<a href=\"/projects/#{@named_repository.project.identifier}/repository/#{@named_repository.identifier}\" class=\"repository\">#{@named_repository.name}</a>"
+    assert_equal link, link_to_repository(@repository)
+    assert_equal link_named, link_to_repository(@named_repository)
+  end
+
   def test_link_to_branch
     branch = 'test_branch'
     link = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}\">#{branch}</a>"

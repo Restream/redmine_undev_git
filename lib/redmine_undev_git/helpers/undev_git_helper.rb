@@ -11,6 +11,18 @@ module RedmineUndevGit::Helpers
       "(#{links.join('; ')})".html_safe
     end
 
+    def link_to_repository(repository)
+      repository = repository.repository if repository.is_a?(Project)
+      link_to repository.name,
+              { :controller => 'repositories',
+                :action => 'show',
+                :id => repository.project,
+                :repository_id => repository.identifier_param,
+                :rev => nil,
+                :path => nil },
+              :class => 'repository'
+    end
+
     def link_to_branch(branch, repository, revision = nil)
       link_to(h(branch), url_for(
           :controller => 'repositories',

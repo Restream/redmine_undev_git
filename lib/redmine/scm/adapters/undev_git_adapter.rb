@@ -99,9 +99,9 @@ module Redmine::Scm::Adapters
     def default_branch
       bras = self.branches
       return nil if bras.nil?
-      default_bras = bras.select{|x| x.is_default == true}
-      return default_bras.first.to_s if ! default_bras.empty?
-      master_bras = bras.select{|x| x.to_s == 'master'}
+      default_bras = bras.select { |x| x.is_default == true }
+      return default_bras.first.to_s unless default_bras.empty?
+      master_bras = bras.select { |x| x.to_s == 'master' }
       master_bras.empty? ? bras.first.to_s : 'master'
     end
 

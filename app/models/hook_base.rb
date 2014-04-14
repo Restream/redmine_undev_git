@@ -1,6 +1,11 @@
 class HookBase < ActiveRecord::Base
   self.table_name = 'hooks'
 
+  NOBODY = 'nobody'
+  USER = 'user'
+  AUTHOR = 'author'
+  ASSIGNEE_TYPES = [NOBODY, USER, AUTHOR]
+
   include Redmine::SafeAttributes
 
   acts_as_customizable
@@ -14,6 +19,7 @@ class HookBase < ActiveRecord::Base
 
   validates :branches, :presence => true
   validates :keywords, :presence => true
+  validates :assignee_type, :presence => true, :inclusion => { :in => ASSIGNEE_TYPES }
 
   scope :by_position, order("#{table_name}.position")
 
@@ -66,12 +72,23 @@ class HookBase < ActiveRecord::Base
     issue
   end
 
+  def assignee(issue = nil)
+    case assignee_type
+      when USER
+        assigned_to
+      when AUTHOR
+        issue ? issue.author : :field_author
+      else
+        nil
+    end
+  end
+
   private
 
   def has_changes_for_issue?(issue)
     (status && issue.status != status) ||
         (done_ratio.present? && issue.done_ratio != done_ratio) ||
-        (assigned_to && issue.assigned_to != assigned_to) ||
+        (assignee(issue) && issue.assigned_to != assignee(issue)) ||
         has_custom_field_changes_for_issue?(issue)
   end
 
@@ -85,7 +102,7 @@ class HookBase < ActiveRecord::Base
   def change_issue(issue)
     issue.status = status if status
     issue.done_ratio = done_ratio if done_ratio.present?
-    issue.assigned_to = assigned_to if assigned_to
+    issue.assigned_to = assignee(issue) if assignee(issue)
 
     cfvalues = {}
     issue.custom_field_values.each do |cfvalue|

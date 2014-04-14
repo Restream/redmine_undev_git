@@ -94,6 +94,7 @@ class ChangeIssueByHookTest < ActionDispatch::IntegrationTest
         :branches => '*',
         :status => IssueStatus.find(2),
         :done_ratio => '16%',
+        :assignee_type => GlobalHook::USER,
         :assigned_to => User.find(2),
         :custom_field_values => {
             1 => 'PostgreSQL'
@@ -120,6 +121,20 @@ class ChangeIssueByHookTest < ActionDispatch::IntegrationTest
     issue_cfv = @issue.custom_value_for(1)
     assert issue_cfv, 'issue custom_field_value must present'
     assert_equal hook_cfv.value, issue_cfv.value
+  end
+
+  def test_issue_changed_by_hook_to_author
+    GlobalHook.create!(
+        :keywords => 'hook9',
+        :branches => '*',
+        :assignee_type => GlobalHook::AUTHOR
+    )
+    assert_not_equal @issue.author, @issue.assigned_to
+
+    @repo.fetch_changesets
+    @issue.reload
+
+    assert_equal @issue.author, @issue.assigned_to
   end
 
 end

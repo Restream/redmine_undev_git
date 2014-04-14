@@ -59,6 +59,8 @@ module HooksHelper
 
   def hook_column_value(column_name, value)
     case value.class.name
+      when 'Symbol'
+        l(value)
       when 'String'
         h(value)
       when 'Time'

@@ -27,12 +27,22 @@
       <%= f.select :done_ratio, [['', nil]] + (0 .. 10).to_a.map { |r| [ "#{r * 10} %", r * 10 ] } %>
     </p>
 
+    <p>
+      <%= f.select :assignee_type,
+                   GlobalHook::ASSIGNEE_TYPES.map { |type| [l("assignee_type.#{type}"), type] },
+                   {},
+                   :class => 'hook_assignee_type' %>
+    </p>
+
     <p><%= f.select :assigned_to_id,
                     principals_options_for_select(hook.assignable_users, hook.assigned_to),
-                    :include_blank => true %></p>
+                    {},
+                    :class => 'hook_assigned_to_id' %></p>
 
     <% hook.custom_field_values.each do |value| %>
       <p><%= hook_custom_field_value_tag_with_label :global_hook, value %></p>
     <% end -%>
   </fieldset>
 </div>
+
+<%= javascript_include_tag 'assignee_type', :plugin => 'redmine_undev_git' %>

@@ -25,7 +25,7 @@
           <td align="center"><%= hook_column_content(:keywords, hook) %></td>
           <td align="center"><%= hook_column_content(:status, hook) %></td>
           <td align="center"><%= hook_column_content(:done_ratio, hook) %></td>
-          <td align="center"><%= hook_column_content(:assigned_to, hook) %></td>
+          <td align="center"><%= hook_column_content(:assignee, hook) %></td>
           <td align="left">
             <% hook.custom_field_values.each do |value| %>
               <% next if value.value_blank? %>

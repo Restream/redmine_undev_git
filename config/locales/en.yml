@@ -34,3 +34,10 @@ en:
   text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
   text_commit_was_rebased_from: "This revision was rebased from %{rebased_from}"
   text_commit_was_rebased_to: "This revision was rebased to %{rebased_to}"
+
+  field_assignee_type: New assignee
+
+  assignee_type:
+    nobody: Assignee will not change
+    user: Change assignee to particular user
+    author: Change assignee to author of the issue

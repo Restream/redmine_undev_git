@@ -4,6 +4,7 @@ ru:
   field_repository: "Репозиторий"
   field_use_init_hooks: "При инициализации репозитория учесть ключевые слова, изменяющие статусы задач"
   field_use_init_refs: "При инициализации репозитория связывать ревизии с тикетами"
+  field_update_by_web_hooks: "Обновлять по веб хуку"
 
   label_branches: "Бранчи"
   label_global_hooks: "Глобальные хуки"

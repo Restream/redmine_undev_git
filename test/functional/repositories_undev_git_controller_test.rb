@@ -619,6 +619,39 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       end
     end
 
+    def test_new_form_contains_update_by_web_hooks_checkbox
+      @request.session[:user_id] = 1
+      get :new, :project_id => 'subproject1', :repository_scm => 'UndevGit'
+      assert_response :success
+      assert_select 'input#repository_update_by_web_hooks'
+    end
+
+    def test_create_with_update_by_web_hooks
+      @request.session[:user_id] = 1
+      repo_url = 'https://github.com/Undev/redmine_undev_git.git'
+      post :create,
+           :project_id => 'subproject1',
+           :repository_scm => 'UndevGit',
+           :repository => {
+               :url => repo_url,
+               :is_default => '0',
+               :identifier => 'test-create-wbh',
+               :update_by_web_hooks => '1'
+           }
+      assert_response 302
+      repository = Repository::UndevGit.find_by_url repo_url
+      assert repository
+      assert repository.update_by_web_hooks?
+
+      put :update, :id => repository.id,
+          :repository => {
+              :update_by_web_hooks => '0'
+          }
+      assert_response 302
+      repository = Repository::UndevGit.find_by_url repo_url
+      refute repository.update_by_web_hooks?
+    end
+
     private
 
     def puts_ruby19_non_utf8_pass

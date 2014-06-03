@@ -14,7 +14,9 @@ require 'redmine_undev_git/patches/projects_controller_patch'
 
 require 'redmine_undev_git/hooks/view_hooks'
 
+require 'redmine_undev_git/services/errors'
 require 'redmine_undev_git/services/migration'
+require 'redmine_undev_git/services/gitlab'
 
 require 'redmine_undev_git/patches/redmine_scm_base_patch'
 require 'redmine_undev_git/patches/custom_field_patch'

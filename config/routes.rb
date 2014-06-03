@@ -4,4 +4,6 @@ RedmineApp::Application.routes.draw do
   resources :projects do
     resources :hooks, :except => :show, :controller => 'project_hooks'
   end
+
+  match 'gitlab_hooks' => 'undev_git_hooks#gitlab_push', :via => :post
 end

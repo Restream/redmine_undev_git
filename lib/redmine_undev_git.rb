@@ -28,6 +28,7 @@ require 'redmine_undev_git/patches/application_helper_patch'
 require 'redmine_undev_git/patches/repositories_helper_patch'
 require 'redmine_undev_git/patches/projects_helper_patch'
 require 'redmine_undev_git/patches/projects_controller_patch'
+require 'redmine_undev_git/patches/repository_patch'
 
 require 'redmine_undev_git/hooks/view_hooks'
 

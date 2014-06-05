@@ -4,7 +4,7 @@ module Workers
 
     class << self
       def defer(repository_id)
-        options = { id: repository_id }
+        options = { 'id' => repository_id }
         defined?(Resque) ? self.perform_async(options) : perform(options)
       rescue Exception => e
         Rails.logger.debug "RepositoryFetcher: #{e.class} => #{e.message}"

@@ -36,6 +36,12 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  def test_success_on_github_ping_hook_when_login_requred
+    Setting.login_required = '1'
+    post '/github_hooks', github_ping_payload.to_json, github_ping_headers
+    assert_response :success
+  end
+
   def gitlab_payload
     {
         before: '95790bf891e76fee5e1747ab589903a6a1f80f22',

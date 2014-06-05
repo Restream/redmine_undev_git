@@ -1,4 +1,4 @@
-class UndevGitHooksController < ApplicationController
+class UndevGitHooksController < ActionController::Base
 
   def gitlab_push
     urls = RedmineUndevGit::Services::Gitlab.git_urls_from_request(request)

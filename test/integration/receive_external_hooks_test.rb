@@ -23,6 +23,19 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  def test_fetch_after_github_push_hook
+    repository = create_test_repository(:project => @project, :url => 'https://github.com/octokitty/testing.git')
+    assert repository
+    Workers::RepositoryFetcher.expects(:defer).with(repository.id).at_least_once
+    post '/github_hooks', github_push_payload.to_json, github_push_headers
+    assert_response :success
+  end
+
+  def test_success_on_github_ping_hook
+    post '/github_hooks', github_ping_payload.to_json, github_ping_headers
+    assert_response :success
+  end
+
   def gitlab_payload
     {
         before: '95790bf891e76fee5e1747ab589903a6a1f80f22',
@@ -66,6 +79,178 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
   def gitlab_headers
     {
         'Content_Type' => 'application/json'
+    }
+  end
+
+  def github_push_payload
+    {
+        after: "1481a2de7b2a7d02428ad93446ab166be7793fbb",
+        before: "17c497ccc7cca9c2f735aa07e9e3813060ce9a6a",
+        commits: [
+            {
+                added: [
+
+                ],
+                author: {
+                    email: "lolwut@noway.biz",
+                    name: "Garen Torikian",
+                    username: "octokitty"
+                },
+                committer: {
+                    email: "lolwut@noway.biz",
+                    name: "Garen Torikian",
+                    username: "octokitty"
+                },
+                distinct: true,
+                id: "c441029cf673f84c8b7db52d0a5944ee5c52ff89",
+                message: "Test",
+                modified: [
+                    "README.md"
+                ],
+                removed: [
+
+                ],
+                timestamp: "2013-02-22T13:50:07-08:00",
+                url: "https://github.com/octokitty/testing/commit/c441029cf673f84c8b7db52d0a5944ee5c52ff89"
+            },
+            {
+                added: [
+
+                ],
+                author: {
+                    email: "lolwut@noway.biz",
+                    name: "Garen Torikian",
+                    username: "octokitty"
+                },
+                committer: {
+                    email: "lolwut@noway.biz",
+                    name: "Garen Torikian",
+                    username: "octokitty"
+                },
+                distinct: true,
+                id: "36c5f2243ed24de58284a96f2a643bed8c028658",
+                message: "This is me testing the windows client.",
+                modified: [
+                    "README.md"
+                ],
+                removed: [
+
+                ],
+                timestamp: "2013-02-22T14:07:13-08:00",
+                url: "https://github.com/octokitty/testing/commit/36c5f2243ed24de58284a96f2a643bed8c028658"
+            },
+            {
+                added: [
+                    "words/madame-bovary.txt"
+                ],
+                author: {
+                    email: "lolwut@noway.biz",
+                    name: "Garen Torikian",
+                    username: "octokitty"
+                },
+                committer: {
+                    email: "lolwut@noway.biz",
+                    name: "Garen Torikian",
+                    username: "octokitty"
+                },
+                distinct: true,
+                id: "1481a2de7b2a7d02428ad93446ab166be7793fbb",
+                message: "Rename madame-bovary.txt to words/madame-bovary.txt",
+                modified: [
+
+                ],
+                removed: [
+                    "madame-bovary.txt"
+                ],
+                timestamp: "2013-03-12T08:14:29-07:00",
+                url: "https://github.com/octokitty/testing/commit/1481a2de7b2a7d02428ad93446ab166be7793fbb"
+            }
+        ],
+        compare: "https://github.com/octokitty/testing/compare/17c497ccc7cc...1481a2de7b2a",
+        created: false,
+        deleted: false,
+        forced: false,
+        head_commit: {
+            added: [
+                "words/madame-bovary.txt"
+            ],
+            author: {
+                email: "lolwut@noway.biz",
+                name: "Garen Torikian",
+                username: "octokitty"
+            },
+            committer: {
+                email: "lolwut@noway.biz",
+                name: "Garen Torikian",
+                username: "octokitty"
+            },
+            distinct: true,
+            id: "1481a2de7b2a7d02428ad93446ab166be7793fbb",
+            message: "Rename madame-bovary.txt to words/madame-bovary.txt",
+            modified: [
+
+            ],
+            removed: [
+                "madame-bovary.txt"
+            ],
+            timestamp: "2013-03-12T08:14:29-07:00",
+            url: "https://github.com/octokitty/testing/commit/1481a2de7b2a7d02428ad93446ab166be7793fbb"
+        },
+        pusher: {
+            email: "lolwut@noway.biz",
+            name: "Garen Torikian"
+        },
+        ref: "refs/heads/master",
+        repository: {
+            created_at: 1332977768,
+            description: "",
+            fork: false,
+            forks: 0,
+            has_downloads: true,
+            has_issues: true,
+            has_wiki: true,
+            homepage: "",
+            id: 3860742,
+            language: "Ruby",
+            master_branch: "master",
+            name: "testing",
+            open_issues: 2,
+            owner: {
+                email: "lolwut@noway.biz",
+                name: "octokitty"
+            },
+            private: false,
+            pushed_at: 1363295520,
+            size: 2156,
+            stargazers: 1,
+            url: "https://github.com/octokitty/testing",
+            watchers: 1
+        }
+    }
+  end
+
+  def github_push_headers
+    {
+        'Content_Type' => 'application/json',
+        'User-Agent' => 'GitHub Hookshot 2636b5a',
+        'X-GitHub-Delivery' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
+        'X-GitHub-Event' => 'push'
+    }
+  end
+
+  def github_ping_payload
+    {
+        'zen' => 'Avoid administrative distraction.',
+        'hook_id' => 2370832
+    }
+  end
+
+  def github_ping_headers
+    {
+        'Content_Type' => 'application/json',
+        'User-Agent' => 'GitHub Hookshot 2636b5a',
+        'X-GitHub-Delivery' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
+        'X-GitHub-Event' => 'ping'
     }
   end
 end

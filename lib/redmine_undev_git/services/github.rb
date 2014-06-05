@@ -12,7 +12,7 @@ module RedmineUndevGit::Services
 
     class << self
       def event(request)
-        request.env['X-GitHub-Event']
+        request.env['HTTP_X_GITHUB_EVENT']
       end
 
       EVENTS.each do |event|

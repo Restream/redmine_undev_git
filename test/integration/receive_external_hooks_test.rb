@@ -237,10 +237,10 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
 
   def github_push_headers
     {
-        'Content_Type' => 'application/json',
-        'User-Agent' => 'GitHub Hookshot 2636b5a',
-        'X-GitHub-Delivery' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
-        'X-GitHub-Event' => 'push'
+        'CONTENT_TYPE' => 'application/json',
+        'HTTP_USER_AGENT' => 'GitHub Hookshot 2636b5a',
+        'HTTP_X_GITHUB_DELIVERY' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
+        'HTTP_X_GITHUB_EVENT' => 'push'
     }
   end
 
@@ -253,10 +253,10 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
 
   def github_ping_headers
     {
-        'Content_Type' => 'application/json',
-        'User-Agent' => 'GitHub Hookshot 2636b5a',
-        'X-GitHub-Delivery' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
-        'X-GitHub-Event' => 'ping'
+        'CONTENT_TYPE' => 'application/json',
+        'HTTP_USER_AGENT' => 'GitHub Hookshot 2636b5a',
+        'HTTP_X_GITHUB_DELIVERY' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
+        'HTTP_X_GITHUB_EVENT' => 'ping'
     }
   end
 end

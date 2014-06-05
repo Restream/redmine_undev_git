@@ -4,7 +4,7 @@ ru:
   field_repository: "Репозиторий"
   field_use_init_hooks: "При инициализации репозитория учесть ключевые слова, изменяющие статусы задач"
   field_use_init_refs: "При инициализации репозитория связывать ревизии с тикетами"
-  field_update_by_web_hooks: "Обновлять по веб хуку"
+  field_fetch_by_web_hook: "Обновлять репозиторий по веб хуку"
 
   label_branches: "Бранчи"
   label_global_hooks: "Глобальные хуки"
@@ -27,6 +27,7 @@ ru:
   repository_url_malformed: "указан неправильно, используйте git://, http(s):// или путь к локальному репозиторию"
 
   setting_undev_git_max_branches_in_assoc: "Максимальное количество веток в связанных редакциях"
+  setting_undev_git_fetch_by_web_hook: "Обновлять все UndevGit репозитории по веб-хуку"
 
   text_branches: "* = любая ветка<br />Допустимы несколько значений (через запятую)"
   text_changed_by_changeset_hook: "Изменено редакцией %{value}."

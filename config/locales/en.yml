@@ -4,7 +4,7 @@ en:
   field_repository: "Repository"
   field_use_init_hooks: "Enable usage of hooks for the repository initialization"
   field_use_init_refs: "Enable referencing to issues for the repository initialization"
-  field_update_by_web_hooks: "Update by web hook"
+  field_fetch_by_web_hook: "Fetch repository by external web hook"
 
   label_branches: "Branches"
   label_global_hooks: "Global hooks"
@@ -27,6 +27,7 @@ en:
   repository_url_malformed: "malformed, use git://, http(s):// or local path"
 
   setting_undev_git_max_branches_in_assoc: "Maximum branches in associated revisions"
+  setting_undev_git_fetch_by_web_hook: "Fetch all UndevGit repositories by external web hook"
 
   text_branches: "* = any branch<br />Multiple values allowed (comma separated)."
   text_changed_by_changeset_hook: "Applied in changeset %{value}."

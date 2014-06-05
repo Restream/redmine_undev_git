@@ -1,4 +1,21 @@
 module RedmineUndevGit
+  def self.max_branches_in_assoc
+    Setting.plugin_redmine_undev_git[:max_branches_in_assoc].to_i
+  end
+
+  def self.fetch_by_web_hook?
+    Setting.plugin_redmine_undev_git[:fetch_by_web_hook].to_i > 0
+  end
+
+  def self.fetch_by_web_hook
+    Setting.plugin_redmine_undev_git[:fetch_by_web_hook]
+  end
+
+  def self.fetch_by_web_hook=(value)
+    settings = Setting.plugin_redmine_undev_git
+    settings[:fetch_by_web_hook] = value
+    Setting.plugin_redmine_undev_git = settings
+  end
 end
 
 require 'redmine_undev_git/patches/string_patch'

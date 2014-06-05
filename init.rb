@@ -38,7 +38,8 @@ Redmine::Plugin.register :redmine_undev_git do
   # Plugin settings
   settings :partial => 'settings/undev_git_settings',
            :default => {
-               :max_branches_in_assoc => 5
+               :max_branches_in_assoc => 5,
+               :fetch_by_web_hook => '0'
            }
 end
 

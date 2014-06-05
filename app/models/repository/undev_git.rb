@@ -14,7 +14,7 @@ class Repository::UndevGit < Repository
   # root_url stores path to local bare repository
   attr_protected :root_url
 
-  safe_attributes 'use_init_hooks', 'use_init_refs', 'update_by_web_hooks'
+  safe_attributes 'use_init_hooks', 'use_init_refs', 'fetch_by_web_hook'
 
   # Storage folder for local copies of remote repositories
   cattr_accessor :repo_storage_dir
@@ -176,7 +176,7 @@ class Repository::UndevGit < Repository
   end
 
   def use_init_hooks?
-    use_init_hooks && use_init_hooks.to_i == 1
+    use_init_hooks.to_i > 0
   end
 
   def use_init_hooks=(val)
@@ -188,23 +188,23 @@ class Repository::UndevGit < Repository
   end
 
   def use_init_refs?
-    use_init_refs && use_init_refs.to_i == 1
+    use_init_refs.to_i > 0
   end
 
   def use_init_refs=(val)
     merge_extra_info(:use_init_refs => val)
   end
 
-  def update_by_web_hooks
-    extra_info && extra_info[:update_by_web_hooks]
+  def fetch_by_web_hook
+    extra_info && extra_info[:fetch_by_web_hook]
   end
 
-  def update_by_web_hooks?
-    update_by_web_hooks && update_by_web_hooks.to_i == 1
+  def fetch_by_web_hook?
+    fetch_by_web_hook.to_i > 0
   end
 
-  def update_by_web_hooks=(val)
-    merge_extra_info(:update_by_web_hooks => val)
+  def fetch_by_web_hook=(val)
+    merge_extra_info(:fetch_by_web_hook => val)
   end
 
   def initialization_done?

@@ -11,8 +11,8 @@ class UndevGitHooksController < ApplicationController
   private
 
   def fetch_repositories(urls)
-    Repository::UndevGit.where('url in (?)', urls).pluck(:id).each do |repo_id|
-      Workers::RepositoryFetcher.defer repo_id
+    Repository::UndevGit.where('url in (?)', urls).each do |repo|
+      Workers::RepositoryFetcher.defer(repo.id) if RedmineUndevGit.fetch_by_web_hook? || repo.fetch_by_web_hook?
     end
   end
 

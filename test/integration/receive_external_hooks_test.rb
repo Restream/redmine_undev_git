@@ -12,10 +12,11 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
     Setting.enabled_scm << 'UndevGit'
     User.current = nil
     @project    = Project.find(PRJ_ID)
+    RedmineUndevGit.fetch_by_web_hook = '1'
   end
 
   def test_fetch_after_gitlab_push_hook
-    repository = create_test_repository(:project => @project, :url => 'https://example.com/diaspora.git ')
+    repository = create_test_repository(:project => @project, :url => 'https://example.com/diaspora.git')
     assert repository
     Workers::RepositoryFetcher.expects(:defer).with(repository.id).at_least_once
     post '/gitlab_hooks', gitlab_payload.to_json, gitlab_headers

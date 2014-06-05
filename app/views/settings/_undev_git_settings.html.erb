@@ -2,3 +2,7 @@
   <label><%= l(:setting_undev_git_max_branches_in_assoc) %></label>
   <%= text_field_tag 'settings[max_branches_in_assoc]', @settings['max_branches_in_assoc'] %>
 </p>
+<p>
+  <label><%= l(:setting_undev_git_fetch_by_web_hook) %></label>
+  <%= check_box_tag 'settings[fetch_by_web_hook]', '1', @settings['fetch_by_web_hook'] %>
+</p>

@@ -41,7 +41,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     branches = Array.new(15) { |i| "fakebranch#{i}" }
     changeset.update_attribute :branches, branches
     @issue.changesets << changeset
-    max_branches = Setting.plugin_redmine_undev_git[:max_branches_in_assoc].to_i
+    max_branches = RedmineUndevGit.max_branches_in_assoc
 
     get :show, :id => 1
     assert_response :success

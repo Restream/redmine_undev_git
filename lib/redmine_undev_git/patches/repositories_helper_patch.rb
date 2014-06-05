@@ -10,7 +10,7 @@ module RedmineUndevGit::Patches
           undev_git_extra_report_last_commit_tag(form, repository),
           undev_git_use_init_hooks_tag(form, repository),
           undev_git_use_init_refs_tag(form, repository),
-          undev_git_web_hooks_tag(form)
+          undev_git_fetch_by_web_hook_tag(form, repository)
       ].compact.join('<br />').html_safe
     end
 
@@ -43,8 +43,12 @@ module RedmineUndevGit::Patches
           :label => :field_use_init_refs))
     end
 
-    def undev_git_web_hooks_tag(form)
-      content_tag('p', form.check_box(:update_by_web_hooks, :label => :field_update_by_web_hooks))
+    def undev_git_fetch_by_web_hook_tag(form, repository)
+      content_tag 'p',
+                  form.check_box(:fetch_by_web_hook,
+                                 :disabled => RedmineUndevGit.fetch_by_web_hook?,
+                                 :label => :field_fetch_by_web_hook) +
+                  render(:partial => 'settings/web_hooks_description')
     end
   end
 end

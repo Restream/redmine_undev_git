@@ -1,0 +1,9 @@
+<em class="info web-hooks-urls">
+    To fetch repository by web hook you should enable web hook on the external service.<br/>
+    Gitlab web hook url:
+    <%= text_field_tag 'gitlab-web-hook',
+                       gitlab_hooks_url(:host => Setting.host_name, :protocol => Setting.protocol),
+                       :size => 60,
+                       :readonly => true,
+                       :class => 'web-hook-url' %>
+</em>

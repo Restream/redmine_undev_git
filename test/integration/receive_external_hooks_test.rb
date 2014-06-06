@@ -42,6 +42,14 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  def test_fetch_after_bitbucket_push_hook
+    repository = create_test_repository(:project => @project, :url => 'https://bitbucket.org/test/dt_fetch.git')
+    assert repository
+    Workers::RepositoryFetcher.expects(:defer).with(repository.id).at_least_once
+    post '/bitbucket_hooks', :payload => bitbucket_payload.to_json
+    assert_response :success
+  end
+
   def gitlab_payload
     {
         before: '95790bf891e76fee5e1747ab589903a6a1f80f22',
@@ -257,6 +265,42 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
         'HTTP_USER_AGENT' => 'GitHub Hookshot 2636b5a',
         'HTTP_X_GITHUB_DELIVERY' => '4d70b218-ec96-11e3-86ba-0eba6417d40d',
         'HTTP_X_GITHUB_EVENT' => 'ping'
+    }
+  end
+
+  def bitbucket_payload
+    {
+        repository: {
+            website: '',
+            fork: false,
+            name: 'dt_fetch',
+            scm: 'git',
+            owner: 'test',
+            absolute_url: '/test/dt_fetch/',
+            slug: 'dt_fetch',
+            is_private: false
+        },
+        truncated: false,
+        commits: [
+            {
+                node: '81c83664d120',
+                files: [
+                    {type: 'added', file: 'update5.txt'}
+                ],
+                raw_author: 'Test <test@example.com>',
+                utctimestamp: '2014-06-06 07:04:38+00:00',
+                author: 'test',
+                timestamp: '2014-06-06 09:04:38',
+                raw_node: '81c83664d120ce05c91b7259b70c02ebc64edd52',
+                parents: ['75d5e5aef45a'],
+                branch: 'master',
+                message: 'update 5',
+                revision: nil,
+                size: -1
+            }
+        ],
+        canon_url: 'https://bitbucket.org',
+        user: 'test'
     }
   end
 end

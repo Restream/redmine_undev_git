@@ -32,9 +32,12 @@ require 'redmine_undev_git/patches/repository_patch'
 
 require 'redmine_undev_git/hooks/view_hooks'
 
-require 'redmine_undev_git/services/errors'
 require 'redmine_undev_git/services/migration'
+require 'redmine_undev_git/services/errors'
+require 'redmine_undev_git/services/ext_repo'
 require 'redmine_undev_git/services/gitlab'
+require 'redmine_undev_git/services/github'
+require 'redmine_undev_git/services/bitbucket'
 
 require 'redmine_undev_git/patches/redmine_scm_base_patch'
 require 'redmine_undev_git/patches/custom_field_patch'

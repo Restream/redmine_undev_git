@@ -21,6 +21,14 @@ class UndevGitHooksController < ActionController::Base
     head :bad_request
   end
 
+  def bitbucket_push
+    urls = RedmineUndevGit::Services::Bitbucket.git_urls_from_request(request)
+    fetch_repositories(urls)
+    head :ok
+  rescue RedmineUndevGit::Services::ServiceError
+    head :bad_request
+  end
+
   private
 
   def fetch_repositories(urls)

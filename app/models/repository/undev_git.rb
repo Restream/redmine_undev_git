@@ -132,6 +132,7 @@ class Repository::UndevGit < Repository
   end
 
   def fetch_changesets
+    fetch_start = Time.now
     @scm = nil
     scm.fetch!
 
@@ -155,6 +156,13 @@ class Repository::UndevGit < Repository
     repo_branches.each { |b| h['branches'][b.to_s] = b.scmid }
     merge_extra_info(h)
     self.save
+    fetch_events.create(:successful => true,
+                        :duration => Time.now - fetch_start)
+  rescue Exception => e
+    fetch_events.create(:successful => false,
+                        :duration => Time.now - fetch_start,
+                        :error_message => e.message)
+    raise
   end
 
   def latest_changesets(path,rev,limit=10)

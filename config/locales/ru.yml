@@ -16,6 +16,7 @@ ru:
   label_project_hooks_plural: "Хуки"
   label_hook_filter: "Фильтр коммитов"
   label_hook_new_values: "Новые значения устанавливаемые хуком"
+  label_fetch_status: "Статус"
 
   new_hook: "Новый хук"
 
@@ -43,3 +44,15 @@ ru:
     nobody: Назначенный не изменяется
     user: Назначить задачу на пользователя
     author: Назначить задачу на автора
+
+  label_fetch_statuses:
+    unknown: "Неизвестно"
+    green: "Ok"
+    yellow: "Внимание"
+    red: "Ошибка"
+
+  text_fetch_statuses:
+    unknown: "Еще не было обновлений."
+    green: "Последнее обновление было успешным."
+    yellow: "Последние обновления завршились с ошибкой."
+    red: "Не удается обновить репозиторий."

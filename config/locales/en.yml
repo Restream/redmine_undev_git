@@ -16,6 +16,7 @@ en:
   label_project_hooks_plural: "Hooks"
   label_hook_filter: "Find commits by"
   label_hook_new_values: "New values that will be applied by hook"
+  label_fetch_status: "Status"
 
   new_hook: "New hook"
 
@@ -43,3 +44,15 @@ en:
     nobody: Assignee will not change
     user: Change assignee to particular user
     author: Change assignee to author of the issue
+
+  label_fetch_statuses:
+    unknown: Unknown
+    green: Ok
+    yellow: Warning
+    red: Error
+
+  text_fetch_statuses:
+    unknown: "There is no fetch yet."
+    green: "Last fetch was successful."
+    yellow: "Some fetches failed."
+    red: "All latest fetches failed."

@@ -219,6 +219,15 @@ class Repository::UndevGit < Repository
     extra_info && extra_info['heads'] && extra_info['heads'].any?
   end
 
+  # returns :unknown, :green, :yellow or :red status
+  def fetch_status
+    return :green if fetch_successful?
+    last_statuses = fetch_events.sorted.limit(RED_STATUS_THRESHOLD).pluck(:successful).uniq
+    return :unknown if last_statuses.empty?
+    return :yellow if last_statuses.length > 1
+    last_statuses[0] ? :green : :red
+  end
+
   private
 
   def previous_branches

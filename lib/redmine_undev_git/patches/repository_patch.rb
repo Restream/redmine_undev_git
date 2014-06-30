@@ -4,6 +4,7 @@ module RedmineUndevGit::Patches
 
     included do
       KEEP_FETCH_EVENTS = 100
+      RED_STATUS_THRESHOLD = 3
 
       has_many :fetch_events, :dependent => :delete_all
 
@@ -31,18 +32,31 @@ module RedmineUndevGit::Patches
         end
       end
 
-      def self.fetch_by_web_hook?(repository)
+      def fetch_by_web_hook?(repository)
         repository.respond_to?(:fetch_by_web_hook?) && (
             RedmineUndevGit.fetch_by_web_hook? || repository.fetch_by_web_hook?
         )
       end
+    end
 
-      def cleanup_fetch_events(keep = KEEP_FETCH_EVENTS)
-        return unless persisted?
-        last_ids = fetch_events.order('id desc').limit(keep).pluck(:id)
-        return 0 if last_ids.count < keep
-        FetchEvents.delete_all(['repository_id = ? and id < ?', id, last_ids.min])
-      end
+    def cleanup_fetch_events(keep = KEEP_FETCH_EVENTS)
+      return unless persisted?
+      last_ids = fetch_events.sorted.limit(keep).pluck(:id)
+      return 0 if last_ids.count < keep
+      FetchEvent.delete_all(['repository_id = ? and id < ?', id, last_ids.min])
+    end
+
+    # should returns :unknown, :green, :yellow or :red status
+    def fetch_status
+      :unknown
+    end
+
+    def fetch_successful?
+      last_fetch_event.try(:successful?)
+    end
+
+    def last_fetch_event
+      fetch_events.sorted.first
     end
   end
 end

@@ -1,7 +1,20 @@
 require File.expand_path( '../../../test_helper', __FILE__ )
 
 class UndevGitTest < ActiveSupport::TestCase
-  fixtures :projects, :repositories, :enabled_modules, :users, :roles
+  fixtures :projects,
+           :users,
+           :roles,
+           :members,
+           :member_roles,
+           :issues,
+           :issue_statuses,
+           :versions,
+           :trackers,
+           :projects_trackers,
+           :issue_categories,
+           :enabled_modules,
+           :enumerations,
+           :repositories
 
   include Redmine::I18n
 
@@ -642,6 +655,56 @@ class UndevGitTest < ActiveSupport::TestCase
       end
       branches = repository.send :previous_branches
       assert_equal exp_branches.sort, branches.sort
+    end
+
+    def test_last_event_successful_nil_when_no_fetch_events
+      refute @repository.fetch_successful?
+    end
+
+    def test_last_event_successful_true
+      @repository.fetch_events.create(:successful => false, :duration => 0)
+      @repository.fetch_events.create(:successful => true, :duration => 0)
+      assert @repository.fetch_successful?
+    end
+
+    def test_last_event_successful_false
+      @repository.fetch_events.create(:successful => true, :duration => 0)
+      @repository.fetch_events.create(:successful => false, :duration => 0)
+      refute @repository.fetch_successful?
+    end
+
+    def test_fetch_status_unknown_if_no_fetch_events
+      assert_equal :unknown, @repository.fetch_status
+    end
+
+    def test_fetch_status_green_if_all_successful
+      Repository::RED_STATUS_THRESHOLD.times do
+        @repository.fetch_events.create(:successful => true, :duration => 0)
+        assert_equal :green, @repository.fetch_status
+      end
+    end
+
+    def test_fetch_status_red_if_all_errors
+      Repository::RED_STATUS_THRESHOLD.times do
+        @repository.fetch_events.create(:successful => false, :duration => 0)
+        assert_equal :red, @repository.fetch_status
+      end
+    end
+
+    def test_fetch_status_yellow_if_some_errors
+      @repository.fetch_events.create(:successful => true, :duration => 0)
+      (Repository::RED_STATUS_THRESHOLD - 1).times do
+        @repository.fetch_events.create(:successful => false, :duration => 0)
+        assert_equal :yellow, @repository.fetch_status
+      end
+    end
+
+    def test_fetch_status_green_if_some_errors_but_last_successful
+      (Repository::RED_STATUS_THRESHOLD - 1).times do
+        @repository.fetch_events.create(:successful => false, :duration => 0)
+      end
+      @repository.fetch_events.create(:successful => true, :duration => 0)
+      assert_equal :green, @repository.fetch_status
     end
 
   else

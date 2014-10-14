@@ -42,3 +42,8 @@ require 'redmine_undev_git/services/bitbucket'
 require 'redmine_undev_git/patches/redmine_scm_base_patch'
 require 'redmine_undev_git/patches/custom_field_patch'
 require 'redmine_undev_git/patches/custom_field_value_patch'
+
+require 'redmine_undev_git/includes/repo_fetch'
+require 'redmine_undev_git/includes/repo_hooks'
+require 'redmine_undev_git/includes/repo_store'
+require 'redmine_undev_git/includes/repo_validate'

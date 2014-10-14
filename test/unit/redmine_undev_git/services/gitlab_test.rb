@@ -3,10 +3,11 @@ require File.expand_path('../../../../test_helper', __FILE__)
 class RedmineUndevGit::Services::GitlabTest < ActiveSupport::TestCase
 
   def test_git_urls_from_request
-    RedmineUndevGit::Services::Gitlab.stubs(:web_hook_from_request).returns(
+    RedmineUndevGit::Services::Gitlab.any_instance.stubs(:web_hook).returns(
         gitlab_payload('git@example.com:path_to/diaspora.git')
     )
-    urls = RedmineUndevGit::Services::Gitlab.git_urls_from_request('stubbed')
+    service = RedmineUndevGit::Services::Gitlab.new(nil)
+    urls = service.all_urls
     assert_include 'git@example.com:path_to/diaspora.git', urls
     assert_include 'https://example.com/path_to/diaspora.git', urls
     assert_include 'git://example.com/path_to/diaspora.git', urls
@@ -14,10 +15,10 @@ class RedmineUndevGit::Services::GitlabTest < ActiveSupport::TestCase
 
   def test_assert_service_error_on_wrong_url
     assert_raise RedmineUndevGit::Services::WrongRepoUrl do
-      RedmineUndevGit::Services::Gitlab.stubs(:web_hook_from_request).returns(
+      RedmineUndevGit::Services::Gitlab.any_instance.stubs(:web_hook).returns(
           gitlab_payload('git@example.com/path_to/diaspora.git')
       )
-      RedmineUndevGit::Services::Gitlab.git_urls_from_request('stubbed')
+      RedmineUndevGit::Services::Gitlab.new(nil).all_urls
     end
   end
 

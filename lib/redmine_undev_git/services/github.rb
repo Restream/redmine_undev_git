@@ -1,11 +1,14 @@
 module RedmineUndevGit::Services
   class Github < RemoteRepo
-    def all_urls
-      [ssh_url, https_url]
+
+    private
+
+    def find_or_create_remote_repo_site
+      RemoteRepoSite::Github.first_or_create!(:server_name => server_name)
     end
 
-    def ping_event?
-      @request.env['HTTP_X_GITHUB_EVENT'] == 'ping'
+    def all_urls
+      [ssh_url, https_url]
     end
 
     def push_event?

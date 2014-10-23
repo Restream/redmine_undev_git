@@ -1,6 +1,12 @@
 module RedmineUndevGit::Services
   class Bitbucket < RemoteRepo
 
+    private
+
+    def find_or_create_remote_repo_site
+      RemoteRepoSite::Bitbucket.first_or_create!(:server_name => server_name)
+    end
+
     def all_urls
       [ssh_url, https_url, https_with_owner_url]
     end
@@ -16,8 +22,6 @@ module RedmineUndevGit::Services
     def web_hook
       @web_hook ||= JSON.parse(@request.params[:payload])
     end
-
-    private
 
     def url_parts
       @parts ||= begin

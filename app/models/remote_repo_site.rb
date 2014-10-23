@@ -4,6 +4,6 @@ class RemoteRepoSite < ActiveRecord::Base
 
   has_many :repos, :class_name => 'RemoteRepo', :foreign_key => 'site_id'
 
-  validates :server_name, :presence => true
+  validates :server_name, :presence => true, :uniqueness => true
 
 end

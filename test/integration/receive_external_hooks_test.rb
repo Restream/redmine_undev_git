@@ -50,6 +50,19 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # working with remote repositories
+
+  def test_create_remote_repo_after_gitlab_push_hook
+    post '/gitlab_hooks', gitlab_payload.to_json, gitlab_headers
+    assert_response :success
+    repository = RemoteRepo.find_by_url(gitlab_payload[:repository][:url])
+    assert repository
+    assert repository.site
+    assert repository.site.is_a?(RemoteRepoSite::Gitlab)
+  end
+
+  # hooks payloads
+
   def gitlab_payload
     {
         before: '95790bf891e76fee5e1747ab589903a6a1f80f22',

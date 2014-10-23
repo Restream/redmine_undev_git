@@ -34,7 +34,7 @@ require 'redmine_undev_git/hooks/view_hooks'
 
 require 'redmine_undev_git/services/migration'
 require 'redmine_undev_git/services/errors'
-require 'redmine_undev_git/services/ext_repo'
+require 'redmine_undev_git/services/remote_repo'
 require 'redmine_undev_git/services/gitlab'
 require 'redmine_undev_git/services/github'
 require 'redmine_undev_git/services/bitbucket'

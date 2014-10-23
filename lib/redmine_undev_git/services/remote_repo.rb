@@ -1,21 +1,11 @@
 module RedmineUndevGit::Services
 
   # Service to work with webhooks from remote repository storage services
-  class ExtRepo
+  class RemoteRepo
 
     def initialize(request)
       @request = request
     end
-
-    # implement actually push_event? and ping_event? methods in subclass. something like this
-    #
-    # def ping_event?
-    #   @request.env['HTTP_X_GITHUB_EVENT'] == 'ping'
-    # end
-    #
-    # def push_event?
-    #   @request.env['HTTP_X_GITHUB_EVENT'] == 'push'
-    # end
 
     def ping_event?
       false

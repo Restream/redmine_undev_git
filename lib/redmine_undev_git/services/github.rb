@@ -1,5 +1,5 @@
 module RedmineUndevGit::Services
-  class Github < ExtRepo
+  class Github < RemoteRepo
     def all_urls
       [ssh_url, https_url]
     end

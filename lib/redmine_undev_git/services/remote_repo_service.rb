@@ -1,12 +1,12 @@
 module RedmineUndevGit::Services
 
   # Service to work with webhooks from remote repository storage services
-  class RemoteRepo
+  class RemoteRepoService
 
     class << self
       def handle_request(request)
         service = self.new(request)
-        service.handle_push_event if service.push_event?
+        service.handle_push_event
       end
     end
 
@@ -14,9 +14,8 @@ module RedmineUndevGit::Services
       @request = request
     end
 
-    private
-
     def handle_push_event
+      return unless push_event?
       repos = find_repositories
       if repos.any?
         fetch_repositories(repos)
@@ -25,6 +24,8 @@ module RedmineUndevGit::Services
         fetch_remote_repository(remote_repo) if remote_repo
       end
     end
+
+    private
 
     def find_repositories
       Repository::UndevGit.where('url in (?)', all_urls)

@@ -1,5 +1,5 @@
 module RedmineUndevGit::Services
-  class Gitlab < RemoteRepo
+  class Gitlab < RemoteRepoService
 
     private
 

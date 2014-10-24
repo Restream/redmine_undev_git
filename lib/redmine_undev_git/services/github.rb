@@ -1,5 +1,5 @@
 module RedmineUndevGit::Services
-  class Github < RemoteRepo
+  class Github < RemoteRepoService
 
     private
 

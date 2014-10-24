@@ -1,5 +1,5 @@
 module RedmineUndevGit::Services
-  class Bitbucket < RemoteRepo
+  class Bitbucket < RemoteRepoService
 
     private
 

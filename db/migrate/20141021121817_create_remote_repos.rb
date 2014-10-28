@@ -4,6 +4,7 @@ class CreateRemoteRepos < ActiveRecord::Migration
       t.references :site
       t.string :url
       t.string :root_url
+      t.text :tail_revisions
 
       t.timestamps
     end

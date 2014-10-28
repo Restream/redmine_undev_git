@@ -6,6 +6,3 @@ gem 'hashie'
 group :development do
   gem 'diffy'
 end
-
-# Ruby binding to libgit2 library
-gem 'rugged'

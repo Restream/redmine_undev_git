@@ -13,6 +13,7 @@ class ActiveSupport::TestCase
   def make_temp_dir
     @temp_storage_dir = Dir.mktmpdir('repo')
     Repository::UndevGit.repo_storage_dir = @temp_storage_dir
+    RedmineUndevGit::Services::RemoteRepoFetch.repo_storage_dir = @temp_storage_dir
   end
 
   def remove_temp_dir

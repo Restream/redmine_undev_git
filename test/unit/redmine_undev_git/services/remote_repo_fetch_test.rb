@@ -1,6 +1,7 @@
 require File.expand_path('../../../../test_helper', __FILE__)
 
 class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
+  fixtures :issues
 
   def setup
     make_temp_dir
@@ -111,6 +112,13 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal [1, 2], parsed[:fix_issues].keys
     assert_equal ['keyword1', 'keyword3'], parsed[:fix_issues][1]
     assert_equal ['keyword2'], parsed[:fix_issues][2]
+  end
+
+  def test_link_revision_to_issues
+    @service.initialize_repository
+    revision = @service.repo.revisions.create!
+    @service.link_revision_to_issues(revision, [1, 2, 100500])
+    assert_equal [1, 2], revision.related_issue_ids
   end
 
 end

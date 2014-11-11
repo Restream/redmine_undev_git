@@ -28,6 +28,7 @@ module RedmineUndevGit::Services
 
         revisions(head_revs, tail_revs).each do |revision|
           parsed = parse_comments(revision.message)
+          link_revision_to_issues(revision, parsed[:ref_issues])
 
         end
 
@@ -40,6 +41,13 @@ module RedmineUndevGit::Services
 
         # save new tail
         repo.tail_revisions = head_revisions
+      end
+    end
+
+    def link_revision_to_issues(revision, ref_issues_ids)
+      ref_issues_ids.each do |issue_id|
+        issue = Issue.find_by_id(issue_id, :include => :project)
+        revision.related_issues << issue if issue
       end
     end
 

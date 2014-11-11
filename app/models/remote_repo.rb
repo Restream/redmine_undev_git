@@ -1,5 +1,8 @@
 class RemoteRepo < ActiveRecord::Base
   belongs_to :site, :class_name => 'RemoteRepoSite'
+  has_many :revisions,
+           :class_name => 'RemoteRepoRevision',
+           :dependent => :destroy # todo: should delete_all for all tails
 
   validates :site, :presence => true
 

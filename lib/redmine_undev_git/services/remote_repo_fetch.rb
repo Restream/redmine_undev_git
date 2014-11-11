@@ -10,7 +10,7 @@ module RedmineUndevGit::Services
     end
 
     def initialize(remote_repo)
-      raise 'Fatal: remote_repo is not persisted.' unless remote_repo.persisted?
+      raise ServiceError.new('Fatal: remote_repo is not persisted.') unless remote_repo.persisted?
       @repo = remote_repo
     end
 
@@ -27,7 +27,8 @@ module RedmineUndevGit::Services
       repo.transaction do
 
         revisions(head_revs, tail_revs).each do |revision|
-           # parse revision
+          parsed = parse_comments(revision.message)
+
         end
 
         # get new commits (head - tail)
@@ -68,10 +69,77 @@ module RedmineUndevGit::Services
     def revisions(include_revs, exclude_revs)
       opts = {}
       opts[:reverse]  = true
-      opts[:excludes] = prev_db_heads
-      opts[:includes] = repo_heads
+      opts[:includes] = include_revs
+      opts[:excludes] = exclude_revs
 
       scm.revisions('', nil, nil, opts)
+    end
+
+    # parse commit message for ref and fix keywords with issue_ids
+    def parse_comments(comments)
+      ret = { :ref_issues => [], :fix_issues => {}, :log_time => {} }
+
+      return ret if comments.blank?
+
+      kw_regexp = (ref_keywords + fix_keywords).uniq.collect{ |kw| Regexp.escape(kw) }.join('|')
+
+      comments.scan(/([\s\(\[,-]|^)((#{kw_regexp})[\s:]+)?(#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i) do |match|
+        action, refs = match[2].to_s.downcase, match[3]
+        next unless action.present? || any_ref_keyword?
+
+        refs.scan(/#(\d+)(\s+@#{Changeset::TIMELOG_RE})?/).each do |m|
+          issue, hours = m[0].to_i, m[2]
+          if issue
+            ret[:ref_issues] << issue
+            if fix_keywords.include?(action)
+              ret[:fix_issues][issue] ||= []
+              ret[:fix_issues][issue] << action
+            end
+            if hours
+              ret[:log_time][issue] ||= []
+              ret[:log_time][issue] << hours
+            end
+          end
+        end
+      end
+
+      ret[:ref_issues].uniq!
+      ret
+    end
+
+    # keywords used to fix issues
+    def fix_keywords
+      @fix_keywords ||= all_applicable_hooks.map do |hook|
+        hook.keywords.map { |keyword| keyword.downcase.strip }
+      end.flatten.uniq
+    end
+
+    # is there asterisk in reference keywords?
+    def any_ref_keyword?
+      if @any_ref_keyword.nil?
+        @any_ref_keyword = Setting.commit_ref_keywords.split(',').collect(&:strip).include?('*')
+      end
+      @any_ref_keyword
+    end
+
+    # keywords used to reference issues
+    def ref_keywords
+      unless @ref_keywords
+        @ref_keywords = Setting.commit_ref_keywords.downcase.split(',').collect(&:strip)
+        @ref_keywords.delete('*')
+      end
+      @ref_keywords
+    end
+
+    def all_applicable_hooks
+      @all_applicable_hooks ||= ProjectHook.global.by_position + GlobalHook.by_position
+    end
+
+    def make_references_to_issues(revision, issues)
+      issues.each do |issue|
+
+        issue.changesets << self
+      end
     end
 
   end

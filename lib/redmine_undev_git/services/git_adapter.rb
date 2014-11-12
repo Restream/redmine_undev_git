@@ -35,6 +35,7 @@ module RedmineUndevGit::Services
       end
 
       def shell_read(cmd, options = {})
+        Rails.logger.debug 'called shell_read'
         shell_out(cmd, options) { |io| io.read }.to_s
       end
 
@@ -78,21 +79,11 @@ module RedmineUndevGit::Services
 
     def clone_repository
       FileUtils.mkdir_p(root_url)
-
-      args = ['clone', url, root_url, '--mirror', '--quiet']
-      args = args.map { |arg| self.class.shell_quote(arg.to_s) }.join(' ')
-      cmd = [self.class.quoted_git_command, args].join(' ')
-
-      self.class.shell_out(cmd)
-
-      if $? && $?.exitstatus != 0
-        raise CommandFailed, "can't clone repository git exited with non-zero status: #{$?.exitstatus}"
-      end
+      git('clone', url, root_url, '--mirror', '--quiet')
     end
 
     def fetch!
-      args = %w{fetch origin --force}
-      git_cmd(args)
+      git('fetch', 'origin', '--force')
     end
 
     def git(*args, &block)

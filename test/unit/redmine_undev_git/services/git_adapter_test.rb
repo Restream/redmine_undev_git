@@ -13,6 +13,7 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
 
   def test_git_version
     @klass.stubs(:shell_read).returns("git version 1.7.3\n")
+    @klass.instance_variable_set :@git_version, nil
     version = @klass.git_version
     assert version
     assert_equal [1, 7, 3], version
@@ -20,6 +21,7 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
 
   def test_git_version_above
     @klass.stubs(:shell_read).returns("git version 1.7.3\n")
+    @klass.instance_variable_set :@git_version, nil
     assert @klass.git_version_above_or_equal?([1,7,2])
     assert @klass.git_version_above_or_equal?([1,7,3])
     refute @klass.git_version_above_or_equal?([1,7,4])

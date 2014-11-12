@@ -11,7 +11,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
   end
 
   def teardown
-    make_temp_dir
+    remove_temp_dir
   end
 
   def test_service_creation_should_fail_with_remote_repo_not_persisted

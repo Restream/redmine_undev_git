@@ -1,8 +1,9 @@
 require 'redmine'
 
-raise PluginRequirementError.new(
-          "redmine_undev_git plugin requires Ruby 1.9.1 or higher but current is #{RUBY_VERSION}"
-      ) unless RUBY_VERSION >= '1.9.1'
+raise(
+    PluginRequirementError,
+    "redmine_undev_git plugin requires Ruby 1.9.1 or higher but current is #{RUBY_VERSION}"
+) unless RUBY_VERSION >= '1.9.1'
 
 Rails.application.paths["app/overrides"] ||= []
 Rails.application.paths["app/overrides"] << File.expand_path("../app/overrides", __FILE__)

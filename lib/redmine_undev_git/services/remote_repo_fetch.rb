@@ -10,7 +10,7 @@ module RedmineUndevGit::Services
     end
 
     def initialize(remote_repo)
-      raise ServiceError.new('Fatal: remote_repo is not persisted.') unless remote_repo.persisted?
+      raise(ServiceError, 'Fatal: remote_repo is not persisted.') unless remote_repo.persisted?
       @repo = remote_repo
     end
 
@@ -66,7 +66,7 @@ module RedmineUndevGit::Services
     def scm
       @scm ||= begin
         repo.update_attribute(:root_url, local_path) if repo.root_url.blank?
-        Redmine::Scm::Adapters::UndevGitAdapter.new(repo.url, repo.root_url)
+        RedmineUndevGit::Services::GitAdapter.new(repo.url, repo.root_url)
       end
     end
 

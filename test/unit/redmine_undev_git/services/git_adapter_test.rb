@@ -45,4 +45,23 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
     assert adapter.repository_exists?
   end
 
+  def test_branches
+    root_url = File.join(@temp_storage_dir, 'remote_test')
+    adapter = @klass.new(REPOSITORY_PATH, root_url)
+    adapter.clone_repository
+    branches = adapter.branches
+    assert branches
+    assert branches.is_a?(Array)
+    branches = branches.map { |b| "#{b.revision[0..6]}_#{b.name}" }.sort
+    exp_branches = %w{
+      1ca7f5e_latin-1-path-encoding
+      2a68215_issue-8857
+      67e7792_test-latin-1
+      83ca5fd_master
+      83ca5fd_master-20120212
+      fba357b_test_branch
+    }
+    assert_equal exp_branches, branches
+  end
+
 end

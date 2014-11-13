@@ -2,6 +2,8 @@ module RedmineUndevGit::Services
   class CommandFailed < ServiceError
   end
 
+  GitBranchRef = Struct.new(:name, :revision)
+
   class GitAdapter
 
     attr_reader :url, :root_url, :path_encoding
@@ -84,6 +86,18 @@ module RedmineUndevGit::Services
 
     def fetch!
       git('fetch', 'origin', '--force')
+    end
+
+    def branches
+      result = []
+      git('branch', '--no-color', '--verbose', '--no-abbrev') do |io|
+        io.each_line do |line|
+          if branch_rev = line.match('^\s*(\*?)\s*(.*?)\s*([0-9a-f]{40}).*$')
+            result << GitBranchRef.new(branch_rev[2], branch_rev[3])
+          end
+        end
+      end
+      result
     end
 
     def git(*args, &block)

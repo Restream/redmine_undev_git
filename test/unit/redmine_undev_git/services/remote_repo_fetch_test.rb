@@ -54,28 +54,6 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal %w{1ca7f5e 2a68215 67e7792 83ca5fd fba357b}, revs
   end
 
-  def test_revisions_from_start
-    incl_revs = %w{9a6f3b9 67e7792 4a79347}
-    excl_revs = []
-    @service.initialize_repository
-    revs = @service.revisions(incl_revs, excl_revs)
-    assert revs
-    assert_equal 6, revs.length
-    revs_hashes = revs.map { |rev| rev.identifier[0..6] }.sort
-    assert_equal %w{3621194 4a79347 67e7792 7234cb2 899a15d 9a6f3b9}, revs_hashes
-  end
-
-  def test_revisions_in_middle
-    incl_revs = %w{4fc55c4 67e7792 61b685f}
-    excl_revs = %w{9a6f3b9 67e7792 4a79347}
-    @service.initialize_repository
-    revs = @service.revisions(incl_revs, excl_revs)
-    assert revs
-    assert_equal 4, revs.length
-    revs_hashes = revs.map { |rev| rev.identifier[0..6] }.sort
-    assert_equal %w{2f9c009 4fc55c4 57ca437 61b685f}, revs_hashes
-  end
-
   def test_fix_keywords_returns_all_keywords_from_hooks
     hooks = [stub(:keywords => ['a  ', 'b', ' c']), stub(:keywords => ['a', '  d'])]
     @service.stubs(:all_applicable_hooks).returns(hooks)

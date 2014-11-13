@@ -3,6 +3,7 @@ module RedmineUndevGit::Services
   end
 
   GitBranchRef = Struct.new(:name, :revision)
+  GitCommit = Struct.new(:sha, :aname, :aemail, :adate, :cname, :cemail, :cdate, :message)
 
   class GitAdapter
 
@@ -10,17 +11,13 @@ module RedmineUndevGit::Services
 
     class << self
 
-      def git_version_above_or_equal?(v)
-        (git_version <=> v) >= 0
-      end
-
       def git_version
-        @git_version ||= begin
-          @git_version = shell_read("#{quoted_git_command} --version --no-color")
-          @git_version.force_encoding('UTF-8') if @git_version.respond_to?(:force_encoding)
-          if m = @git_version.match(%r{\A(.*?)((\d+\.)+\d+)})
-            m[2].scan(%r{\d+}).collect(&:to_i)
-          end
+        result = shell_read("#{quoted_git_command} --version --no-color")
+        result.force_encoding('UTF-8') if @git_version.respond_to?(:force_encoding)
+        if m = result.match(%r{\A(.*?)((\d+\.)+\d+)})
+          m[2]
+        else
+          raise ServiceError, 'fails while check git version'
         end
       end
 
@@ -49,15 +46,10 @@ module RedmineUndevGit::Services
           block.call(io) if block_given?
         end
       rescue Exception => e
-        msg = strip_credential(e.message)
         # The command failed, log it and re-raise
-        logmsg = "GIT command failed, "
-        logmsg += "make sure that git is in PATH (#{ENV['PATH']})\n"
-        logmsg += "You can configure scm_git_command in config/configuration.yml.\n"
-        logmsg += "#{strip_credential(cmd)}\n"
-        logmsg += "with: #{msg}"
+        logmsg = "#{cmd}\nfailed with: #{e.message}"
         Rails.logger.error(logmsg)
-        raise CommandFailed, msg
+        raise CommandFailed, e.message
       end
 
     end
@@ -100,12 +92,89 @@ module RedmineUndevGit::Services
       result
     end
 
+    def revisions(include_revs, exclude_revs)
+
+      # :sha              %H
+      # :author           %an %ae
+      # :author_date      %ai
+      # :committer        %cn %ce
+      # :committer_date   %ci
+      # :message          %B
+
+      revision_regexp = /(?<h>[0-9a-f]{40});\s(?<an>.*?);\s(?<ae>.*?);\s(?<ai>.*?);\s(?<cn>.*?);\s(?<ce>.*?);\s(?<ci>.*?);/
+
+      format_string = '%H; %an; %ae; %ai; %cn; %ce; %ci;%n%B%H'
+
+      revs = []
+      revs += include_revs unless include_revs.blank?
+      revs += exclude_revs.map{|r| "^#{r}"} unless exclude_revs.blank?
+
+      cmd_args = %w{log --date=iso --date-order --name-status --no-color}
+      cmd_args << "--format=\"#{format_string}\""
+      cmd_args << '--all' if revs.empty?
+      cmd_args << "--encoding=#{path_encoding}"
+      cmd_args << '--stdin'
+
+      result = []
+
+      git(*cmd_args, { :write_stdin => true }) do |io|
+
+        # includes and excludes
+        io.binmode
+        io.puts(revs.join("\n"))
+        io.close_write
+
+        revision = nil
+        io.each_line do |io_line|
+          line = io_line.dup
+          line.force_encoding(path_encoding)
+          begin
+            line.blank?
+          rescue ArgumentError #invalid byte sequence in UTF-8
+            line = remove_invalid_characters(line)
+          end
+
+          if revision.nil? && md = line.match(revision_regexp)
+            revision = GitCommit.new
+            result << revision
+
+            revision.message = ''
+            revision.sha = md[:h]
+
+            # author
+            revision.aname = md[:an]
+            revision.aemail = md[:ae]
+            revision.adate = Time.parse(md[:ai]) unless md[:ai].blank?
+
+            # committer
+            revision.cname = md[:cn]
+            revision.cemail = md[:ce]
+            revision.cdate = Time.parse(md[:ci]) unless md[:ci].blank?
+
+          elsif revision
+            if line =~ /#{revision.sha}/
+              revision = nil
+            else
+              revision.message << line
+            end
+          end
+        end
+      end
+      result
+    end
+
+    def remove_invalid_characters(s)
+      s.chars.select { |c| c.valid_encoding? }.join
+    end
+
+    # expects many arguments, not one array or string
+    # examples:
+    #   git('log', '--all')     # ok
+    #   git('log --all')        # error
+    #   git(['log',  '--all'])  # error
     def git(*args, &block)
       options = args.extract_options!
-      system_args = ['--git-dir', root_url]
-      if self.class.git_version_above_or_equal?([1, 7, 2])
-        system_args << '-c' << 'core.quotepath=false'
-      end
+      system_args = ['--git-dir', root_url, '-c', 'core.quotepath=false']
 
       args = system_args + Array.wrap(args)
       args = args.map { |arg| self.class.shell_quote(arg.to_s) }.join(' ')

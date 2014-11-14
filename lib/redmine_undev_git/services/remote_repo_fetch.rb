@@ -24,12 +24,16 @@ module RedmineUndevGit::Services
       # no changes. going home
       return if head_revs == tail_revs
 
+      revisions = scm.revisions(head_revs, tail_revs)
+
       repo.transaction do
 
-        revisions(head_revs, tail_revs).each do |revision|
+        revisions.each do |revision|
           parsed = parse_comments(revision.message)
           link_revision_to_issues(revision, parsed[:ref_issues])
-
+          parsed[:fix_issues].each do |issue, actions|
+            committer = repo.site.find_user_by_mail(revision.cemail)
+          end
         end
 
         # get new commits (head - tail)
@@ -60,7 +64,7 @@ module RedmineUndevGit::Services
     end
 
     def initialize_repository
-      scm.clone_repository unless scm.cloned?
+      scm.clone_repository unless scm.repository_exists?
     end
 
     def scm
@@ -71,16 +75,7 @@ module RedmineUndevGit::Services
     end
 
     def head_revisions
-      scm.branches.map(&:scmid).sort.uniq
-    end
-
-    def revisions(include_revs, exclude_revs)
-      opts = {}
-      opts[:reverse]  = true
-      opts[:includes] = include_revs
-      opts[:excludes] = exclude_revs
-
-      scm.revisions('', nil, nil, opts)
+      scm.branches.map(&:revision).sort.uniq
     end
 
     # parse commit message for ref and fix keywords with issue_ids

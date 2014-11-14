@@ -36,7 +36,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     refute Dir.exists?(@service.local_path)
     @service.send :initialize_repository
     assert Dir.exists?(@service.local_path)
-    assert @service.scm.cloned?
+    assert @service.scm.repository_exists?
   end
 
   def test_get_head_revisions

@@ -368,7 +368,7 @@ class Repository::UndevGit < Repository
     hooks << hook_for_any_branch if hook_for_any_branch && hooks.empty?
 
     hooks.each do |hook|
-      hook.apply_for_issue_by_changeset(issue, changeset)
+      apply_for_issue_by_changeset(hook, issue, changeset)
     end
   end
 
@@ -434,8 +434,19 @@ class Repository::UndevGit < Repository
         hook = all_hooks.detect do |h|
           !h.any_branch? && h.applied_for?(keywords, [branch])
         end
-        hook.apply_for_issue_by_changeset(issue, changeset) if hook
+        apply_for_issue_by_changeset(hook, issue, changeset) if hook
       end
+    end
+  end
+
+  def apply_for_issue_by_changeset(hook, issue, changeset)
+    hook.apply_for_issue(
+        issue,
+        :user => changeset.user,
+        :notes => ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
+    ) do
+      Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
+                              { :changeset => changeset, :issue => issue, :hook => hook })
     end
   end
 

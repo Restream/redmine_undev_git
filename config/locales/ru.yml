@@ -32,6 +32,7 @@ ru:
 
   text_branches: "* = любая ветка<br />Допустимы несколько значений (через запятую)"
   text_changed_by_changeset_hook: "Изменено редакцией %{value}."
+  text_changed_by_remote_revision_hook: "Изменено коммитом удаленной репы %{value}."
   text_hook_cannot_be_empty: "Укажите Новый статус или Новый % готовности"
   text_hook_repository_note: "* = любой репозиторий UndevGit"
   text_undev_git_repository_note: "Ссылка или путь к локальному репозиторию<br />(например, git://example.com/repo.git, https://example.com/repo.git или /repos/gitrepo)"

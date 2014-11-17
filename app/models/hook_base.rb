@@ -50,26 +50,21 @@ class HookBase < ActiveRecord::Base
     branches == %w{*}
   end
 
-  def apply_for_issue_by_changeset(issue, changeset)
-
-    # the issue may have been updated
-    issue.reload
-
+  def apply_for_issue(issue, options = {}, &block)
     return unless has_changes_for_issue?(issue)
 
-    issue.init_journal(
-        changeset.user || User.anonymous,
-        ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
-    )
+    updater = options[:user] || User.anonymous
+    notes = options[:notes] || "Changed by hook #{id}"
 
+    issue.reload
+    issue.init_journal(updater, notes)
     change_issue(issue)
 
-    Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
-                            { :changeset => changeset, :issue => issue, :hook => self })
+    yield if block_given?
+
     unless issue.save
-      logger.warn("Issue ##{issue.id} could not be saved by changeset #{changeset.id}: #{issue.errors.full_messages}") if logger
+      logger.warn("Issue ##{issue.id} could not be updated by hook #{id}: #{issue.errors.full_messages}") if logger
     end
-    issue
   end
 
   def assignee(issue = nil)

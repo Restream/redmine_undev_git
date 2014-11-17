@@ -32,6 +32,7 @@ en:
 
   text_branches: "* = any branch<br />Multiple values allowed (comma separated)."
   text_changed_by_changeset_hook: "Applied in changeset %{value}."
+  text_changed_by_remote_revision_hook: "Applied in remote repo commit %{value}."
   text_hook_cannot_be_empty: "Define new status or new % done"
   text_hook_repository_note: "* = any UndevGit repository"
   text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"

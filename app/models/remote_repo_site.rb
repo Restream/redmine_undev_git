@@ -13,7 +13,7 @@ class RemoteRepoSite < ActiveRecord::Base
     mapping = user_mappings.where(:email => email).first
     return mapping.user if mapping
 
-    User.find_by_mail(email) || User.anonymous
+    User.find_by_mail(email)
   end
 
 end

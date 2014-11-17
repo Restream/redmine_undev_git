@@ -43,7 +43,7 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
     branches = adapter.branches
     assert branches
     assert branches.is_a?(Array)
-    branches = branches.map { |b| "#{b.revision[0..6]}_#{b.name}" }.sort
+    branches = branches.map { |b| "#{b.sha[0..6]}_#{b.name}" }.sort
     exp_branches = %w{
       1ca7f5e_latin-1-path-encoding
       2a68215_issue-8857
@@ -51,6 +51,37 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
       83ca5fd_master
       83ca5fd_master-20120212
       fba357b_test_branch
+    }
+    assert_equal exp_branches, branches
+  end
+
+  def test_branches_for_sha
+    adapter = create_adapter
+    adapter.clone_repository
+    branches = adapter.branches('7234cb2')
+    assert branches
+    assert branches.is_a?(Array)
+    branches = branches.map { |b| "#{b.sha[0..6]}_#{b.name}" }.sort
+    exp_branches = %w{
+      1ca7f5e_latin-1-path-encoding
+      67e7792_test-latin-1
+      83ca5fd_master
+      83ca5fd_master-20120212
+      fba357b_test_branch
+    }
+    assert_equal exp_branches, branches
+  end
+
+  def test_branches_for_sha_2
+    adapter = create_adapter
+    adapter.clone_repository
+    branches = adapter.branches('83ca5fd')
+    assert branches
+    assert branches.is_a?(Array)
+    branches = branches.map { |b| "#{b.sha[0..6]}_#{b.name}" }.sort
+    exp_branches = %w{
+      83ca5fd_master
+      83ca5fd_master-20120212
     }
     assert_equal exp_branches, branches
   end

@@ -30,10 +30,15 @@ module RedmineUndevGit::Services
 
         revisions.each do |revision|
           parsed = parse_comments(revision.message)
-          link_revision_to_issues(revision, parsed[:ref_issues])
-          parsed[:fix_issues].each do |issue, actions|
-            committer = repo.site.find_user_by_mail(revision.cemail)
+
+          if parsed[:ref_issues].any? || parsed[:fix_issues].present?
+
+            link_revision_to_issues(repo_revision, parsed[:ref_issues])
+            parsed[:fix_issues].each do |issue, actions|
+              apply_hooks(revision, actions, issue)
+            end
           end
+
         end
 
         # get new commits (head - tail)
@@ -48,10 +53,57 @@ module RedmineUndevGit::Services
       end
     end
 
+    def repo_revision_by_git_revision(revision)
+      @revisions_cache ||= {}
+      @revisions_cache[revision.sha] ||=
+          repo.revisions.find_by_sha(revision.sha) ||
+          repo.revisions.create!(
+              :author           => repo.site.find_user_by_email(revision.aemail),
+              :committer        => repo.site.find_user_by_email(revision.cemail),
+              :sha              => revision.sha,
+              :author_string    => revision.author,
+              :committer_string => revision.committer,
+              :message          => revision.message,
+              :author_date      => revision.adate,
+              :committer_date   => revision.cdate
+          )
+      @revisions_cache[revision.sha]
+    end
+
     def link_revision_to_issues(revision, ref_issues_ids)
       ref_issues_ids.each do |issue_id|
         issue = Issue.find_by_id(issue_id, :include => :project)
-        revision.related_issues << issue if issue
+        if issue
+          repo_revision = repo_revision_by_git_revision(revision)
+          repo_revision.related_issues << issue
+        end
+      end
+    end
+
+    def apply_hooks(revision, actions, issue)
+      committer = repo.site.find_user_by_email(revision.cemail)
+      return unless committer.allowed_to?(:edit_issues, issue.project)
+
+      revision_branches = scm.branches(revision.sha).map(&:name)
+
+      all_applicable_hooks.each do |hook|
+        if hook.applied_for?(actions, revision_branches)
+
+          hook.apply_for_issue(
+              issue,
+              :user => committer,
+              :notes => ll(Setting.default_language,
+                           :text_changed_by_remote_revision_hook,
+                           revision.full_text_tag(issue.project))
+          )
+
+          journal_id = issue.last_journal_id
+
+          repo_revision = repo_revision_by_git_revision(revision)
+          repo_revision.applied_hooks.create!(:hook => hook, :issue => issue, :journal_id => journal_id)
+
+          return
+        end
       end
     end
 
@@ -75,7 +127,7 @@ module RedmineUndevGit::Services
     end
 
     def head_revisions
-      scm.branches.map(&:revision).sort.uniq
+      scm.branches.map(&:sha).sort.uniq
     end
 
     # parse commit message for ref and fix keywords with issue_ids
@@ -134,8 +186,17 @@ module RedmineUndevGit::Services
       @ref_keywords
     end
 
+    # return all applicable hooks in that order:
+    # 1. hooks for project (without hooks for specific repository)
+    # 1.1. for specific branch
+    # 1.2. for any branch
+    # 2. global hooks
+    # 2.1. for specific branch
+    # 2.2. for any branch
     def all_applicable_hooks
-      @all_applicable_hooks ||= ProjectHook.global.by_position + GlobalHook.by_position
+      @all_applicable_hooks ||=
+          ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
+          GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
     end
 
     def make_references_to_issues(revision, issues)

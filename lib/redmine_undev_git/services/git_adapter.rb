@@ -2,8 +2,15 @@ module RedmineUndevGit::Services
   class CommandFailed < ServiceError
   end
 
-  GitBranchRef = Struct.new(:name, :revision)
-  GitCommit = Struct.new(:sha, :aname, :aemail, :adate, :cname, :cemail, :cdate, :message)
+  GitBranchRef = Struct.new(:name, :sha)
+  GitRevision = Struct.new(:sha, :aname, :aemail, :adate, :cname, :cemail, :cdate, :message) do
+    def author
+      "#{aname} <#{aemail}>"
+    end
+    def committer
+      "#{cname} <#{cemail}>"
+    end
+  end
 
   class GitAdapter
 
@@ -80,9 +87,11 @@ module RedmineUndevGit::Services
       git('fetch', 'origin', '--force')
     end
 
-    def branches
+    def branches(sha = nil)
       result = []
-      git('branch', '--no-color', '--verbose', '--no-abbrev') do |io|
+      args = %w{branch --no-color --verbose --no-abbrev}
+      args += ['--contains', sha] if sha.present?
+      git(*args) do |io|
         io.each_line do |line|
           if branch_rev = line.match('^\s*(\*?)\s*(.*?)\s*([0-9a-f]{40}).*$')
             result << GitBranchRef.new(branch_rev[2], branch_rev[3])
@@ -92,7 +101,7 @@ module RedmineUndevGit::Services
       result
     end
 
-    def revisions(include_revs, exclude_revs)
+    def revisions(include_revs = nil, exclude_revs = nil)
 
       # :sha              %H
       # :author           %an %ae
@@ -135,7 +144,7 @@ module RedmineUndevGit::Services
           end
 
           if revision.nil? && md = line.match(revision_regexp)
-            revision = GitCommit.new
+            revision = GitRevision.new
             result << revision
 
             revision.message = ''

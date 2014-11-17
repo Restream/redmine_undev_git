@@ -1,7 +1,20 @@
 require File.expand_path('../../../../test_helper', __FILE__)
 
 class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
-  fixtures :issues
+  fixtures :projects,
+           :users,
+           :roles,
+           :members,
+           :member_roles,
+           :issues,
+           :issue_statuses,
+           :versions,
+           :trackers,
+           :projects_trackers,
+           :issue_categories,
+           :enabled_modules,
+           :enumerations,
+           :repositories
 
   def setup
     make_temp_dir
@@ -116,9 +129,47 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
   def test_link_revision_to_issues
     @service.initialize_repository
-    revision = @service.repo.revisions.create!
+    revisions = @service.scm.revisions
+    revision = revisions.first
     @service.link_revision_to_issues(revision, [1, 2, 100500])
-    assert_equal [1, 2], revision.related_issue_ids
+    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
+    assert_equal [1, 2], repo_revision.related_issue_ids
+  end
+
+  def test_get_cached_repo_revision
+    @service.initialize_repository
+    revisions = @service.scm.revisions
+    revision_x = revisions.first
+    revision_y = revisions.last
+    assert revisions
+    repo_revision_x1 = @service.repo_revision_by_git_revision(revision_x)
+    assert repo_revision_x1
+    assert repo_revision_x1.persisted?
+    repo_revision_y = @service.repo_revision_by_git_revision(revision_y)
+    assert repo_revision_y
+    assert repo_revision_y.persisted?
+    refute_equal repo_revision_y, repo_revision_x1
+    repo_revision_x2 = @service.repo_revision_by_git_revision(revision_x)
+    assert_equal repo_revision_x1, repo_revision_x2
+  end
+
+  def test_apply_hooks_by_admin
+    undev_git_repo = create_test_repository
+    create_hooks!(:repository_id => undev_git_repo.id)
+    @service.initialize_repository
+    revisions = @service.scm.revisions
+    revision = revisions.first
+    issue = Issue.find(1)
+    user = User.find(1)
+    revision.cemail = user.mail
+
+    @service.apply_hooks(revision, ['close'], issue)
+
+    issue.reload
+    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
+
+    assert repo_revision
+    assert_equal 1, repo_revision.applied_hooks.length
   end
 
 end

@@ -6,8 +6,8 @@ class CreateRemoteRepoRevisions < ActiveRecord::Migration
       t.references :committer
 
       t.string :sha
-      t.string :author
-      t.string :committer
+      t.string :author_string
+      t.string :committer_string
       t.text :message
       t.datetime :author_date
       t.datetime :committer_date

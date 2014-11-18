@@ -3,6 +3,8 @@ module RedmineUndevGit::Services
   class RemoteRepoFetch
     attr_reader :repo
 
+    include Redmine::I18n
+
     cattr_accessor :repo_storage_dir
     self.repo_storage_dir = Redmine::Configuration['scm_repo_storage_dir'] || begin
       rpath = Rails.root.join('repos')
@@ -81,30 +83,33 @@ module RedmineUndevGit::Services
     end
 
     def apply_hooks(revision, actions, issue)
-      committer = repo.site.find_user_by_email(revision.cemail)
-      return unless committer.allowed_to?(:edit_issues, issue.project)
+      user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
+      return unless user.allowed_to?(:edit_issues, issue.project)
 
       revision_branches = scm.branches(revision.sha).map(&:name)
 
       all_applicable_hooks.each do |hook|
         if hook.applied_for?(actions, revision_branches)
 
+          repo_revision = repo_revision_by_git_revision(revision)
+
           hook.apply_for_issue(
               issue,
-              :user => committer,
-              :notes => ll(Setting.default_language,
-                           :text_changed_by_remote_revision_hook,
-                           revision.full_text_tag(issue.project))
+              :user => user,
+              :notes => notes_for_issue_change(repo_revision)
           )
 
           journal_id = issue.last_journal_id
 
-          repo_revision = repo_revision_by_git_revision(revision)
           repo_revision.applied_hooks.create!(:hook => hook, :issue => issue, :journal_id => journal_id)
 
           return
         end
       end
+    end
+
+    def notes_for_issue_change(repo_revision)
+      ll(Setting.default_language, :text_changed_by_remote_revision_hook, repo_revision.redmine_uri)
     end
 
     def download_changes

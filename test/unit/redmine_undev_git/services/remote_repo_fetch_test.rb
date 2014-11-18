@@ -154,22 +154,85 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
   end
 
   def test_apply_hooks_by_admin
-    undev_git_repo = create_test_repository
-    create_hooks!(:repository_id => undev_git_repo.id)
-    @service.initialize_repository
-    revisions = @service.scm.revisions
-    revision = revisions.first
+    # this hook should apply
+    hook1 = ProjectHook.create!(
+        :project_id => 1,
+        :branches => 'master',
+        :keywords => 'fix',
+        :status_id => 3,
+        :done_ratio => '50%'
+    )
+    # this hook should not apply
+    ProjectHook.create!(
+        :project_id => 1,
+        :branches => '*',
+        :keywords => 'fix',
+        :status_id => 1,
+        :done_ratio => '20%'
+    )
+
     issue = Issue.find(1)
     user = User.find(1)
-    revision.cemail = user.mail
 
-    @service.apply_hooks(revision, ['close'], issue)
+    @service.initialize_repository
+
+    revision = RedmineUndevGit::Services::GitRevision.new()
+    revision.sha = 'deff712f05a90d96edbd70facc47d944be5897e3'
+    revision.aname = user.name
+    revision.aemail = user.mail
+    revision.adate = Time.parse('2009-06-26 23:06:56 -0700')
+    revision.cname = revision.aname
+    revision.cemail = revision.aemail
+    revision.cdate = revision.adate
+    revision.message = "this commit should fix ##{issue.id} by 50%"
+
+    @service.apply_hooks(revision, ['fix'], issue)
 
     issue.reload
+
+    assert_equal 50, issue.done_ratio
+    assert_equal 3, issue.status_id
+
     repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
 
     assert repo_revision
-    assert_equal 1, repo_revision.applied_hooks.length
+    assert_equal [hook1], repo_revision.applied_hooks.map { |ah| ah.hook }
+  end
+
+  def test_not_apply_hooks_by_unknown_user
+    ProjectHook.create!(
+        :project_id => 1,
+        :branches => 'master',
+        :keywords => 'fix',
+        :status_id => 3,
+        :done_ratio => '50%'
+    )
+
+    issue = Issue.find(1)
+
+    @service.initialize_repository
+
+    revision = RedmineUndevGit::Services::GitRevision.new()
+    revision.sha = 'deff712f05a90d96edbd70facc47d944be5897e3'
+    revision.aname = 'Simon Peterson'
+    revision.aemail = 'simon@example.com'
+    revision.adate = Time.parse('2009-06-26 23:06:56 -0700')
+    revision.cname = revision.aname
+    revision.cemail = revision.aemail
+    revision.cdate = revision.adate
+    revision.message = "this commit should not fix ##{issue.id} by 50%"
+
+    @service.apply_hooks(revision, ['fix'], issue)
+
+    issue.reload
+
+    assert_equal 0, issue.done_ratio  # doesn't changed
+    assert_equal 1, issue.status_id   # doesn't changed
+
+    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
+
+    assert repo_revision
+    assert repo_revision.applied_hooks.empty?
   end
 
 end

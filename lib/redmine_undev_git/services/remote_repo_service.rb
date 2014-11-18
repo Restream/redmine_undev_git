@@ -44,7 +44,11 @@ module RedmineUndevGit::Services
     def try_to_create_remote_repository
       return nil unless Policies::CreateRemoteRepo.allowed?(repository_url)
       remote_repo_site = find_or_create_remote_repo_site
-      remote_repo_site.repos.create!(:url => repository_url)
+      remote_repo_site.repos.create!(
+          :url => repository_url,
+          :path_to_repo => url_parts[:path_to_repo],
+          :web_hook => web_hook
+      )
     end
 
     def fetch_remote_repository(remote_repo)

@@ -131,6 +131,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     @service.initialize_repository
     revisions = @service.scm.revisions
     revision = revisions.first
+    Policies::ReferenceToIssue.stubs(:allowed?).returns(true)
     @service.link_revision_to_issues(revision, [1, 2, 100500])
     repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
     assert_equal [1, 2], repo_revision.related_issue_ids
@@ -199,7 +200,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal [hook1], repo_revision.applied_hooks.map { |ah| ah.hook }
   end
 
-  def test_not_apply_hooks_by_unknown_user
+  def test_not_apply_hooks_by_unknown_user_if_deny
     ProjectHook.create!(
         :project_id => 1,
         :branches => 'master',
@@ -222,6 +223,8 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     revision.cdate = revision.adate
     revision.message = "this commit should not fix ##{issue.id} by 50%"
 
+    Policies::ApplyHooks.stubs(:allowed?).returns(false)
+
     @service.apply_hooks(revision, ['fix'], issue)
 
     issue.reload
@@ -231,8 +234,45 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
     repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
 
+    refute repo_revision, 'Do not save revision if no hooks was applied'
+  end
+
+  def test_apply_hooks_by_unknown_user_if_allowed
+    hook1 = ProjectHook.create!(
+        :project_id => 1,
+        :branches => 'master',
+        :keywords => 'fix',
+        :status_id => 3,
+        :done_ratio => '50%'
+    )
+
+    issue = Issue.find(1)
+
+    @service.initialize_repository
+
+    revision = RedmineUndevGit::Services::GitRevision.new()
+    revision.sha = 'deff712f05a90d96edbd70facc47d944be5897e3'
+    revision.aname = 'Simon Peterson'
+    revision.aemail = 'simon@example.com'
+    revision.adate = Time.parse('2009-06-26 23:06:56 -0700')
+    revision.cname = revision.aname
+    revision.cemail = revision.aemail
+    revision.cdate = revision.adate
+    revision.message = "this commit should not fix ##{issue.id} by 50%"
+
+    Policies::ApplyHooks.stubs(:allowed?).returns(true)
+
+    @service.apply_hooks(revision, ['fix'], issue)
+
+    issue.reload
+
+    assert_equal 50, issue.done_ratio
+    assert_equal 3, issue.status_id
+
+    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
+
     assert repo_revision
-    assert repo_revision.applied_hooks.empty?
+    assert_equal [hook1], repo_revision.applied_hooks.map { |ah| ah.hook }
   end
 
 end

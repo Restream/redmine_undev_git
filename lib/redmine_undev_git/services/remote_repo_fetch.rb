@@ -73,9 +73,10 @@ module RedmineUndevGit::Services
     end
 
     def link_revision_to_issues(revision, ref_issues_ids)
+      user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
       ref_issues_ids.each do |issue_id|
         issue = Issue.find_by_id(issue_id, :include => :project)
-        if issue
+        if issue && Policies::ReferenceToIssue.allowed?(user, issue)
           repo_revision = repo_revision_by_git_revision(revision)
           repo_revision.related_issues << issue
         end
@@ -84,7 +85,7 @@ module RedmineUndevGit::Services
 
     def apply_hooks(revision, actions, issue)
       user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
-      return unless user.allowed_to?(:edit_issues, issue.project)
+      return unless Policies::ApplyHooks.allowed?(user, issue)
 
       revision_branches = scm.branches(revision.sha).map(&:name)
 

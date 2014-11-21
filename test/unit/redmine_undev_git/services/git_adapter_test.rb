@@ -134,10 +134,10 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
 
     exp_time = Time.new(2010,9,26, 21,14,28, '+02:00')
 
-    assert_equal FELIX_HEX, rev.aname
+    assert_match FELIX_HEX, rev.aname
     assert_equal 'felix@fachschaften.org', rev.aemail
     assert_equal exp_time, rev.adate.in_time_zone('Moscow')
-    assert_equal FELIX_HEX, rev.cname
+    assert_match FELIX_HEX, rev.cname
     assert_equal 'felix@fachschaften.org', rev.cemail
     assert_equal exp_time, rev.cdate.in_time_zone('Moscow')
   end

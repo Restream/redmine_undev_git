@@ -17,6 +17,7 @@ ru:
   label_hook_filter: "Фильтр коммитов"
   label_hook_new_values: "Новые значения устанавливаемые хуком"
   label_fetch_status: "Статус"
+  label_associated_remote_revisions: Связанные удаленные редакции
 
   new_hook: "Новый хук"
 

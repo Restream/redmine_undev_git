@@ -28,8 +28,6 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     User.current = @user
     @request.session[:user_id] = 2
     make_temp_dir
-    @repository = create_test_repository(:project => @project)
-    @repository.fetch_changesets
   end
 
   def teardown
@@ -37,6 +35,8 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   end
 
   def test_show_branches_in_associated_revisions
+    @repository = create_test_repository(:project => @project)
+    @repository.fetch_changesets
     changeset = @repository.changesets.last
     branches = Array.new(15) { |i| "fakebranch#{i}" }
     changeset.update_attribute :branches, branches
@@ -52,6 +52,8 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   end
 
   def test_show_repo_name_in_associated_revisions
+    @repository = create_test_repository(:project => @project)
+    @repository.fetch_changesets
     changeset = @repository.changesets.last
     branches = %w[fakebranch]
     changeset.update_attribute :branches, branches
@@ -65,5 +67,23 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
       assert_match "/projects/ecookbook/repository/#{@repository.identifier_param}",
                    links[0].attributes['href']
     end
+  end
+
+  def test_show_remote_revisions_block
+    Setting.commit_ref_keywords = 'hook4'
+
+    user = User.find(1)
+    site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
+    site.stubs(:find_user_by_email).returns(user)
+    repo = site.repos.create!(:url => RD4)
+    repo.fetch
+
+    revision = repo.find_revision('57096e1')
+    assert revision
+
+    get :show, :id => 5
+    assert_response :success
+
+    assert_select 'div#issue-changesets a', { :text => /#{revision.short_sha}/ }
   end
 end

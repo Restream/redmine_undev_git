@@ -59,10 +59,12 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal %w{1ca7f5e 2a68215 67e7792 83ca5fd fba357b}, revs
   end
 
-  def test_get_tail_revisions
+  def test_tail_revisions_stored_after_fetch
     assert_equal [], @service.repo.tail_revisions
     @service.fetch
-    revs = @service.repo.tail_revisions
+    repo = @service.repo
+    repo.reload
+    revs = repo.tail_revisions
     revs.map! { |rev| rev[0..6] }
     assert_equal %w{1ca7f5e 2a68215 67e7792 83ca5fd fba357b}, revs
   end

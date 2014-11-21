@@ -4,6 +4,7 @@ class RemoteRepoRevision < ActiveRecord::Base
   belongs_to :committer, :class_name => 'User'
 
   has_and_belongs_to_many :related_issues, :class_name => 'Issue', :join_table => 'remote_repo_related_issues'
+  has_and_belongs_to_many :refs, :class_name => 'RemoteRepoRef', :join_table => 'remote_repo_refs_revs'
   has_many :applied_hooks, :class_name => 'RemoteRepoHook'
 
   validates :repo, :presence => true
@@ -19,6 +20,10 @@ class RemoteRepoRevision < ActiveRecord::Base
 
   def short_sha
     sha[0..7]
+  end
+
+  def branches
+    refs.map(&:name)
   end
 
 end

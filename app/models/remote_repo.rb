@@ -4,6 +4,7 @@ class RemoteRepo < ActiveRecord::Base
            :class_name => 'RemoteRepoRevision',
            :inverse_of => :repo,
            :dependent => :destroy # todo: should delete_all for all tails
+  has_many :refs, :class_name => 'RemoteRepoRef', :inverse_of => :repo
 
   validates :site, :presence => true
 
@@ -16,5 +17,9 @@ class RemoteRepo < ActiveRecord::Base
 
   def uri
     [site.uri.chomp('/'), path_to_repo].join('/')
+  end
+
+  def find_revision(sha)
+    revisions.where("#{RemoteRepoRevision.table_name}.sha like ?", "#{sha}%").first
   end
 end

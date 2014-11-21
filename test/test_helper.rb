@@ -10,6 +10,66 @@ class ActiveSupport::TestCase
   R_BEFORE_REBASE_PATH = File.join(Rails.root, 'tmp', 'test', 'rebase_test_before.git')
   R_AFTER_REBASE_PATH = File.join(Rails.root, 'tmp', 'test', 'rebase_test_after.git')
 
+  # testing hooks
+  RD1 = File.join(Rails.root, 'tmp', 'test', 'hooks_every_branch_r1.git')
+  RD2 = File.join(Rails.root, 'tmp', 'test', 'hooks_every_branch_r2.git')
+  RD3 = File.join(Rails.root, 'tmp', 'test', 'hooks_every_branch_r3.git')
+  RD4 = File.join(Rails.root, 'tmp', 'test', 'hooks_every_branch_r4.git')
+
+  CMT1 = '1a81e3a76c1fd2a5eef3c63d7b9ff36bf836548c'
+  CMT2 = '725bc91aabb76019be9d0d8714e9aef15bd9753c'
+  CMT3 = 'a578eac0e2f36e609fe49a5eec2f4386ab71cf24'
+  CMT4 = '57096e16ce4541e2f02c330ffe24551f91f90cae'
+  CMT5 = '0b652ac1bc8b9424230701dcc28511cd47df1c32'
+  CMT6 = 'c18df3f4dca6fa808f19a3a60047274dddc7280c'
+  CMT7 = '0d8c70c242b62e1e35fdbf2c5a35be3f1700fd40'
+  CMT8 = '90045e487f0d5d966c446882965e543bcbbd353e'
+  CMT9 = 'c25b5dd0f99b3cb2d102c9893de24b8c16797f0c'
+
+# R4
+#    *          c9 Merge branch 'develop'; hook9 #5
+#    |\
+# ----- -- ------------------------------------------------------------------------
+# R3 |  |
+#    |  *       c8 Merge branch 'feature' into develop; hook8 #5
+#    |  |\
+# ----- -- -- ----------------------------------------------------------------------
+# R2 |  |  |  * c7 Merge branch 'feature' into staging; hook7 #5
+#    |  |  | /|
+#    |  |  || |
+#    |  |  |/ |
+#    |  |  *  | c6 hook6 #5
+# ----- -- -- ----------------------------------------------------------------------
+# R1 |  |  |  * c5 hook5 #5
+#    |  |  |/
+#    |  |  *    c4 hook4 #5
+#    |  |  *    c3 hook3 #5
+#    |  |/
+#    |  *       c2 hook2 #5
+#    |/
+#    *          c1 hook1 #5
+#
+#    m  d  f  s
+#    a  e  e  t
+#    s  v  a  a
+#    t  e  t  g
+#    e  l  u  i
+#    r  o  r  n
+#       p  e  g
+#
+#  Hooks:
+#    keywords       branches      new %     hook fired on
+#    hook1          *             10        R1
+#
+#    hook2_1        develop       21        R1
+#    hook2_2        feature       22        R1
+#    hook2_3        staging       23        R1
+#    hook2_4        master        24        R4
+#
+#    hook3_1        develop       31        R3
+#    hook3_2        master        32        R4
+
+
   def make_temp_dir
     @temp_storage_dir = Dir.mktmpdir('repo')
     Repository::UndevGit.repo_storage_dir = @temp_storage_dir

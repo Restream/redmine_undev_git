@@ -26,32 +26,28 @@ module RedmineUndevGit::Services
       # no changes. going home
       return if head_revs == tail_revs
 
+      # get new commits
       revisions = scm.revisions(head_revs, tail_revs)
 
       repo.transaction do
 
         revisions.each do |revision|
+
           parsed = parse_comments(revision.message)
 
-          if parsed[:ref_issues].any? || parsed[:fix_issues].present?
+          # references to issue
+          link_revision_to_issues(revision, parsed[:ref_issues])
 
-            link_revision_to_issues(repo_revision, parsed[:ref_issues])
-            parsed[:fix_issues].each do |issue, actions|
-              apply_hooks(revision, actions, issue)
-            end
+          # hooks
+          parsed[:fix_issues].each do |issue, actions|
+            apply_hooks(revision, actions, issue)
           end
 
         end
 
-        # get new commits (head - tail)
-        # for each commits:
-        #   parse commit message
-        #   reference to issue
-        #   apply hooks
-        #   store commit ?
-
         # save new tail
         repo.tail_revisions = head_revisions
+        repo.save!
       end
     end
 
@@ -73,7 +69,10 @@ module RedmineUndevGit::Services
     end
 
     def link_revision_to_issues(revision, ref_issues_ids)
+      return if ref_issues_ids.blank?
+
       user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
+
       ref_issues_ids.each do |issue_id|
         issue = Issue.find_by_id(issue_id, :include => :project)
         if issue && Policies::ReferenceToIssue.allowed?(user, issue)
@@ -203,13 +202,6 @@ module RedmineUndevGit::Services
       @all_applicable_hooks ||=
           ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
           GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
-    end
-
-    def make_references_to_issues(revision, issues)
-      issues.each do |issue|
-
-        issue.changesets << self
-      end
     end
 
   end

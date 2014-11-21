@@ -1,0 +1,12 @@
+<% remote_revisions.each do |revision| %>
+  <div class="changeset <%= cycle('odd', 'even') %> remote-revision">
+    <p><%= link_to_remote_revision(revision) %><br />
+      <span class="author">
+        <%= authoring(revision.committer_date, revision.committer || revision.committer_string) %>
+      </span>
+    </p>
+    <div class="wiki">
+      <%= textilizable(revision, :message) %>
+    </div>
+  </div>
+<% end %>

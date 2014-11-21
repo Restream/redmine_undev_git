@@ -56,5 +56,22 @@ module RedmineUndevGit::Helpers
           &block
       )
     end
+
+    def link_to_remote_revision(revision)
+      [
+          link_to("#{revision.short_sha}", revision.uri, :target => '_blank'),
+          links_to_remote_branches(revision),
+          link_to("#{revision.repo.path_to_repo}", revision.repo.uri, :target => '_blank')
+      ].join(' ').html_safe
+    end
+
+    def links_to_remote_branches(revision)
+      max_refs = RedmineUndevGit.max_branches_in_assoc
+      links = revision.refs.limit(max_refs).map do |ref|
+        link_to(ref.name, ref.uri, :target => '_blank')
+      end
+      links << '...' if revision.refs.count > max_refs
+      "(#{links.join('; ')})".html_safe
+    end
   end
 end

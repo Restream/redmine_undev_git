@@ -39,8 +39,8 @@ module RedmineUndevGit::Services
           link_revision_to_issues(revision, parsed[:ref_issues])
 
           # hooks
-          parsed[:fix_issues].each do |issue, actions|
-            apply_hooks(revision, actions, issue)
+          parsed[:fix_issues].each do |issue_id, actions|
+            apply_hooks(revision, actions, issue_id)
           end
 
         end
@@ -95,14 +95,17 @@ module RedmineUndevGit::Services
       end
     end
 
-    def apply_hooks(revision, actions, issue)
+    def apply_hooks(revision, actions, issue_id)
+      issue = Issue.find_by_id(issue_id)
+      return unless issue
+
       user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
       return unless Policies::ApplyHooks.allowed?(user, issue)
 
       revision_branches = scm.branches(revision.sha).map(&:name)
 
-      all_applicable_hooks.each do |hook|
-        if hook.applied_for?(actions, revision_branches)
+      actions.each do |action|
+        if hook = all_applicable_hooks.detect { |h| h.applied_for?(action, revision_branches) }
 
           repo_revision = repo_revision_by_git_revision(revision)
 
@@ -116,7 +119,6 @@ module RedmineUndevGit::Services
 
           repo_revision.applied_hooks.create!(:hook => hook, :issue => issue, :journal_id => journal_id)
 
-          return
         end
       end
     end

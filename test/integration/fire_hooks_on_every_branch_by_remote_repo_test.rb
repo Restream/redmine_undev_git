@@ -42,7 +42,7 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     hook2_3 = GlobalHook.create!(:keywords => 'hook2', :branches => 'feature', :done_ratio => '23%')
     hook2_4 = GlobalHook.create!(:keywords => 'hook2', :branches => 'master',  :done_ratio => '24%')
     fetch_step_by_step
-    assert_equal [hook2_1.id, hook2_3.id, hook2_2.id], @hook_ids1
+    assert_equal [hook2_1.id], @hook_ids1
     assert_equal [], @hook_ids2
     assert_equal [], @hook_ids3
     assert_equal [hook2_4.id], @hook_ids4
@@ -68,10 +68,10 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
 
     fetch_step_by_step
 
-    assert_equal [hook_feature, hook_staging], @hook_ids1
-    assert_equal [],                           @hook_ids2
-    assert_equal [hook_develop],               @hook_ids3
-    assert_equal [],                           @hook_ids4
+    assert_equal [hook_feature], @hook_ids1
+    assert_equal [],             @hook_ids2
+    assert_equal [hook_develop], @hook_ids3
+    assert_equal [],             @hook_ids4
   end
 
   def test_hooks_priority_2

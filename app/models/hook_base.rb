@@ -41,6 +41,8 @@ class HookBase < ActiveRecord::Base
   end
 
   def applied_for?(o_keywords, o_branches)
+    o_keywords = Array(o_keywords)
+    o_branches = Array(o_branches)
     found_keywords = (keywords & o_keywords).any?
     found_branches = any_branch? || (branches & o_branches).any?
     found_keywords && found_branches

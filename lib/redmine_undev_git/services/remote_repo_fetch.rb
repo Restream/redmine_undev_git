@@ -55,17 +55,30 @@ module RedmineUndevGit::Services
       @revisions_cache ||= {}
       @revisions_cache[revision.sha] ||=
           repo.revisions.find_by_sha(revision.sha) ||
-          repo.revisions.create!(
-              :author           => repo.site.find_user_by_email(revision.aemail),
-              :committer        => repo.site.find_user_by_email(revision.cemail),
-              :sha              => revision.sha,
-              :author_string    => revision.author,
-              :committer_string => revision.committer,
-              :message          => revision.message,
-              :author_date      => revision.adate,
-              :committer_date   => revision.cdate
-          )
+              create_remote_repo_revision(revision)
       @revisions_cache[revision.sha]
+    end
+
+    def create_remote_repo_revision(revision)
+      repo_revision = repo.revisions.create!(
+          :author           => repo.site.find_user_by_email(revision.aemail),
+          :committer        => repo.site.find_user_by_email(revision.cemail),
+          :sha              => revision.sha,
+          :author_string    => revision.author,
+          :committer_string => revision.committer,
+          :message          => revision.message,
+          :author_date      => revision.adate,
+          :committer_date   => revision.cdate
+      )
+      add_refs_to_remote_repo_revision(repo_revision)
+      repo_revision
+    end
+
+    def add_refs_to_remote_repo_revision(repo_revision)
+      scm.branches(repo_revision.sha).each do |branch|
+        repo_ref = repo.refs.where(:name => branch.name).first_or_create
+        repo_revision.refs << repo_ref
+      end
     end
 
     def link_revision_to_issues(revision, ref_issues_ids)

@@ -156,6 +156,18 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal repo_revision_x1, repo_revision_x2
   end
 
+  def test_create_refs_when_create_repo_revision
+    @service.initialize_repository
+    revisions = @service.scm.revisions
+    revision = revisions.first
+    exp_branches = @service.scm.branches(revision.sha).map(&:name)
+
+    repo_revision = @service.repo_revision_by_git_revision(revision)
+    branches = repo_revision.refs.map(&:name)
+
+    assert_equal exp_branches.sort, branches.sort
+  end
+
   def test_apply_hooks_by_admin
     # this hook should apply
     hook1 = ProjectHook.create!(

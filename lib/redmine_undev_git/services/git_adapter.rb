@@ -101,7 +101,7 @@ module RedmineUndevGit::Services
       result
     end
 
-    def revisions(include_revs = nil, exclude_revs = nil)
+    def revisions(include_revs = nil, exclude_revs = nil, options = {})
 
       # :sha              %H
       # :author           %an %ae
@@ -122,6 +122,10 @@ module RedmineUndevGit::Services
       cmd_args << "--format=\"#{format_string}\""
       cmd_args << '--all' if revs.empty?
       cmd_args << "--encoding=#{path_encoding}"
+      if options[:grep]
+        grep_args = Array(options[:grep]).map { |keyword| "--grep=\"#{escape_special_characters(keyword)}\"" }
+        cmd_args += grep_args if grep_args.any?
+      end
       cmd_args << '--stdin'
 
       result = []
@@ -170,6 +174,11 @@ module RedmineUndevGit::Services
         end
       end
       result
+    end
+
+    def escape_special_characters(string)
+      pattern = /('|"|\.|\*|\/|\-|\\)/
+      string.gsub(pattern) { |match| "\\"  + match }
     end
 
     def remove_invalid_characters(s)

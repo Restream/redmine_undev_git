@@ -20,34 +20,40 @@ module RedmineUndevGit::Services
       initialize_repository
       download_changes
 
-      head_revs = head_revisions
-      tail_revs = repo.tail_revisions
-
-      # no changes. going home
-      return if head_revs == tail_revs
-
-      # get new commits
-      revisions = scm.revisions(head_revs, tail_revs)
+      revisions = find_new_revisions
 
       repo.transaction do
 
-        revisions.each do |revision|
-
-          parsed = parse_comments(revision.message)
-
-          # references to issue
-          link_revision_to_issues(revision, parsed[:ref_issues])
-
-          # hooks
-          parsed[:fix_issues].each do |issue_id, actions|
-            apply_hooks(revision, actions, issue_id)
-          end
-
-        end
+        parse_new_revisions_for_links_and_hooks(revisions)
 
         # save new tail
         repo.tail_revisions = head_revisions
         repo.save!
+      end
+    end
+
+    def find_new_revisions
+      head_revs = head_revisions
+      tail_revs = repo.tail_revisions
+
+      return [] if head_revs == tail_revs
+
+      # get new commits
+      scm.revisions(head_revs, tail_revs)
+    end
+
+    def parse_new_revisions_for_links_and_hooks(revisions)
+      revisions.each do |revision|
+
+        parsed = parse_comments(revision.message)
+
+        # references to issue
+        link_revision_to_issues(revision, parsed[:ref_issues])
+
+        # hooks
+        parsed[:fix_issues].each do |issue_id, actions|
+          apply_hooks(revision, actions, issue_id)
+        end
       end
     end
 

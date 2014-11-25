@@ -39,7 +39,7 @@ module RedmineUndevGit::Services
       return [] if head_revs == tail_revs
 
       # get new commits
-      scm.revisions(head_revs, tail_revs)
+      scm.revisions(head_revs, tail_revs, :grep => '#')
     end
 
     def parse_new_revisions_for_links_and_hooks(revisions)

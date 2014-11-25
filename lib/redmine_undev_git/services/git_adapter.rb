@@ -122,9 +122,8 @@ module RedmineUndevGit::Services
       cmd_args << "--format=\"#{format_string}\""
       cmd_args << '--all' if revs.empty?
       cmd_args << "--encoding=#{path_encoding}"
-      if options[:grep]
-        grep_args = Array(options[:grep]).map { |keyword| "--grep=\"#{escape_special_characters(keyword)}\"" }
-        cmd_args += grep_args if grep_args.any?
+      Array(options[:grep]).each do |keyword|
+        cmd_args << "--grep=#{strip_special_characters(keyword)}"
       end
       cmd_args << '--stdin'
 
@@ -176,9 +175,9 @@ module RedmineUndevGit::Services
       result
     end
 
-    def escape_special_characters(string)
-      pattern = /('|"|\.|\*|\/|\-|\\)/
-      string.gsub(pattern) { |match| "\\"  + match }
+    def strip_special_characters(string)
+      pattern = /('|"|\.|\*|\/|\-|\\|\s|;)/
+      string.gsub(pattern, '')
     end
 
     def remove_invalid_characters(s)

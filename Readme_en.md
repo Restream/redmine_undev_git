@@ -45,7 +45,7 @@ You can configure hooks to be executed for certain branches, a project or even a
 Thus, there are global hooks that are run for all repositories, 
 project hooks that are run for all project repositories, and repository hooks.
 
-If "*" is specified as a branch for the hook, it means that this hook is applied only once when a commit is added to the repository;
+If '*' is specified as a branch for the hook, it means that this hook is applied only once when a commit is added to the repository;
 if branch names are specified, the hook is applied each time a commit is added to a branch (once per branch).
 
 ### Configuration

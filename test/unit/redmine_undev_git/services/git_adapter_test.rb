@@ -147,6 +147,25 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
     assert_equal exp_time, rev.cdate.in_time_zone('Moscow')
   end
 
+  def test_revisions_with_one_grep
+    adapter = create_adapter
+    adapter.clone_repository
+    revs = adapter.revisions(nil, nil, :grep => 'initial')
+    assert revs
+    assert_equal 1, revs.length
+    assert_equal '7234cb2', revs[0].sha[0..6]
+  end
+
+  def test_revisions_with_several_greps
+    adapter = create_adapter
+    adapter.clone_repository
+    revs = adapter.revisions(nil, nil, :grep => %w{readme added initial})
+    assert revs
+    assert_equal 7, revs.length
+    revs_hashes = revs.map { |rev| rev.sha[0..6] }.sort
+    assert_equal %w{4f26664 713f494 7234cb2 7e61ac7 899a15d 9a6f3b9 fba357b}, revs_hashes
+  end
+
   def create_adapter
     root_url = File.join(@temp_storage_dir, 'remote_test')
     @klass.new(REPOSITORY_PATH, root_url)

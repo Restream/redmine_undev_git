@@ -122,9 +122,15 @@ module RedmineUndevGit::Services
       cmd_args << "--format=\"#{format_string}\""
       cmd_args << '--all' if revs.empty?
       cmd_args << "--encoding=#{path_encoding}"
-      Array(options[:grep]).each do |keyword|
-        cmd_args << "--grep=#{strip_special_characters(keyword)}"
+
+      grep_keywords = Array(options[:grep])
+      if grep_keywords.any?
+        grep_keywords.each do |keyword|
+          cmd_args << "--grep=#{strip_special_characters(keyword)}"
+        end
+        cmd_args << '--regexp-ignore-case'
       end
+
       cmd_args << '--stdin'
 
       result = []

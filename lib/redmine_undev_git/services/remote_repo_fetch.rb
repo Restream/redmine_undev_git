@@ -19,14 +19,14 @@ module RedmineUndevGit::Services
     def fetch
       initialize_repository
       download_changes
-
-      new_revisions = find_new_revisions
-
       repo.transaction do
 
+        new_revisions = find_new_revisions
         parse_revisions_for_references(new_revisions)
         parse_revisions_for_timelog(new_revisions)
-        # parse_new_revisions_for_links_and_hooks(new_revisions)
+
+        hooks_revisions = find_hooks_revisions
+        parse_revisions_for_hooks(hooks_revisions)
 
         # save new tail
         repo.tail_revisions = head_revisions
@@ -40,41 +40,36 @@ module RedmineUndevGit::Services
 
       return [] if head_revs == tail_revs
 
-      # get new commits
+      # get new commits. ignore commits without issue_id in message
       scm.revisions(head_revs, tail_revs, :grep => '#')
+    end
+
+    def find_hooks_revisions
+      scm.revisions(nil, nil, :grep => fix_keywords)
     end
 
     def parse_revisions_for_references(revisions)
       pattern = regexp_pattern_for_references
       revisions.each do |revision|
-        issue_ids = revision.message.scan(pattern).flatten.map(&:to_i)
-        link_revision_to_issues(revision, issue_ids)
-      end
-    end
-
-    def regexp_pattern_for_references
-      if any_ref_keyword?
-        /#(?<issue_id>\d+)/
-      else
-        kw_regexp = ref_keywords.uniq.collect { |kw| Regexp.escape(kw) }.join('|')
-        /#{kw_regexp}[\s:]+\#(?<issue_id>\d+)/i
+        scan_message_with_pattern(revision.message, pattern) do |issue_id, _, _|
+          link_revision_to_issues(revision, [issue_id])
+        end
       end
     end
 
     def parse_revisions_for_timelog(revisions)
       return unless Setting.commit_logtime_enabled?
 
-      pattern = /#(?<issue_id>\d+)\s+(?<hours>@#{Changeset::TIMELOG_RE})/
+      pattern = regexp_pattern_without_keywords
 
       revisions.each do |revision|
         committer = user_by_email(revision.cemail)
         next unless committer
 
-        revision.message.scan(pattern).each do |match|
-          if issue = Issue.find_by_id(match[:issue_id].to_i)
-            hours = match[:hours]
+        scan_message_with_pattern(revision.message, pattern) do |issue_id, _, hours|
+          if issue = Issue.find_by_id(issue_id)
             log_time(:issue => issue, :user => committer, :hours => hours, :spent_on => revision.cdate)
-            link_revision_to_issues(revision, [issue.id])
+            link_revision_to_issues(revision, [issue_id])
           end
         end
       end
@@ -102,17 +97,34 @@ module RedmineUndevGit::Services
       end
     end
 
-    def parse_new_revisions_for_links_and_hooks(revisions)
+    def parse_revisions_for_hooks(revisions)
+      pattern = regexp_pattern_with_keywords(fix_keywords)
       revisions.each do |revision|
+        scan_message_with_pattern(revision.message, pattern) do |issue_id, action, _|
+          apply_hook(revision, action, issue_id)
+        end
+      end
+    end
 
-        parsed = parse_comments(revision.message)
+    def regexp_pattern_for_references
+      any_ref_keyword? ? regexp_pattern_without_keywords : regexp_pattern_with_keywords(ref_keywords)
+    end
 
-        # references to issue
-        link_revision_to_issues(revision, parsed[:ref_issues])
+    def regexp_pattern_without_keywords
+      /(?<action>\s?)(?<refs>#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE}/
+    end
 
-        # hooks
-        parsed[:fix_issues].each do |issue_id, actions|
-          apply_hooks(revision, actions, issue_id)
+    def regexp_pattern_with_keywords(keywords)
+      kw_regexp = keywords.collect{ |kw| Regexp.escape(kw) }.join('|')
+      /([\s\(\[,-]|^)((?<action>#{kw_regexp})[\s:]+)(?<refs>#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i
+    end
+
+    def scan_message_with_pattern(message, pattern, &block)
+      message.scan(pattern) do |match|
+        action, refs = match[:action], match[:refs]
+
+        refs.scan(/#(?<issue_id>\d+)(\s+(?<hours>@#{TIMELOG_RE}))?/).each do |match|
+          block.call(action, match[:issue_id].to_i, match[:hours])
         end
       end
     end
@@ -155,45 +167,41 @@ module RedmineUndevGit::Services
       end
     end
 
-    def link_revision_to_issues(revision, ref_issues_ids)
-      return if ref_issues_ids.blank?
+    def link_revision_to_issue(revision, issue_id)
+      return unless issue_id
 
-      user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
+      user = user_by_email(revision.cemail) || User.anonymous
 
-      ref_issues_ids.each do |issue_id|
-        issue = Issue.find_by_id(issue_id, :include => :project)
-        if issue && Policies::ReferenceToIssue.allowed?(user, issue)
-          repo_revision = repo_revision_by_git_revision(revision)
-          repo_revision.related_issues << issue
-        end
+      issue = Issue.find_by_id(issue_id, :include => :project)
+      if issue && Policies::ReferenceToIssue.allowed?(user, issue)
+        repo_revision = repo_revision_by_git_revision(revision)
+        repo_revision.related_issues << issue
       end
     end
 
-    def apply_hooks(revision, actions, issue_id)
+    def apply_hook(revision, action, issue_id)
       issue = Issue.find_by_id(issue_id)
       return unless issue
 
-      user = repo.site.find_user_by_email(revision.cemail) || User.anonymous
+      user = user_by_email(revision.cemail) || User.anonymous
       return unless Policies::ApplyHooks.allowed?(user, issue)
 
       revision_branches = scm.branches(revision.sha).map(&:name)
 
-      actions.each do |action|
-        if hook = all_applicable_hooks.detect { |h| h.applied_for?(action, revision_branches) }
+      if hook = all_applicable_hooks.detect { |h| h.applied_for?(action, revision_branches) }
 
-          repo_revision = repo_revision_by_git_revision(revision)
+        repo_revision = repo_revision_by_git_revision(revision)
 
-          hook.apply_for_issue(
-              issue,
-              :user => user,
-              :notes => notes_for_issue_change(repo_revision)
-          )
+        hook.apply_for_issue(
+            issue,
+            :user => user,
+            :notes => notes_for_issue_change(repo_revision)
+        )
 
-          journal_id = issue.last_journal_id
+        journal_id = issue.last_journal_id
 
-          repo_revision.applied_hooks.create!(:hook => hook, :issue => issue, :journal_id => journal_id)
+        repo_revision.applied_hooks.create!(:hook => hook, :issue => issue, :journal_id => journal_id)
 
-        end
       end
     end
 

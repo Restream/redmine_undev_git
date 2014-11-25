@@ -134,7 +134,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     revisions = @service.scm.revisions
     revision = revisions.first
     Policies::ReferenceToIssue.stubs(:allowed?).returns(true)
-    @service.link_revision_to_issues(revision, [1, 2, 100500])
+    [1, 2, 100500].each { |id| @service.link_revision_to_issue(revision, id) }
     repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
     assert_equal [1, 2], repo_revision.related_issue_ids
   end
@@ -201,7 +201,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     revision.cdate = revision.adate
     revision.message = "this commit should fix ##{issue.id} by 50%"
 
-    @service.apply_hooks(revision, ['fix'], issue)
+    @service.apply_hook(revision, 'fix', issue)
 
     issue.reload
 
@@ -239,7 +239,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
     Policies::ApplyHooks.stubs(:allowed?).returns(false)
 
-    @service.apply_hooks(revision, ['fix'], issue)
+    @service.apply_hook(revision, 'fix', issue)
 
     issue.reload
 
@@ -276,7 +276,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
     Policies::ApplyHooks.stubs(:allowed?).returns(true)
 
-    @service.apply_hooks(revision, ['fix'], issue)
+    @service.apply_hook(revision, 'fix', issue)
 
     issue.reload
 

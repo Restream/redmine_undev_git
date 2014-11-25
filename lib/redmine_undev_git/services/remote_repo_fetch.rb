@@ -20,11 +20,13 @@ module RedmineUndevGit::Services
       initialize_repository
       download_changes
 
-      revisions = find_new_revisions
+      new_revisions = find_new_revisions
 
       repo.transaction do
 
-        parse_new_revisions_for_links_and_hooks(revisions)
+        parse_revisions_for_references(new_revisions)
+        parse_revisions_for_timelog(new_revisions)
+        # parse_new_revisions_for_links_and_hooks(new_revisions)
 
         # save new tail
         repo.tail_revisions = head_revisions
@@ -40,6 +42,64 @@ module RedmineUndevGit::Services
 
       # get new commits
       scm.revisions(head_revs, tail_revs, :grep => '#')
+    end
+
+    def parse_revisions_for_references(revisions)
+      pattern = regexp_pattern_for_references
+      revisions.each do |revision|
+        issue_ids = revision.message.scan(pattern).flatten.map(&:to_i)
+        link_revision_to_issues(revision, issue_ids)
+      end
+    end
+
+    def regexp_pattern_for_references
+      if any_ref_keyword?
+        /#(?<issue_id>\d+)/
+      else
+        kw_regexp = ref_keywords.uniq.collect { |kw| Regexp.escape(kw) }.join('|')
+        /#{kw_regexp}[\s:]+\#(?<issue_id>\d+)/i
+      end
+    end
+
+    def parse_revisions_for_timelog(revisions)
+      return unless Setting.commit_logtime_enabled?
+
+      pattern = /#(?<issue_id>\d+)\s+(?<hours>@#{Changeset::TIMELOG_RE})/
+
+      revisions.each do |revision|
+        committer = user_by_email(revision.cemail)
+        next unless committer
+
+        revision.message.scan(pattern).each do |match|
+          if issue = Issue.find_by_id(match[:issue_id].to_i)
+            hours = match[:hours]
+            log_time(:issue => issue, :user => committer, :hours => hours, :spent_on => revision.cdate)
+            link_revision_to_issues(revision, [issue.id])
+          end
+        end
+      end
+    end
+
+    def log_time(options)
+      time_entry = TimeEntry.new(
+          :user => options[:user],
+          :hours => options[:hours],
+          :issue => options[:issue],
+          :spent_on => options[:spent_on],
+          :comments => l(:text_time_logged_by_changeset, :value => text_tag(options[:issue].project),
+                         :locale => Setting.default_language)
+      )
+      time_entry.activity = log_time_activity unless log_time_activity.nil?
+
+      unless time_entry.save
+        Rails.logger.warn("TimeEntry could not be created by remote revision (#{options.inspect}): #{time_entry.errors.full_messages}") if Rails.logger
+      end
+    end
+
+    def log_time_activity
+      if Setting.commit_logtime_activity_id.to_i > 0
+        TimeEntryActivity.find_by_id(Setting.commit_logtime_activity_id.to_i)
+      end
     end
 
     def parse_new_revisions_for_links_and_hooks(revisions)
@@ -67,8 +127,8 @@ module RedmineUndevGit::Services
 
     def create_remote_repo_revision(revision)
       repo_revision = repo.revisions.create!(
-          :author           => repo.site.find_user_by_email(revision.aemail),
-          :committer        => repo.site.find_user_by_email(revision.cemail),
+          :author           => user_by_email(revision.aemail),
+          :committer        => user_by_email(revision.cemail),
           :sha              => revision.sha,
           :author_string    => revision.author,
           :committer_string => revision.committer,
@@ -78,6 +138,14 @@ module RedmineUndevGit::Services
       )
       add_refs_to_remote_repo_revision(repo_revision)
       repo_revision
+    end
+
+    def user_by_email(email)
+      @users_by_email ||= {}
+      unless @users_by_email.has_key?(email)
+        @users_by_email[email] = repo.site.find_user_by_email(email)
+      end
+      @users_by_email[email]
     end
 
     def add_refs_to_remote_repo_revision(repo_revision)

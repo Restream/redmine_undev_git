@@ -17,46 +17,45 @@ and then works with the created copy.
 
 ### Setup
 
- 1. Copy the plugin directory into plugins
- 2. bundle exec rake redmine:plugins:migrate
- 3. bundle install in the Redmine root directory
+ 1. Copy the plugin directory into **plugins**
+ 2. **bundle exec rake redmine:plugins:migrate**
+ 3. **bundle install** in the Redmine root directory
  4. Restart Redmine
 
 ### Configuration
 
-Go to the project settings > *Repositories* tab > *Enabled SCM* section
-to enable UndevGit.
+To enable UndevGit, go to the Redmine administrative menu > *Repositories* tab > *Enabled SCM* group.
 
 The plugin settings allow you to specify the maximum number of branches to be displayed on 
-the ticket page in the *Associated Revisions* section.
+the issue page in the *Associated revisions* section.
 An empty field or 0 means no restrictions.
-For details of hook configuration, see the corresponding section below.
+For details on hook configuration, see the corresponding section below.
 
-In the Redmine settings, `config/configuration.yml` file, you can specify
-the directory for storing local repository copies
-by setting a value for the `scm_repo_storage_dir` key. By default, the `repos` directory is used
-(in the Redmine root directory).
-Local repository copies are stored in the `repos\[projectidentifier]\[repository_id]` directory.
+In the Redmine settings, you can specify the directory 
+for storing local repository copies by setting
+a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` file.
+By default, the `repos` directory in the Redmine root directory is used, so
+local repository copies are stored in `repos\[projectidentifier]\[repository_id]`.
 When you remove a repository, the corresponding directory is deleted.
 
 ## Hooks
 
-Hooks are used to flexibly configure how and when a ticket can be changed.
-You can configure hooks to be run for certain branches, a project or even a specific repository.
+Hooks are used to flexibly configure how and when an issue status can be changed.
+You can configure hooks to be executed for certain branches, a project or even a specific repository.
 Thus, there are global hooks that are run for all repositories, 
 project hooks that are run for all project repositories, and repository hooks.
 
 If "*" is specified as a branch for the hook, it means that this hook is applied only once when a commit is added to the repository;
 if branch names are specified, the hook is applied each time a commit is added to a branch (once per branch).
 
-### Настройка
+### Configuration
 
-Hooks implement the Redmine feature of closing tickets
+Hooks implement the Redmine feature of changing the issue status
 using keywords. Therefore, the keywords specified
-at the *Repository* tab of the Redmine settings (*Fixing keywords* attribute)
+on the *Repository* tab of the Redmine settings (*Fixing keywords* attribute)
 are not used. You should define a set of keywords for each hook.
 
-Hooks can be configured in the following windows. Global hooks are managed from the Redmine settings window
+Hooks are configured as follows. Global hooks are managed from the Redmine settings window
 (*Global hooks* menu item, above *Plugins*).
 Project and repository hooks are available on the *Hooks* tab of the project settings menu.
 
@@ -70,12 +69,12 @@ There are also different priorities within each hook type, which can be changed 
 If there are several hooks applicable to a commit,
 only the hook with the highest priority will be run.
 
-Hooks applied to all branches have a lower priority
+Hooks that are applied to all branches have a lower priority
 than hooks with branch names specified explicitly.
 
 ### Logging
 
-All changes in a ticked are recorded in its log. If no changes have been made,
+All changes of an issue are recorded in its history log. If no changes have been made,
 the log will have no entries.
 
 ### Examples
@@ -86,41 +85,41 @@ A commit is pushed to 2 branches (feature, develop) of a repository.
 There are 2 configured hooks:
 Hook1 for branch '*'
 Hook2 for branch 'feature'
-In this case, only hook2 will be run.
+In this case, only Hook2 will be run.
 
 #### Example 2
 
-There is commit A with the text 'fix #1' and the following hooks:
-Hook1 global, branch '*'
-Hook2 global, branch 'master'
-Hook3, project, branch 'develop,staging'
-Hook4 for a repository, branch 'staging'
-Hook5 for a repository, branch 'feature'
+There are several hooks:
+Hook1, global, branch '*'
+Hook2, global, branch 'master'
+Hook3, for a project, branch 'develop,staging'
+Hook4, for a repository, branch 'staging'
+Hook5, for a repository, branch 'feature'
 
-First push: commit A to branch feature: Hook5 is run.
-Second push: merge feature to staging: Hook4 is run.
-Third push: merge feature to develop: Hook3 is run.
-Fourth push: merge feature to master: Hook2 is run.
+First push: add commit A to branch 'feature' — Hook5 is run.
+Second push: merge 'feature' to 'staging' — Hook4 is run.
+Third push: merge 'feature' to 'develop' — Hook3 is run.
+Fourth push: merge 'feature' to 'master' — Hook2 is run.
 
-Hook1 is used only if commit B is pushed to branch featureX.
+Hook1 is used only if commit B is pushed to branch 'featureX'.
 
-## Linking commits to tickets
+## Linking commits to issues
 
-To link a commit to a ticket, specify the keyword and the ticket number starting with #,
+To link a commit to an issue, specify the keyword and the issue number starting with #,
 for example: `refs #124`.
-Keywords are set on the *Repository* tab of the Redmine settings window
+Keywords are set on the *Repository* tab of the Redmine settings
 (*Referencing keywords* attribute).
-If you set '*' as a keyword, specifying only the ticket number with #
-will be enough to link a commit to a ticket.
+If you set '*' as a keyword, specifying only the issue number with #
+will be enough to link a commit to the issue.
 
 ## Moving of commits (rebase)
 
 UndevGit enables you to determine which commits have be moved by using `git rebase`.
 Old references to commits are not removed from the changeset list; instead, they are marked with a special icon
-with a link to a new commit reference. Similarly, new commits are marked with an icon
-with a link to old commit references.
-This mark is available when viewing the list of commits or a specific commit.
-Using rebase does not cause new changes of tickets; however, the links in the Associated Revisions are changed.
+linking to a new commit reference. Similarly, new commits are marked with icons
+linking to old commit references.
+This icon is available when viewing the list of commits or a specific commit.
+Using rebase does not cause new changes of issues; however, the links in the *Associated revisions* section are changed.
 Using rebase also does not affect timelogs.
 
 ## Repository updates by a webhook
@@ -143,7 +142,7 @@ Unpack the test repositories
 Create a database
     rake RAILS_ENV=test db:drop db:create db:migrate redmine:plugins:migrate
 
-Launch tests for the redmine_undev_plugin plugin@@@
+Launch tests for redmine_undev_plugin
     rake RAILS_ENV=test NAME=redmine_undev_git redmine:plugins:test
 
 ## TODO:

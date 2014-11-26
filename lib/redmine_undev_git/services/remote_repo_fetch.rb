@@ -50,7 +50,7 @@ module RedmineUndevGit::Services
 
     def link_revisions_to_issues(revisions)
       revisions.each do |revision|
-        parse_message_for_references(revision.message).each do |issue_id|
+        parser.parse_message_for_references(revision.message).each do |issue_id|
           link_revision_to_issue(revision, issue_id)
         end
       end
@@ -63,7 +63,7 @@ module RedmineUndevGit::Services
         committer = user_by_email(revision.cemail)
         next unless committer
 
-        parse_message_for_logtime(revision.message).each do |issue_id, hours|
+        parser.parse_message_for_logtime(revision.message).each do |issue_id, hours|
           if issue = Issue.find_by_id(issue_id)
             log_time(:issue => issue, :user => committer, :hours => hours, :spent_on => revision.cdate)
             link_revision_to_issue(revision, issue_id)
@@ -96,62 +96,10 @@ module RedmineUndevGit::Services
 
     def apply_hooks_to_issues_by_revisions(revisions)
       revisions.each do |revision|
-        parse_message_for_hooks(revision.message) do |issue_id, action|
+        parser.parse_message_for_hooks(revision.message) do |issue_id, action|
           apply_hook(revision, action, issue_id)
         end
       end
-    end
-
-    def regexp_pattern_for_references
-      @regexp_pattern_for_references ||=
-          any_ref_keyword? ? regexp_pattern_without_keywords : regexp_pattern_with_keywords(ref_keywords)
-    end
-
-    def regexp_pattern_for_hooks
-      @regexp_pattern_for_references ||= regexp_pattern_with_keywords(fix_keywords)
-    end
-
-    def regexp_pattern_without_keywords
-      /(?<action>\s?)(?<refs>#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE}/
-    end
-
-    def regexp_pattern_with_keywords(keywords)
-      kw_regexp = keywords.collect{ |kw| Regexp.escape(kw) }.join('|')
-      /([\s\(\[,-]|^)((?<action>#{kw_regexp})[\s:]+)(?<refs>#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i
-    end
-
-    def scan_message_with_pattern(message, pattern, &block)
-      message.scan(pattern) do |match|
-        action, refs = match[:action], match[:refs]
-
-        refs.scan(/#(?<issue_id>\d+)(\s+(?<hours>@#{TIMELOG_RE}))?/).each do |match|
-          block.call(action, match[:issue_id].to_i, match[:hours])
-        end
-      end
-    end
-
-    def parse_message_for_references(message)
-      issue_ids = []
-      scan_message_with_pattern(message, regexp_pattern_for_references) do |issue_id, _, _|
-        issue_ids << issue_id
-      end
-      issue_ids.uniq
-    end
-
-    def parse_message_for_logtime(message)
-      log_entries = []
-      scan_message_with_pattern(message, regexp_pattern_without_keywords) do |issue_id, _, hours|
-        log_entries << [issue_id, hours]
-      end
-      log_entries
-    end
-
-    def parse_message_for_hooks(message)
-      hooks = []
-      scan_message_with_pattern(message, regexp_pattern_without_keywords) do |issue_id, action, _|
-        hooks << [issue_id, action]
-      end
-      hooks
     end
 
     def repo_revision_by_git_revision(revision)
@@ -294,5 +242,8 @@ module RedmineUndevGit::Services
           GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
     end
 
+    def parser
+      @parser ||= MessageParser.new(any_ref_keyword? ? nil : ref_keywords, fix_keywords)
+    end
   end
 end

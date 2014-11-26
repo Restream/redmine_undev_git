@@ -19,7 +19,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
   def setup
     make_temp_dir
     @site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
-    remote_repo = @site.repos.create!(:url => REPOSITORY_PATH)
+    remote_repo = @site.repos.create!(:url => RD4)
     @service = RedmineUndevGit::Services::RemoteRepoFetch.new(remote_repo)
   end
 
@@ -56,7 +56,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     @service.initialize_repository
     revs = @service.head_revisions
     revs.map! { |rev| rev[0..6] }
-    assert_equal %w{1ca7f5e 2a68215 67e7792 83ca5fd fba357b}, revs
+    assert_equal %w{0d8c70c 90045e4 c18df3f c25b5dd}, revs
   end
 
   def test_tail_revisions_stored_after_fetch
@@ -66,7 +66,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     repo.reload
     revs = repo.tail_revisions
     revs.map! { |rev| rev[0..6] }
-    assert_equal %w{1ca7f5e 2a68215 67e7792 83ca5fd fba357b}, revs
+    assert_equal %w{0d8c70c 90045e4 c18df3f c25b5dd}, revs
   end
 
   def test_fix_keywords_returns_all_keywords_from_hooks
@@ -92,41 +92,6 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
   def test_any_ref_keywords_returns_false_unless_asterisk
     Setting.stubs(:commit_ref_keywords).returns('a, b, c   ,d')
     refute @service.any_ref_keyword?
-  end
-
-  def test_parse_comments_should_returns_issue_ids_by_ref_keywords
-    Setting.stubs(:commit_ref_keywords).returns('keyword1,keyword2,keyword3')
-    parsed = @service.parse_comments('keyword1 #1, and keyword2 #2 but not keyword3')
-    assert parsed
-    assert_equal [1, 2], parsed[:ref_issues]
-  end
-
-  def test_parse_comments_should_returns_unique_issue_ids
-    Setting.stubs(:commit_ref_keywords).returns('keyword1,keyword2,keyword3')
-    parsed = @service.parse_comments('keyword1 #1, and keyword2 #2 and keyword3 #1')
-    assert parsed
-    assert_equal [1, 2], parsed[:ref_issues]
-  end
-
-  def test_parse_comments_should_returns_issue_ids_by_asterisk
-    Setting.stubs(:commit_ref_keywords).returns('*')
-    parsed = @service.parse_comments('keyword1 #1, and keyword2 #2 and #3')
-    assert parsed
-    assert_equal [1, 2, 3], parsed[:ref_issues]
-  end
-
-  def test_parse_comments_should_returns_issue_ids_for_change_by_keywords
-    hooks = [
-        stub(:keywords => ['keyword1']),
-        stub(:keywords => ['keyword2']),
-        stub(:keywords => ['keyword3'])
-    ]
-    @service.stubs(:all_applicable_hooks).returns(hooks)
-    parsed = @service.parse_comments('keyword1 #1, and keyword2 #2 and keyword3 #1')
-    assert parsed
-    assert_equal [1, 2], parsed[:fix_issues].keys
-    assert_equal ['keyword1', 'keyword3'], parsed[:fix_issues][1]
-    assert_equal ['keyword2'], parsed[:fix_issues][2]
   end
 
   def test_link_revision_to_issues
@@ -168,12 +133,26 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal exp_branches.sort, branches.sort
   end
 
+  def test_head_branches_returns_branches_name
+    @service.initialize_repository
+    branches = @service.head_branches.sort
+    assert_equal %w{develop feature master staging}, branches
+  end
+
+  def test_update_repo_refs
+    @service.initialize_repository
+    @service.update_repo_refs
+    branches = @service.head_branches.sort
+    refs = @service.repo.refs.pluck(:name).sort
+    assert_equal branches, refs
+  end
+
   def test_apply_hooks_by_admin
     # this hook should apply
     hook1 = ProjectHook.create!(
         :project_id => 1,
         :branches => 'master',
-        :keywords => 'fix',
+        :keywords => 'hook3',
         :status_id => 3,
         :done_ratio => '50%'
     )
@@ -181,129 +160,88 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     ProjectHook.create!(
         :project_id => 1,
         :branches => '*',
-        :keywords => 'fix',
+        :keywords => 'hook3',
         :status_id => 1,
         :done_ratio => '20%'
     )
 
-    issue = Issue.find(1)
-    user = User.find(1)
+    user = User.find(1) # admin
+    @service.stubs(:user_by_email).returns(user)
 
     @service.initialize_repository
+    @service.apply_hooks_to_issues_by_revisions
 
-    revision = RedmineUndevGit::Services::GitRevision.new()
-    revision.sha = 'deff712f05a90d96edbd70facc47d944be5897e3'
-    revision.aname = user.name
-    revision.aemail = user.mail
-    revision.adate = Time.parse('2009-06-26 23:06:56 -0700')
-    revision.cname = revision.aname
-    revision.cemail = revision.aemail
-    revision.cdate = revision.adate
-    revision.message = "this commit should fix ##{issue.id} by 50%"
+    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
+    assert repo_revision
 
-    @service.apply_hook(revision, 'fix', issue)
+    assert_equal 1, repo_revision.applied_hooks.count
+    applied_hook = repo_revision.applied_hooks.first
 
-    issue.reload
+    assert_equal hook1, applied_hook.hook
+    assert_equal 'master', applied_hook.ref.name
+
+    issue = Issue.find(5)
 
     assert_equal 50, issue.done_ratio
     assert_equal 3, issue.status_id
-
-    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
-
-    assert repo_revision
-    assert_equal [hook1], repo_revision.applied_hooks.map { |ah| ah.hook }
   end
 
   def test_not_apply_hooks_by_unknown_user_if_deny
     ProjectHook.create!(
         :project_id => 1,
         :branches => 'master',
-        :keywords => 'fix',
+        :keywords => 'hook3',
         :status_id => 3,
         :done_ratio => '50%'
     )
 
-    issue = Issue.find(1)
 
     @service.initialize_repository
-
-    revision = RedmineUndevGit::Services::GitRevision.new()
-    revision.sha = 'deff712f05a90d96edbd70facc47d944be5897e3'
-    revision.aname = 'Simon Peterson'
-    revision.aemail = 'simon@example.com'
-    revision.adate = Time.parse('2009-06-26 23:06:56 -0700')
-    revision.cname = revision.aname
-    revision.cemail = revision.aemail
-    revision.cdate = revision.adate
-    revision.message = "this commit should not fix ##{issue.id} by 50%"
+    @service.apply_hooks_to_issues_by_revisions
 
     Policies::ApplyHooks.stubs(:allowed?).returns(false)
 
-    @service.apply_hook(revision, 'fix', issue)
+    issue = Issue.find(5)
 
     issue.reload
 
     assert_equal 0, issue.done_ratio  # doesn't changed
     assert_equal 1, issue.status_id   # doesn't changed
 
-    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
+    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
 
-    refute repo_revision, 'Do not save revision if no hooks was applied'
+    assert repo_revision.applied_hooks.empty?
   end
 
   def test_apply_hooks_by_unknown_user_if_allowed
     hook1 = ProjectHook.create!(
         :project_id => 1,
         :branches => 'master',
-        :keywords => 'fix',
+        :keywords => 'hook3',
         :status_id => 3,
         :done_ratio => '50%'
     )
 
-    issue = Issue.find(1)
-
-    @service.initialize_repository
-
-    revision = RedmineUndevGit::Services::GitRevision.new()
-    revision.sha = 'deff712f05a90d96edbd70facc47d944be5897e3'
-    revision.aname = 'Simon Peterson'
-    revision.aemail = 'simon@example.com'
-    revision.adate = Time.parse('2009-06-26 23:06:56 -0700')
-    revision.cname = revision.aname
-    revision.cemail = revision.aemail
-    revision.cdate = revision.adate
-    revision.message = "this commit should not fix ##{issue.id} by 50%"
-
     Policies::ApplyHooks.stubs(:allowed?).returns(true)
 
-    @service.apply_hook(revision, 'fix', issue)
+    @service.initialize_repository
+    @service.apply_hooks_to_issues_by_revisions
 
-    issue.reload
+    issue = Issue.find(5)
 
     assert_equal 50, issue.done_ratio
     assert_equal 3, issue.status_id
 
-    repo_revision = @service.repo.revisions.find_by_sha(revision.sha)
+    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
 
     assert repo_revision
     assert_equal [hook1], repo_revision.applied_hooks.map { |ah| ah.hook }
   end
 
-  def test_find_revisions_returns_revisions_with_sharp_sign_in_comments1
+  def test_find_revisions_returns_revisions_with_sharp_sign_in_comments
     @service.initialize_repository
 
     revisions = @service.find_new_revisions
-
-    revisions.map! { |rev| rev.sha[0..6] }
-    assert_equal [], revisions
-  end
-
-  def test_find_revisions_returns_revisions_with_sharp_sign_in_comments2
-    remote_repo = @site.repos.create!(:url => RD4)
-    service = RedmineUndevGit::Services::RemoteRepoFetch.new(remote_repo)
-    service.initialize_repository
-
-    revisions = service.find_new_revisions
     revisions.map! { |rev| rev.sha[0..6] }
     assert_equal 9, revisions.length
     assert_equal %w{0d8c70c c25b5dd 0b652ac 90045e4 c18df3f 57096e1 a578eac 725bc91 1a81e3a}, revisions

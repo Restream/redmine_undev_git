@@ -3,9 +3,9 @@ module RedmineUndevGit::Services
   class RemoteRepoFetch
     attr_reader :repo
 
-    HookRequest = Struct.new(:issue, :hook, :revision, :ref) do
+    HookRequest = Struct.new(:issue, :hook, :repo_revision, :ref) do
       def valid?
-        issue && hook && revision && ref
+        issue && hook && repo_revision && ref
       end
     end
 
@@ -31,8 +31,6 @@ module RedmineUndevGit::Services
         link_revisions_to_issues(new_revisions)
         log_time_from_revisions(new_revisions)
 
-        update_repo_refs
-
         apply_hooks_to_issues_by_revisions
 
         # save new tail
@@ -42,7 +40,7 @@ module RedmineUndevGit::Services
     end
 
     def update_repo_refs
-      stored_refs = repo.refs.pluck(&:name)
+      stored_refs = repo.refs.pluck(:name)
       new_refs = head_branches - stored_refs
       new_refs.each { |new_ref| repo.refs.create!(:name => new_ref) }
     end
@@ -104,24 +102,35 @@ module RedmineUndevGit::Services
     end
 
     def apply_hooks_to_issues_by_revisions
+      update_repo_refs
       head_branches.each do |branch|
         revisions = find_hooks_revisions(branch)
 
         revisions.each do |revision|
-          parser.parse_message_for_hooks(revision.message) do |issue_id, action|
+          parser.parse_message_for_hooks(revision.message).each do |issue_id, action|
 
-            hook = all_applicable_hooks.detect { |h| h.applied_for?(action, branch) }
+            repo_revision = repo_revision_by_git_revision(revision)
 
-            hook_request = HookRequest.new
-            hook_request.issue = Issue.find_by_id(issue_id)
-            hook_request.hook = hook
-            hook_request.revision = revision
-            hook_request.ref = repo.refs.find_by_name(branch)
+            hook = all_applicable_hooks.detect { |h| h.applied_for?(action, repo_revision.branches) }
 
-            apply_hook(hook_request) if hook_request.valid?
+            next unless hook.applied_for?(action, branch)
+
+            req = HookRequest.new
+            req.issue = Issue.find_by_id(issue_id)
+            req.hook = hook
+            req.repo_revision = repo_revision
+            req.ref = repo.refs.find_by_name(branch)
+
+            apply_hook(req) if allow_to_apply_hook?(req)
           end
         end
       end
+    end
+
+    def allow_to_apply_hook?(hook_request)
+      hook_request.valid? &&
+          !hook_was_applied?(hook_request) &&
+          Policies::ApplyHooks.allowed?(hook_request.repo_revision.committer, hook_request.issue)
     end
 
     def find_hooks_revisions(branch)
@@ -179,37 +188,30 @@ module RedmineUndevGit::Services
     end
 
     def apply_hook(req)
-      repo_revision = repo_revision_by_git_revision(revision)
-
-      return if hook_was_applied?(repo_revision, req)
-
-      user = user_by_email(revision.cemail) || User.anonymous
-      return unless Policies::ApplyHooks.allowed?(user, issue)
-
       req.hook.apply_for_issue(
           req.issue,
-          :user => user,
-          :notes => notes_for_issue_change(repo_revision)
+          :user => req.repo_revision.committer,
+          :notes => notes_for_issue_change(req.repo_revision)
       )
 
-      journal_id = issue.last_journal_id
+      journal_id = req.issue.last_journal_id
 
-      repo_revision.applied_hooks.create!(
+      req.repo_revision.applied_hooks.create!(
           :hook => req.hook,
           :ref => req.ref,
           :issue => req.issue,
           :journal_id => journal_id)
     end
 
-    def hook_was_applied?(repo_revision, req)
+    def hook_was_applied?(req)
       if req.hook.any_branch?
-        repo.hooks.where(
+        repo.applied_hooks.where(
             :issue_id                => req.issue.id,
-            :remote_repo_revision_id => repo_revision.id).any?
+            :remote_repo_revision_id => req.repo_revision.id).any?
       else
-        repo.hooks.where(
+        repo.applied_hooks.where(
             :issue_id                => req.issue.id,
-            :remote_repo_revision_id => repo_revision.id,
+            :remote_repo_revision_id => req.repo_revision.id,
             :remote_repo_ref_id      => req.ref.id).any?
       end
     end

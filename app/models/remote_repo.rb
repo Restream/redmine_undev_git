@@ -5,6 +5,7 @@ class RemoteRepo < ActiveRecord::Base
            :inverse_of => :repo,
            :dependent => :destroy # todo: should delete_all for all tails
   has_many :refs, :class_name => 'RemoteRepoRef', :inverse_of => :repo
+  has_many :applied_hooks, :through => :revisions
 
   validates :site, :presence => true
 

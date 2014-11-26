@@ -18,8 +18,8 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
   def setup
     make_temp_dir
-    site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
-    remote_repo = site.repos.create!(:url => REPOSITORY_PATH)
+    @site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
+    remote_repo = @site.repos.create!(:url => REPOSITORY_PATH)
     @service = RedmineUndevGit::Services::RemoteRepoFetch.new(remote_repo)
   end
 
@@ -287,6 +287,42 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
     assert repo_revision
     assert_equal [hook1], repo_revision.applied_hooks.map { |ah| ah.hook }
+  end
+
+  def test_find_revisions_returns_revisions_with_sharp_sign_in_comments1
+    @service.initialize_repository
+
+    revisions = @service.find_new_revisions
+
+    revisions.map! { |rev| rev.sha[0..6] }
+    assert_equal [], revisions
+  end
+
+  def test_find_revisions_returns_revisions_with_sharp_sign_in_comments2
+    remote_repo = @site.repos.create!(:url => RD4)
+    service = RedmineUndevGit::Services::RemoteRepoFetch.new(remote_repo)
+    service.initialize_repository
+
+    revisions = service.find_new_revisions
+    revisions.map! { |rev| rev.sha[0..6] }
+    assert_equal 9, revisions.length
+    assert_equal %w{0d8c70c c25b5dd 0b652ac 90045e4 c18df3f 57096e1 a578eac 725bc91 1a81e3a}, revisions
+  end
+
+  def test_find_revisions_returns_only_new_revisions
+    remote_repo = @site.repos.create!(:url => RD1)
+    service = RedmineUndevGit::Services::RemoteRepoFetch.new(remote_repo)
+    service.initialize_repository
+    service.repo.tail_revisions = service.head_revisions
+    service.repo.save!
+    service.scm.set_url(RD2)
+    service.download_changes
+
+    revisions = service.find_new_revisions
+
+    revisions.map! { |rev| rev.sha[0..6] }
+    assert_equal 2, revisions.length
+    assert_equal %w{0d8c70c c18df3f}, revisions
   end
 
 end

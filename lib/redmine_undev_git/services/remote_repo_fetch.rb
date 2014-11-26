@@ -22,11 +22,11 @@ module RedmineUndevGit::Services
       repo.transaction do
 
         new_revisions = find_new_revisions
-        parse_revisions_for_references(new_revisions)
-        parse_revisions_for_timelog(new_revisions)
+        link_revisions_to_issues(new_revisions)
+        log_time_from_revisions(new_revisions)
 
         hooks_revisions = find_hooks_revisions
-        parse_revisions_for_hooks(hooks_revisions)
+        apply_hooks_to_issues_by_revisions(hooks_revisions)
 
         # save new tail
         repo.tail_revisions = head_revisions
@@ -48,28 +48,25 @@ module RedmineUndevGit::Services
       scm.revisions(nil, nil, :grep => fix_keywords)
     end
 
-    def parse_revisions_for_references(revisions)
-      pattern = regexp_pattern_for_references
+    def link_revisions_to_issues(revisions)
       revisions.each do |revision|
-        scan_message_with_pattern(revision.message, pattern) do |issue_id, _, _|
-          link_revision_to_issues(revision, [issue_id])
+        parse_message_for_references(revision.message).each do |issue_id|
+          link_revision_to_issue(revision, issue_id)
         end
       end
     end
 
-    def parse_revisions_for_timelog(revisions)
+    def log_time_from_revisions(revisions)
       return unless Setting.commit_logtime_enabled?
-
-      pattern = regexp_pattern_without_keywords
 
       revisions.each do |revision|
         committer = user_by_email(revision.cemail)
         next unless committer
 
-        scan_message_with_pattern(revision.message, pattern) do |issue_id, _, hours|
+        parse_message_for_logtime(revision.message).each do |issue_id, hours|
           if issue = Issue.find_by_id(issue_id)
             log_time(:issue => issue, :user => committer, :hours => hours, :spent_on => revision.cdate)
-            link_revision_to_issues(revision, [issue_id])
+            link_revision_to_issue(revision, issue_id)
           end
         end
       end
@@ -97,17 +94,21 @@ module RedmineUndevGit::Services
       end
     end
 
-    def parse_revisions_for_hooks(revisions)
-      pattern = regexp_pattern_with_keywords(fix_keywords)
+    def apply_hooks_to_issues_by_revisions(revisions)
       revisions.each do |revision|
-        scan_message_with_pattern(revision.message, pattern) do |issue_id, action, _|
+        parse_message_for_hooks(revision.message) do |issue_id, action|
           apply_hook(revision, action, issue_id)
         end
       end
     end
 
     def regexp_pattern_for_references
-      any_ref_keyword? ? regexp_pattern_without_keywords : regexp_pattern_with_keywords(ref_keywords)
+      @regexp_pattern_for_references ||=
+          any_ref_keyword? ? regexp_pattern_without_keywords : regexp_pattern_with_keywords(ref_keywords)
+    end
+
+    def regexp_pattern_for_hooks
+      @regexp_pattern_for_references ||= regexp_pattern_with_keywords(fix_keywords)
     end
 
     def regexp_pattern_without_keywords
@@ -127,6 +128,30 @@ module RedmineUndevGit::Services
           block.call(action, match[:issue_id].to_i, match[:hours])
         end
       end
+    end
+
+    def parse_message_for_references(message)
+      issue_ids = []
+      scan_message_with_pattern(message, regexp_pattern_for_references) do |issue_id, _, _|
+        issue_ids << issue_id
+      end
+      issue_ids.uniq
+    end
+
+    def parse_message_for_logtime(message)
+      log_entries = []
+      scan_message_with_pattern(message, regexp_pattern_without_keywords) do |issue_id, _, hours|
+        log_entries << [issue_id, hours]
+      end
+      log_entries
+    end
+
+    def parse_message_for_hooks(message)
+      hooks = []
+      scan_message_with_pattern(message, regexp_pattern_without_keywords) do |issue_id, action, _|
+        hooks << [issue_id, action]
+      end
+      hooks
     end
 
     def repo_revision_by_git_revision(revision)
@@ -230,38 +255,6 @@ module RedmineUndevGit::Services
 
     def head_revisions
       scm.branches.map(&:sha).sort.uniq
-    end
-
-    # parse commit message for ref and fix keywords with issue_ids
-    def parse_comments(comments)
-      ret = { :ref_issues => [], :fix_issues => {}, :log_time => {} }
-
-      return ret if comments.blank?
-
-      kw_regexp = (ref_keywords + fix_keywords).uniq.collect{ |kw| Regexp.escape(kw) }.join('|')
-
-      comments.scan(/([\s\(\[,-]|^)((#{kw_regexp})[\s:]+)?(#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i) do |match|
-        action, refs = match[2].to_s.downcase, match[3]
-        next unless action.present? || any_ref_keyword?
-
-        refs.scan(/#(\d+)(\s+@#{Changeset::TIMELOG_RE})?/).each do |m|
-          issue, hours = m[0].to_i, m[2]
-          if issue
-            ret[:ref_issues] << issue
-            if fix_keywords.include?(action)
-              ret[:fix_issues][issue] ||= []
-              ret[:fix_issues][issue] << action
-            end
-            if hours
-              ret[:log_time][issue] ||= []
-              ret[:log_time][issue] << hours
-            end
-          end
-        end
-      end
-
-      ret[:ref_issues].uniq!
-      ret
     end
 
     # keywords used to fix issues

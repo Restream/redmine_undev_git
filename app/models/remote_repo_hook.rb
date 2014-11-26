@@ -3,5 +3,5 @@ class RemoteRepoHook < ActiveRecord::Base
   belongs_to :hook, :class_name => 'HookBase'
   belongs_to :issue
   belongs_to :journal
-
+  belongs_to :ref, :class_name => 'RemoteRepoRef', :foreign_key => 'remote_repo_ref_id'
 end

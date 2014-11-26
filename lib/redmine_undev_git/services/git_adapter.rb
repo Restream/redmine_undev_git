@@ -190,6 +190,19 @@ module RedmineUndevGit::Services
       s.chars.select { |c| c.valid_encoding? }.join
     end
 
+    def set_url(new_url)
+      if repository_exists?
+        git('remote', 'set-url', 'origin', new_url)
+        @url = new_url
+      else
+        @url = new_url
+      end
+    end
+
+    def remove_repo
+      Dir.delete(root_url) if Dir.exists?(root_url)
+    end
+
     # expects many arguments, not one array or string
     # examples:
     #   git('log', '--all')     # ok

@@ -253,7 +253,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     service.initialize_repository
     service.repo.tail_revisions = service.head_revisions
     service.repo.save!
-    service.scm.set_url(RD2)
+    service.scm.fetch_url = RD2
     service.download_changes
 
     revisions = service.find_new_revisions
@@ -261,6 +261,19 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     revisions.map! { |rev| rev.sha[0..6] }
     assert_equal 2, revisions.length
     assert_equal %w{0d8c70c c18df3f}, revisions
+  end
+
+  def test_find_hooks_revisions
+    @service.repo.url = RD1
+    @service.initialize_repository
+    assert_equal %w{1a81e3a}, shorted(@service.find_hooks_revisions('master'))
+    assert_equal %w{1a81e3a 725bc91}, shorted(@service.find_hooks_revisions('develop'))
+    assert_equal %w{1a81e3a 57096e1 725bc91 a578eac}, shorted(@service.find_hooks_revisions('feature'))
+    assert_equal %w{0b652ac 1a81e3a 57096e1 725bc91 a578eac}, shorted(@service.find_hooks_revisions('staging'))
+  end
+
+  def shorted(revisions)
+    revisions.map { |rev| rev.sha[0..6] }.sort
   end
 
 end

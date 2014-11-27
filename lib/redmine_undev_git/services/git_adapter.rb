@@ -20,7 +20,7 @@ module RedmineUndevGit::Services
 
       def git_version
         result = shell_read("#{quoted_git_command} --version --no-color")
-        result.force_encoding('UTF-8') if @git_version.respond_to?(:force_encoding)
+        result.force_encoding('UTF-8') if result.respond_to?(:force_encoding)
         if m = result.match(%r{\A(.*?)((\d+\.)+\d+)})
           m[2]
         else
@@ -190,13 +190,14 @@ module RedmineUndevGit::Services
       s.chars.select { |c| c.valid_encoding? }.join
     end
 
-    def set_url(new_url)
-      if repository_exists?
-        git('remote', 'set-url', 'origin', new_url)
-        @url = new_url
-      else
-        @url = new_url
-      end
+    def fetch_url=(new_url)
+      git('remote', 'set-url', 'origin', new_url)
+    end
+
+    def fetch_url
+      result = git('remote', '-v') { |io| io.read }.to_s
+      match = result.match(/origin\s+(?<url>.+?)\s+\(fetch\)/)
+      match && match[:url]
     end
 
     def remove_repo

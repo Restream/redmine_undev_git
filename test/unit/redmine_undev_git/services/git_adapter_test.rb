@@ -166,6 +166,33 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
     assert_equal %w{4f26664 713f494 7234cb2 7e61ac7 899a15d 9a6f3b9 fba357b}, revs_hashes
   end
 
+  def test_get_fetch_url_from_cloned_repo
+    adapter = create_adapter
+    adapter.clone_repository
+    assert_equal adapter.url, adapter.fetch_url
+  end
+
+  def test_get_fetch_url_raise_error_unless_repo_exists
+    adapter = create_adapter
+    assert_raises RedmineUndevGit::Services::CommandFailed do
+      adapter.fetch_url
+    end
+  end
+
+  def test_set_fetch_url_for_cloned_repo
+    adapter = create_adapter
+    adapter.clone_repository
+    adapter.fetch_url = RD3
+    assert_equal RD3, adapter.fetch_url
+  end
+
+  def test_set_fetch_url_raise_error_unless_repo_exists
+    adapter = create_adapter
+    assert_raises RedmineUndevGit::Services::CommandFailed do
+      adapter.fetch_url = RD3
+    end
+  end
+
   def create_adapter
     root_url = File.join(@temp_storage_dir, 'remote_test')
     @klass.new(REPOSITORY_PATH, root_url)

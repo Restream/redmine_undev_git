@@ -113,7 +113,7 @@ module RedmineUndevGit::Services
 
             hook = all_applicable_hooks.detect { |h| h.applied_for?(action, repo_revision.branches) }
 
-            next unless hook.applied_for?(action, branch)
+            next unless hook && hook.applied_for?(action, branch)
 
             req = HookRequest.new
             req.issue = Issue.find_by_id(issue_id)
@@ -229,7 +229,12 @@ module RedmineUndevGit::Services
     end
 
     def initialize_repository
-      scm.clone_repository unless scm.repository_exists?
+      if scm.repository_exists?
+        fetch_url = scm.fetch_url
+        scm.fetch_url = repo.url if fetch_url != repo.url
+      else
+        scm.clone_repository
+      end
     end
 
     def scm

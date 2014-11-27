@@ -38,7 +38,7 @@ module RedmineUndevGit::Services
     end
 
     def regexp_pattern_for_hooks
-      @regexp_pattern_for_references ||= regexp_pattern_with_keywords(fix_keywords)
+      @regexp_pattern_for_hooks ||= regexp_pattern_with_keywords(fix_keywords)
     end
 
     def regexp_pattern_without_keywords

@@ -118,7 +118,7 @@ module RedmineUndevGit::Services
       revs += include_revs unless include_revs.blank?
       revs += exclude_revs.map{|r| "^#{r}"} unless exclude_revs.blank?
 
-      cmd_args = %w{log --date=iso --date-order --name-status --no-color}
+      cmd_args = %w{log --date=iso --date-order --reverse --name-status --no-color}
       cmd_args << "--format=\"#{format_string}\""
       cmd_args << '--all' if revs.empty?
       cmd_args << "--encoding=#{path_encoding}"

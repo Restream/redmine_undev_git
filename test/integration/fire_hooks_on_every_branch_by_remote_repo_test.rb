@@ -27,82 +27,109 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     remove_temp_dir
   end
 
-  def test_hook1
+  def test_hook_applied_for_any_branch_one_time
     hook1 = GlobalHook.create!(:keywords => 'hook1', :branches => '*', :done_ratio => '10%')
+
     fetch_step_by_step
-    assert_equal [hook1.id], @hook_ids1
-    assert_equal [], @hook_ids2
-    assert_equal [], @hook_ids3
-    assert_equal [], @hook_ids4
+
+    issue = Issue.find(5)
+    assert_equal 10, issue.done_ratio
+
+    rev = @repo.find_revision(CMT1)
+    assert rev
+    assert_equal 1, @applied1.length
+    ahook = @applied1.first
+    refute ahook.ref, 'Reference to RemoteRepoRef should be empty'
+    assert_equal hook1, ahook.hook
+    assert_equal issue, ahook.issue
+    assert_equal rev, ahook.revision
+
+    assert @applied2.empty?
+    assert @applied3.empty?
+    assert @applied4.empty?
   end
 
-  def test_hook2
+  def test_apply_only_one_hook_with_first_position
     hook2_1 = GlobalHook.create!(:keywords => 'hook2', :branches => 'develop', :done_ratio => '21%')
     hook2_2 = GlobalHook.create!(:keywords => 'hook2', :branches => 'staging', :done_ratio => '22%')
     hook2_3 = GlobalHook.create!(:keywords => 'hook2', :branches => 'feature', :done_ratio => '23%')
     hook2_4 = GlobalHook.create!(:keywords => 'hook2', :branches => 'master',  :done_ratio => '24%')
     fetch_step_by_step
-    assert_equal [hook2_1.id], @hook_ids1
-    assert_equal [], @hook_ids2
-    assert_equal [], @hook_ids3
-    assert_equal [hook2_4.id], @hook_ids4
+
+    issue = Issue.find(5)
+    assert_equal 21, issue.done_ratio
+    assert_equal 1, @applied1.length
+    assert_equal hook2_1, @applied1.first.hook
+    assert @applied2.empty?
+    assert @applied3.empty?
+    assert @applied4.empty?
   end
 
-  def test_hook3
+  def test_hook_applied_for_every_branch_by_one_hook
+    hook2_1 = GlobalHook.create!(:keywords => 'hook3', :branches => 'feature,develop,staging,master', :done_ratio => '21%')
+    hook2_2 = GlobalHook.create!(:keywords => 'hook3', :branches => 'staging', :done_ratio => '22%')
+    hook2_3 = GlobalHook.create!(:keywords => 'hook3', :branches => 'feature', :done_ratio => '23%')
+    hook2_4 = GlobalHook.create!(:keywords => 'hook3', :branches => 'master',  :done_ratio => '24%')
+    fetch_step_by_step
+
+    issue = Issue.find(5)
+    assert_equal 21, issue.done_ratio
+
+    assert_equal %w{feature staging}, branches(@applied1)
+    assert @applied2.empty?
+    assert_equal %w{develop}, branches(@applied3)
+    assert_equal %w{master}, branches(@applied4)
+  end
+
+  def test_hook_applied_for_branch_by_two_hooks
     hook3_1 = GlobalHook.create!(:keywords => 'hook3', :branches => 'develop', :done_ratio => '31%')
-    hook3_2 = GlobalHook.create!(:keywords => 'hook3', :branches => 'master',  :done_ratio => '32%')
+    hook3_2 = GlobalHook.create!(:keywords => 'hook4', :branches => 'master',  :done_ratio => '32%')
     fetch_step_by_step
-    assert_equal [], @hook_ids1
-    assert_equal [], @hook_ids2
-    assert_equal [hook3_1.id], @hook_ids3
-    assert_equal [hook3_2.id], @hook_ids4
+
+    issue = Issue.find(5)
+    assert_equal 32, issue.done_ratio
+
+    assert @applied1.empty?
+    assert @applied2.empty?
+    assert_equal %w{develop}, branches(@applied3)
+    assert_equal %w{master}, branches(@applied4)
   end
 
-  def test_hooks_priority_1
-    hooks = create_global_hooks
-
-    hook_feature = hooks.detect { |r| r.branches.include? 'feature' }.id
-    hook_staging = hooks.detect { |r| r.branches.include? 'staging' }.id
-    hook_develop = hooks.detect { |r| r.branches.include? 'develop' }.id
-    hook_any     = hooks.detect { |r| r.branches.include? '*' }.id
+  def test_hooks_with_branches_has_higher_priority
+    GlobalHook.create!(:keywords => 'hook3', :branches => '*', :done_ratio => '11%')
+    GlobalHook.create!(:keywords => 'hook3', :branches => 'feature', :done_ratio => '12%')
 
     fetch_step_by_step
 
-    assert_equal [hook_feature], @hook_ids1
-    assert_equal [],             @hook_ids2
-    assert_equal [hook_develop], @hook_ids3
-    assert_equal [],             @hook_ids4
+    issue = Issue.find(5)
+    assert_equal 12, issue.done_ratio
   end
 
-  def test_hooks_priority_2
-    create_global_hooks
-    hooks = create_project_hooks
-
-    hook_feature = hooks.detect { |r| r.branches.include? 'feature' }.id
-    hook_staging = hooks.detect { |r| r.branches.include? 'staging' }.id
-    hook_develop = hooks.detect { |r| r.branches.include? 'develop' }.id
-    hook_any     = hooks.detect { |r| r.branches.include? '*' }.id
+  def test_project_hooks_has_higher_priority
+    GlobalHook.create!(:keywords => 'hook3', :branches => '*', :done_ratio => '11%')
+    GlobalHook.create!(:keywords => 'hook3', :branches => 'feature', :done_ratio => '12%')
+    @project.hooks.create(:keywords => 'hook3', :branches => '*', :done_ratio => '21%')
 
     fetch_step_by_step
 
-    assert_equal [hook_feature, hook_staging], @hook_ids1
-    assert_equal [],                           @hook_ids2
-    assert_equal [hook_develop],               @hook_ids3
-    assert_equal [],                           @hook_ids4
+    issue = Issue.find(5)
+    assert_equal 21, issue.done_ratio
   end
 
-  def test_hooks_for_merged_commits
-    hook_feature = GlobalHook.create!(
-        :keywords => 'hook6, hook7', :branches => 'feature', :done_ratio => '11%')
-    hook_staging = GlobalHook.create!(
-        :keywords => 'hook6, hook7', :branches => 'staging', :done_ratio => '12%')
+  def test_hooks_applied_in_reverse_date_order_on_same_branch
+    GlobalHook.create!(:keywords => 'hook1', :branches => 'master', :done_ratio => '11%')
+    GlobalHook.create!(:keywords => 'hook2', :branches => 'master', :done_ratio => '12%')
+    GlobalHook.create!(:keywords => 'hook3', :branches => 'master', :done_ratio => '13%')
+    GlobalHook.create!(:keywords => 'hook4', :branches => 'master', :done_ratio => '14%')
+    GlobalHook.create!(:keywords => 'hook6', :branches => 'master', :done_ratio => '16%')
 
-    fetch_step_by_step
+    site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
+    repo = site.repos.create!(:url => RD4)
+    repo.fetch
 
-    assert_equal [],                                 @hook_ids1
-    assert_equal [hook_feature.id, hook_staging.id], @hook_ids2
-    assert_equal [],                                 @hook_ids3
-    assert_equal [],                                 @hook_ids4
+    applied_keywords = RemoteRepoHook.order(:id).all.map { |ah| ah.hook.keywords.join }
+
+    assert_equal %w{hook1 hook2 hook3 hook4 hook6}, applied_keywords
  end
 
   def create_global_hooks
@@ -141,26 +168,30 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
 
   def fetch_step_by_step
     site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
-    repo = site.repos.create!(:url => RD1)
+    @repo = site.repos.create!(:url => RD1)
     last_id = get_last_id_of_applied_hooks
 
-    repo.fetch
-    @hook_ids1 = RemoteRepoHook.where('id > ?', last_id).pluck(:hook_id).sort
+    @repo.fetch
+    @applied1 = RemoteRepoHook.where('id > ?', last_id).all
     last_id = get_last_id_of_applied_hooks
 
-    repo.url = RD2
-    repo.fetch
-    @hook_ids2 = RemoteRepoHook.where('id > ?', last_id).pluck(:hook_id).sort
+    @repo.url = RD2
+    @repo.fetch
+    @applied2 = RemoteRepoHook.where('id > ?', last_id).all
     last_id = get_last_id_of_applied_hooks
 
-    repo.url = RD3
-    repo.fetch
-    @hook_ids3 = RemoteRepoHook.where('id > ?', last_id).pluck(:hook_id).sort
+    @repo.url = RD3
+    @repo.fetch
+    @applied3 = RemoteRepoHook.where('id > ?', last_id).all
     last_id = get_last_id_of_applied_hooks
 
-    repo.url = RD4
-    repo.fetch
-    @hook_ids4 = RemoteRepoHook.where('id > ?', last_id).pluck(:hook_id).sort
+    @repo.url = RD4
+    @repo.fetch
+    @applied4 = RemoteRepoHook.where('id > ?', last_id).all
+  end
+
+  def branches(applied_hooks)
+    applied_hooks.map { |h| h.ref.try(:name) || '*' }.sort
   end
 
   def get_last_id_of_applied_hooks

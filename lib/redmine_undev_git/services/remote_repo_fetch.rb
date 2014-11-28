@@ -5,7 +5,7 @@ module RedmineUndevGit::Services
 
     HookRequest = Struct.new(:issue, :hook, :repo_revision, :ref) do
       def valid?
-        issue && hook && repo_revision && ref
+        issue && hook && repo_revision && (hook.any_branch? || ref)
       end
     end
 
@@ -110,21 +110,26 @@ module RedmineUndevGit::Services
           parser.parse_message_for_hooks(revision.message).each do |issue_id, action|
 
             repo_revision = repo_revision_by_git_revision(revision)
+            add_branch_to_revision(branch, repo_revision)
 
-            hook = all_applicable_hooks.detect { |h| h.applicable_for?(action, repo_revision.branches) }
+            hook = find_hook_applicable_for(action, branch)
 
-            next unless hook && hook.applicable_for?(action, branch)
+            next unless hook
 
             req = HookRequest.new
             req.issue = Issue.find_by_id(issue_id)
             req.hook = hook
             req.repo_revision = repo_revision
-            req.ref = repo.refs.find_by_name(branch)
+            req.ref = repo_ref_by_name(branch) unless hook.any_branch?
 
             apply_hook(req) if allow_to_apply_hook?(req)
           end
         end
       end
+    end
+
+    def repo_ref_by_name(branch)
+      repo.refs.find_by_name(branch)
     end
 
     def allow_to_apply_hook?(hook_request)
@@ -158,6 +163,10 @@ module RedmineUndevGit::Services
       )
       add_refs_to_remote_repo_revision(repo_revision)
       repo_revision
+    end
+
+    def add_branch_to_revision(branch, repo_revision)
+      repo_revision.refs << repo_ref_by_name(branch) unless repo_revision.branches.include?(branch)
     end
 
     def user_by_email(email)
@@ -287,6 +296,11 @@ module RedmineUndevGit::Services
       @all_applicable_hooks ||=
           ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
           GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
+    end
+
+    def find_hook_applicable_for(keyword, branch)
+      hook = all_applicable_hooks.detect { |h| h.applicable_for_keyword?(keyword) }
+      hook if hook.applicable_for_branch?(branch)
     end
 
     def parser

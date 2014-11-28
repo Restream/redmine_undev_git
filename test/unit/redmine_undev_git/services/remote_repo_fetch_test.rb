@@ -244,7 +244,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     revisions = @service.find_new_revisions
     revisions.map! { |rev| rev.sha[0..6] }
     assert_equal 9, revisions.length
-    assert_equal %w{0d8c70c c25b5dd 0b652ac 90045e4 c18df3f 57096e1 a578eac 725bc91 1a81e3a}, revisions
+    assert_equal %w{1a81e3a 725bc91 a578eac 57096e1 c18df3f 90045e4 0b652ac c25b5dd 0d8c70c}, revisions
   end
 
   def test_find_revisions_returns_only_new_revisions
@@ -260,7 +260,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
     revisions.map! { |rev| rev.sha[0..6] }
     assert_equal 2, revisions.length
-    assert_equal %w{0d8c70c c18df3f}, revisions
+    assert_equal %w{c18df3f 0d8c70c}, revisions
   end
 
   def test_find_hooks_revisions

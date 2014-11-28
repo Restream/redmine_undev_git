@@ -51,7 +51,7 @@ class HookTest < ActiveSupport::TestCase
       [true, false].each do |result|
         sample[result].each do |args|
           assert_equal result,
-                       hook.applied_for?(*args),
+                       hook.applicable_for?(*args),
                        "GlobalHook.new(#{sample[:hook]}).applied_for?(#{args[0]}, #{args[1]}) should return #{result}"
         end
       end

@@ -356,11 +356,11 @@ class Repository::UndevGit < Repository
     hooks = []
 
     # hook for any branch have the less priority then hook for specific branch
-    hook_for_any_branch = all_hooks.detect { |h| h.any_branch? && h.applied_for?(keywords, changeset.branches) }
+    hook_for_any_branch = all_hooks.detect { |h| h.any_branch? && h.applicable_for?(keywords, changeset.branches) }
 
     # find hook for every branch
     changeset.branches.each do |branch|
-      specific_hook = all_hooks.detect { |h| !h.any_branch? && h.applied_for?(keywords, [branch]) }
+      specific_hook = all_hooks.detect { |h| !h.any_branch? && h.applicable_for?(keywords, [branch]) }
       hooks << specific_hook if specific_hook
     end
 
@@ -432,7 +432,7 @@ class Repository::UndevGit < Repository
         next if issue.closed?
 
         hook = all_hooks.detect do |h|
-          !h.any_branch? && h.applied_for?(keywords, [branch])
+          !h.any_branch? && h.applicable_for?(keywords, [branch])
         end
         apply_for_issue_by_changeset(hook, issue, changeset) if hook
       end

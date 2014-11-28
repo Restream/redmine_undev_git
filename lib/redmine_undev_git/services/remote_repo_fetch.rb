@@ -111,9 +111,9 @@ module RedmineUndevGit::Services
 
             repo_revision = repo_revision_by_git_revision(revision)
 
-            hook = all_applicable_hooks.detect { |h| h.applied_for?(action, repo_revision.branches) }
+            hook = all_applicable_hooks.detect { |h| h.applicable_for?(action, repo_revision.branches) }
 
-            next unless hook && hook.applied_for?(action, branch)
+            next unless hook && hook.applicable_for?(action, branch)
 
             req = HookRequest.new
             req.issue = Issue.find_by_id(issue_id)

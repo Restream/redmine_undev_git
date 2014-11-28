@@ -40,7 +40,7 @@ class HookBase < ActiveRecord::Base
     @keywords ||= read_attribute(:keywords).to_s.split_by_comma
   end
 
-  def applied_for?(o_keywords, o_branches)
+  def applicable_for?(o_keywords, o_branches)
     o_keywords = Array(o_keywords)
     o_branches = Array(o_branches)
     found_keywords = (keywords & o_keywords).any?

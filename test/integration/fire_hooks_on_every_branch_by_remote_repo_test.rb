@@ -159,6 +159,7 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
   end
 
   def test_fetch_redmine_as_a_big_repo
+    skip
     site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
     repo = site.repos.create!(:url => Rails.root)
     assert_nothing_raised do

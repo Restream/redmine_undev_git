@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module RedmineUndevGit::Services
   class CommandFailed < ServiceError
   end
@@ -201,7 +203,7 @@ module RedmineUndevGit::Services
     end
 
     def remove_repo
-      Dir.delete(root_url) if Dir.exists?(root_url)
+      FileUtils.rm_r(root_url) if Dir.exists?(root_url)
     end
 
     # expects many arguments, not one array or string

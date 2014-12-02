@@ -33,10 +33,27 @@ module RedmineUndevGit::Services
 
         apply_hooks_to_issues_by_revisions
 
-        # save new tail
-        repo.tail_revisions = head_revisions
-        repo.save!
+        save_new_tail
       end
+    end
+
+    def refetch
+      repo.transaction do
+        clear_tail
+        repo.clear_time_entries
+        scm.remove_repo
+        fetch
+      end
+    end
+
+    def save_new_tail
+      repo.tail_revisions = head_revisions
+      repo.save!
+    end
+
+    def clear_tail
+      repo.tail_revisions = []
+      repo.save!
     end
 
     def update_repo_refs
@@ -71,7 +88,7 @@ module RedmineUndevGit::Services
           committer = user_by_email(revision.cemail)
           issue = Issue.find_by_id(issue_id)
           if committer && issue
-            log_time(:issue => issue, :user => committer, :hours => hours, :spent_on => revision.cdate)
+            log_time(:issue => issue, :user => committer, :hours => hours, :revision => revision)
             link_revision_to_issue(revision, issue_id)
           end
         end
@@ -79,14 +96,16 @@ module RedmineUndevGit::Services
     end
 
     def log_time(options)
+      revision = options[:revision]
+      repo_revision = repo_revision_by_git_revision(revision)
       time_entry = TimeEntry.new(
           :user => options[:user],
           :hours => options[:hours],
           :issue => options[:issue],
-          :spent_on => options[:spent_on],
-          :comments => l(:text_time_logged_by_changeset, :value => text_tag(options[:issue].project),
-                         :locale => Setting.default_language)
+          :spent_on => revision.cdate,
+          :comments => notes_for_issue_timelog(repo_revision)
       )
+      time_entry.remote_repo_revision = repo_revision
       time_entry.activity = log_time_activity unless log_time_activity.nil?
 
       unless time_entry.save
@@ -226,6 +245,10 @@ module RedmineUndevGit::Services
 
     def notes_for_issue_change(repo_revision)
       ll(Setting.default_language, :text_changed_by_remote_revision_hook, repo_revision.redmine_uri)
+    end
+
+    def notes_for_issue_timelog(repo_revision)
+      ll(Setting.default_language, :text_time_logged_by_changeset, repo_revision.redmine_uri)
     end
 
     def download_changes

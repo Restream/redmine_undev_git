@@ -29,7 +29,7 @@ class RedmineUndevGit::Services::MessageParserTest < ActiveSupport::TestCase
   def test_parse_message_for_logtime
     parser = RedmineUndevGit::Services::MessageParser.new(nil, [])
     log_entries = parser.parse_message_for_logtime('one #1 two #2 @4h30m, #2 @5h')
-    assert_equal [[1, nil], [2, '@4h30m'], [2, '@5h']], log_entries
+    assert_equal [[2, '4h30m'], [2, '5h']], log_entries
   end
 
   def test_parse_message_for_hooks

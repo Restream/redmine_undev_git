@@ -22,6 +22,7 @@ require 'redmine_undev_git/patches/string_patch'
 require 'redmine_undev_git/patches/project_patch'
 require 'redmine_undev_git/patches/issue_patch'
 require 'redmine_undev_git/patches/changeset_patch'
+require 'redmine_undev_git/patches/time_entry_patch'
 
 require 'redmine_undev_git/helpers/undev_git_helper'
 

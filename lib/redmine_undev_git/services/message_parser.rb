@@ -19,7 +19,7 @@ module RedmineUndevGit::Services
     def parse_message_for_logtime(message)
       log_entries = []
       scan_message_with_pattern(message, regexp_pattern_without_keywords) do |issue_id, _, hours|
-        log_entries << [issue_id, hours]
+        log_entries << [issue_id, hours] unless hours.blank?
       end
       log_entries
     end
@@ -54,7 +54,7 @@ module RedmineUndevGit::Services
       message.scan(pattern) do |match|
         action, refs = match[0], match[1]
 
-        refs.scan(/#(?<issue_id>\d+)(\s+(?<hours>@#{Changeset::TIMELOG_RE}))?/i).each do |match|
+        refs.scan(/#(?<issue_id>\d+)(\s+@(?<hours>#{Changeset::TIMELOG_RE}))?/i).each do |match|
           block.call(match[0].to_i, action, match[1])
         end
       end

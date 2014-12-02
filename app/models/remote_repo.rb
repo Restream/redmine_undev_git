@@ -6,14 +6,24 @@ class RemoteRepo < ActiveRecord::Base
            :dependent => :destroy # todo: should delete_all for all tails
   has_many :refs, :class_name => 'RemoteRepoRef', :inverse_of => :repo
   has_many :applied_hooks, :through => :revisions
+  has_many :time_entries, :through => :revisions
 
   validates :site, :presence => true
 
   serialize :tail_revisions, Array
 
   def fetch
-    fetch_service = RedmineUndevGit::Services::RemoteRepoFetch.new(self)
+    fetch_service = create_fetch_service
     fetch_service.fetch
+  end
+
+  def refetch
+    fetch_service = create_fetch_service
+    fetch_service.refetch
+  end
+
+  def create_fetch_service
+    RedmineUndevGit::Services::RemoteRepoFetch.new(self)
   end
 
   def uri
@@ -22,5 +32,9 @@ class RemoteRepo < ActiveRecord::Base
 
   def find_revision(sha)
     revisions.where("#{RemoteRepoRevision.table_name}.sha like ?", "#{sha}%").first
+  end
+
+  def clear_time_entries
+    TimeEntry.joins(:remote_repo_revision => :repo).where("#{RemoteRepo.table_name}.id = ?", id).destroy_all
   end
 end

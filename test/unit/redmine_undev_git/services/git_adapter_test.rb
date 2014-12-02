@@ -193,6 +193,14 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
     end
   end
 
+  def test_remove_repo
+    adapter = create_adapter
+    adapter.clone_repository
+    assert adapter.repository_exists?
+    adapter.remove_repo
+    refute adapter.repository_exists?
+  end
+
   def create_adapter
     root_url = File.join(@temp_storage_dir, 'remote_test')
     @klass.new(REPOSITORY_PATH, root_url)

@@ -67,11 +67,10 @@ module RedmineUndevGit::Services
       return unless Setting.commit_logtime_enabled?
 
       revisions.each do |revision|
-        committer = user_by_email(revision.cemail)
-        next unless committer
-
         parser.parse_message_for_logtime(revision.message).each do |issue_id, hours|
-          if issue = Issue.find_by_id(issue_id)
+          committer = user_by_email(revision.cemail)
+          issue = Issue.find_by_id(issue_id)
+          if committer && issue
             log_time(:issue => issue, :user => committer, :hours => hours, :spent_on => revision.cdate)
             link_revision_to_issue(revision, issue_id)
           end

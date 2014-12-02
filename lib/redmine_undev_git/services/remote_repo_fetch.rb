@@ -192,7 +192,7 @@ module RedmineUndevGit::Services
       issue = Issue.find_by_id(issue_id, :include => :project)
       if issue && Policies::ReferenceToIssue.allowed?(user, issue)
         repo_revision = repo_revision_by_git_revision(revision)
-        repo_revision.related_issues << issue
+        repo_revision.ensure_issue_is_related(issue)
       end
     end
 

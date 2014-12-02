@@ -26,4 +26,8 @@ class RemoteRepoRevision < ActiveRecord::Base
     refs.map(&:name)
   end
 
+  def ensure_issue_is_related(issue)
+    related_issues << issue unless related_issues.exists?(issue)
+  end
+
 end

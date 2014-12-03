@@ -18,6 +18,8 @@ module RedmineUndevGit
   end
 end
 
+include 'lazy_helpers'
+
 require 'redmine_undev_git/patches/string_patch'
 require 'redmine_undev_git/patches/project_patch'
 require 'redmine_undev_git/patches/issue_patch'

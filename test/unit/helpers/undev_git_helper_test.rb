@@ -1,7 +1,8 @@
 require File.expand_path( '../../../test_helper', __FILE__ )
 
-class ApplicationHelperTest < ActionView::TestCase
+class UndevGitHelperTest < ActionView::TestCase
   include ERB::Util
+  include UndevGitHelper
 
   fixtures :projects, :issues, :users
 
@@ -28,10 +29,18 @@ class ApplicationHelperTest < ActionView::TestCase
 
   def test_link_to_repository
     @project = Project.find(2)
-    link = "<a href=\"/projects/#{@repository.project.identifier}/repository/\" class=\"repository\">#{@repository.name}</a>"
-    link_named = "<a href=\"/projects/#{@named_repository.project.identifier}/repository/#{@named_repository.identifier}\" class=\"repository\">#{@named_repository.name}</a>"
-    assert_equal link, link_to_repository(@repository)
-    assert_equal link_named, link_to_repository(@named_repository)
+    exp_link = "/projects/#{@repository.project.identifier}/repository"
+    result_link = link_to_repository(@repository)
+    assert_match exp_link, result_link
+    assert_match @repository.name, result_link
+  end
+
+  def test_link_to_named_repository
+    @project = Project.find(2)
+    exp_link_named = "/projects/#{@named_repository.project.identifier}/repository/#{@named_repository.identifier}"
+    result_named_link = link_to_repository(@named_repository)
+    assert_match exp_link_named, result_named_link
+    assert_match @named_repository.name, result_named_link
   end
 
   def test_link_to_branch

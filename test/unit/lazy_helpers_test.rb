@@ -14,8 +14,14 @@ class LazyControllerTest < ActiveSupport::TestCase
     helper UsualHelper
   end
 
+  class TestChildController < TestController
+  end
+
   def setup
     TestController.class_eval do
+      @lazy_helpers = nil
+    end
+    TestChildController.class_eval do
       @lazy_helpers = nil
     end
     @controller = TestController.new
@@ -28,27 +34,44 @@ class LazyControllerTest < ActiveSupport::TestCase
   end
 
   def test_custom_module_does_not_included_straight
-    @controller.class.send :lazy_helper, CustomHelper
+    TestController.class_eval do
+      lazy_helper CustomHelper
+    end
     refute @controller._helpers.included_modules.include?(CustomHelper)
   end
 
   def test_custom_module_included_by_module_name
-    @controller.class.send :lazy_helper, CustomHelper
+    TestController.class_eval do
+      lazy_helper CustomHelper
+    end
     @controller.send :include_lazy_helpers
     assert @controller._helpers.included_modules.include?(CustomHelper)
   end
 
   def test_custom_module_included_with_true_condition
-    @controller.class.send :lazy_helper, CustomHelper, :if_included => UsualHelper
+    TestController.class_eval do
+      lazy_helper CustomHelper, :if_included => UsualHelper
+    end
     @controller.send :include_lazy_helpers
     assert @controller._helpers.included_modules.include?(CustomHelper)
   end
 
   def test_custom_module_doesnt_included_with_false_condition
     some_module = Module.new
-    @controller.class.send :lazy_helper, CustomHelper, :if_included => some_module
+    TestController.class_eval do
+      lazy_helper CustomHelper, :if_included => some_module
+    end
     @controller.send :include_lazy_helpers
     refute @controller._helpers.included_modules.include?(CustomHelper)
+  end
+
+  def test_custom_module_included_in_child_classes
+    TestController.class_eval do
+      lazy_helper CustomHelper
+    end
+    child_controller = TestChildController.new
+    child_controller.send :include_lazy_helpers
+    assert child_controller._helpers.included_modules.include?(CustomHelper)
   end
 
 end

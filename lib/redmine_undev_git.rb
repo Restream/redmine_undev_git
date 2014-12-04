@@ -26,14 +26,11 @@ require 'redmine_undev_git/patches/issue_patch'
 require 'redmine_undev_git/patches/changeset_patch'
 require 'redmine_undev_git/patches/time_entry_patch'
 
-require 'redmine_undev_git/helpers/undev_git_helper'
-
-require 'redmine_undev_git/patches/application_helper_patch'
-require 'redmine_undev_git/patches/repositories_helper_patch'
 require 'redmine_undev_git/patches/projects_helper_patch'
 require 'redmine_undev_git/patches/projects_controller_patch'
 require 'redmine_undev_git/patches/repository_patch'
 require 'redmine_undev_git/patches/issues_controller_patch'
+require 'redmine_undev_git/patches/application_controller_patch'
 
 require 'redmine_undev_git/hooks/view_hooks'
 

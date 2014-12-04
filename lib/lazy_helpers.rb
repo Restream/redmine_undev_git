@@ -14,7 +14,8 @@ module LazyHelpers
     end
 
     def lazy_helpers
-      @lazy_helpers || []
+      all_lazy_helpers = @lazy_helpers || []
+      superclass.respond_to?(:lazy_helpers) ? superclass.lazy_helpers + all_lazy_helpers : all_lazy_helpers
     end
   end
 

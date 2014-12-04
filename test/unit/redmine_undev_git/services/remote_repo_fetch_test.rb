@@ -320,33 +320,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal hooks_count, @service.repo.applied_hooks.count
   end
 
-  def stubs_scm_revisions(revisions)
-    RedmineUndevGit::Services::GitAdapter.any_instance.stubs(:revisions).returns(revisions)
-    branches = [RedmineUndevGit::Services::GitBranchRef.new('master', '1')]
-    RedmineUndevGit::Services::GitAdapter.any_instance.stubs(:branches).returns(branches)
-  end
-
   def shorted(revisions)
     revisions.map { |rev| rev.sha[0..6] }.sort
   end
-
-  def fake_revision(attrs = {})
-    @clock ||= attrs[:clock] || (Time.now - 1.year)
-    r = RedmineUndevGit::Services::GitRevision.new
-    r.sha     = fake_sha
-    r.aname   = attrs[:aname]   || 'Redmine Admin'
-    r.aemail  = attrs[:aemail]  || 'admin@somenet.foo'
-    r.adate   = attrs[:adate]   || @clock
-    r.cname   = attrs[:cname]   || r.aname
-    r.cemail  = attrs[:cemail]  || r.aemail
-    r.cdate   = attrs[:cdate]   || @clock
-    r.message = attrs[:message] || 'test fixes #5 @1h'
-    @clock = @clock + 1.hour
-    r
-  end
-
-  def fake_sha
-    Digest::SHA1.hexdigest rand(1000000).to_s
-  end
-
 end

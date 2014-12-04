@@ -18,6 +18,8 @@ en:
   label_hook_new_values: "New values that will be applied by hook"
   label_fetch_status: "Status"
   label_associated_remote_revisions: Associated remote revisions
+  label_associated_remote_repository: Associated remote repository
+  label_associated_remote_site: Remote repository server
 
   new_hook: "New hook"
 

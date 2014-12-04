@@ -5,6 +5,10 @@ module RedmineUndevGit::Patches
     included do
       has_many :hooks, :class_name => 'ProjectHook'
     end
+
+    def remote_repositories
+      RemoteRepo.related_to_project(self)
+    end
   end
 end
 

@@ -12,6 +12,10 @@ class RemoteRepo < ActiveRecord::Base
 
   serialize :tail_revisions, Array
 
+  scope :related_to_project, ->(project) {
+    joins(:revisions => :related_issues).where("#{Issue.table_name}.project_id = ?", project.id).uniq
+  }
+
   def fetch
     fetch_service = create_fetch_service
     fetch_service.fetch

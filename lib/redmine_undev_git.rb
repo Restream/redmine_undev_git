@@ -26,7 +26,6 @@ require 'redmine_undev_git/patches/issue_patch'
 require 'redmine_undev_git/patches/changeset_patch'
 require 'redmine_undev_git/patches/time_entry_patch'
 
-require 'redmine_undev_git/patches/projects_helper_patch'
 require 'redmine_undev_git/patches/projects_controller_patch'
 require 'redmine_undev_git/patches/repository_patch'
 require 'redmine_undev_git/patches/issues_controller_patch'

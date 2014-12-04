@@ -42,8 +42,3 @@ module RedmineUndevGit::Patches
     end
   end
 end
-
-unless ProjectsHelper.included_modules.include?(RedmineUndevGit::Patches::ProjectsHelperPatch)
-  ProjectsHelper.send :include, RedmineUndevGit::Patches::ProjectsHelperPatch
-end
-

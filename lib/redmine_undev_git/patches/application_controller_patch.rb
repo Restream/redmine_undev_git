@@ -5,6 +5,7 @@ module RedmineUndevGit::Patches::ApplicationControllerPatch
 
   included do
     lazy_helper :undev_git
+    lazy_helper RedmineUndevGit::Patches::ProjectsHelperPatch, :if_included => ProjectsHelper
   end
 
 end

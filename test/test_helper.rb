@@ -2,7 +2,15 @@ require File.expand_path(File.dirname(__FILE__) + '../../../../test/test_helper'
 
 require 'tmpdir'
 
+factories_path = File.expand_path(File.dirname(__FILE__) + '/factories')
+unless FactoryGirl.definition_file_paths.include? factories_path
+  FactoryGirl.definition_file_paths << factories_path
+  FactoryGirl.reload
+end
+
 class ActiveSupport::TestCase
+  include FactoryGirl::Syntax::Methods
+
   REPOSITORY_PATH = File.join(Rails.root, 'tmp', 'test', 'undev_git_repository')
 
   # these repositories looks like:

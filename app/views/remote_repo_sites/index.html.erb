@@ -1,0 +1,23 @@
+<% if remote_repo_sites.any? %>
+  <table class="list">
+    <thead>
+    <tr>
+      <th><%= l(:field_server_name) %></th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <% remote_repo_sites.sort.each do |site| %>
+      <tr class="<%= cycle 'odd', 'even' %>">
+        <td>
+          <%= link_to site.server_name, site.uri, :target => '_blank' %>
+        </td>
+        <td class="buttons">
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>

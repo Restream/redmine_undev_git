@@ -47,6 +47,15 @@ Redmine::Plugin.register :redmine_undev_git do
                :max_branches_in_assoc => 5,
                :fetch_by_web_hook => '0'
            }
+
+  # Remote repositories
+  menu :admin_menu,
+      :remote_repo_sites,
+      { :controller => 'remote_repo_sites', :action => 'index' },
+      :html => { :class => 'remote_repo_sites_label' }
+  permission :edit_remote_repo_sites,
+      { :remote_repo_sites => [:index, :show] },
+      :require => :admin
 end
 
 Redmine::Scm::Base.insert 0, 'UndevGit'

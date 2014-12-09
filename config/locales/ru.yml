@@ -20,6 +20,8 @@ ru:
   label_associated_remote_revisions: Связанные внешние коммиты
   label_associated_remote_repositories: Связанный внешний репозиторий
   label_associated_remote_site: Сервер внешнего репозитория
+  label_remote_repo_sites: Сервера внешних репозиториев
+  label_remote_repo: Внешний репозиторий
 
   new_hook: "Новый хук"
 

@@ -20,6 +20,8 @@ en:
   label_associated_remote_revisions: Associated remote revisions
   label_associated_remote_repository: Associated remote repository
   label_associated_remote_site: Remote repository server
+  label_remote_repo_sites: Remote repository servers
+  label_remote_repo: Внешний репозиторий
 
   new_hook: "New hook"
 

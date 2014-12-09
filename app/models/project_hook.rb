@@ -20,4 +20,8 @@ class ProjectHook < HookBase
   def available_custom_fields
     project ? project.all_issue_custom_fields : []
   end
+
+  def to_s
+    "#{super}; project: #{project.try(:identifier)}; repository: #{repository_id}"
+  end
 end

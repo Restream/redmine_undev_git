@@ -51,9 +51,9 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
 
   def test_apply_only_one_hook_with_first_position
     hook2_1 = GlobalHook.create!(:keywords => 'hook2', :branches => 'develop', :done_ratio => '21%')
-    hook2_2 = GlobalHook.create!(:keywords => 'hook2', :branches => 'staging', :done_ratio => '22%')
-    hook2_3 = GlobalHook.create!(:keywords => 'hook2', :branches => 'feature', :done_ratio => '23%')
-    hook2_4 = GlobalHook.create!(:keywords => 'hook2', :branches => 'master',  :done_ratio => '24%')
+    hook2_2 = GlobalHook.create!(:keywords => 'hook2', :branches => 'develop', :done_ratio => '22%')
+    hook2_3 = GlobalHook.create!(:keywords => 'hook2', :branches => 'develop', :done_ratio => '23%')
+    hook2_4 = GlobalHook.create!(:keywords => 'hook2', :branches => 'develop',  :done_ratio => '24%')
     fetch_step_by_step
 
     issue = Issue.find(5)

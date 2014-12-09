@@ -26,12 +26,14 @@ module RedmineUndevGit::Services
       initialize_repository
       download_changes
       repo.transaction do
+        update_repo_refs
+        update_revisions_refs
 
         new_revisions = find_new_revisions
         link_revisions_to_issues(new_revisions)
         log_time_from_revisions(new_revisions)
 
-        apply_hooks_to_issues_by_revisions
+        apply_hooks_to_issues
 
         save_new_tail
       end
@@ -60,6 +62,12 @@ module RedmineUndevGit::Services
       stored_refs = repo.refs.pluck(:name)
       new_refs = head_branches - stored_refs
       new_refs.each { |new_ref| repo.refs.create!(:name => new_ref) }
+    end
+
+    def update_revisions_refs
+      repo.revisions.each do |repo_revision|
+        update_remote_repo_revision_refs(repo_revision)
+      end
     end
 
     def find_new_revisions
@@ -119,35 +127,58 @@ module RedmineUndevGit::Services
       end
     end
 
-    def apply_hooks_to_issues_by_revisions
-      update_repo_refs
-      head_branches.each do |branch|
-        revisions = find_hooks_revisions(branch)
+    def apply_hooks_to_issues
+      revisions = find_hooks_revisions
 
-        revisions.each do |revision|
-          parser.parse_message_for_hooks(revision.message).each do |issue_id, action|
+      revisions.each do |revision|
+        parser.parse_message_for_hooks(revision.message).each do |issue_id, action|
 
-            repo_revision = repo_revision_by_git_revision(revision)
-            add_branch_to_revision(branch, repo_revision)
+          repo_revision = repo_revision_by_git_revision(revision)
 
-            hook = find_hook_applicable_for(action, branch)
+          apply_hooks_to_issue_by_repo_revision(issue_id, action, repo_revision)
+        end
+      end
+    end
 
-            next unless hook
+    def apply_hooks_to_issue_by_repo_revision(issue_id, action, repo_revision)
+      # find all hooks that applicable for revision
+      hooks = all_applicable_hooks.find_all { |h| h.applicable_for?(action, repo_revision.branches) }
+      applied_branches = []
 
-            req = HookRequest.new
-            req.issue = Issue.find_by_id(issue_id)
-            req.hook = hook
-            req.repo_revision = repo_revision
-            req.ref = repo_ref_by_name(branch) unless hook.any_branch?
+      hooks.each do |hook|
 
-            apply_hook(req) if allow_to_apply_hook?(req)
+        apply_hook = ->(branch = nil) {
+          req               = HookRequest.new
+          req.issue         = Issue.find_by_id(issue_id)
+          req.hook          = hook
+          req.repo_revision = repo_revision
+          req.ref           = repo_ref_by_name(branch) if branch
+
+          if allow_to_apply_hook?(req)
+            apply_hook(req)
+            applied_branches << branch if branch
           end
+        }
+
+        if hook.any_branch?
+          apply_hook.call
+          return
+        end
+
+        repo_revision.branches.each do |branch|
+
+          next if applied_branches.include?(branch)
+
+          next unless hook.applicable_for_branch?(branch)
+
+          apply_hook.call(branch)
         end
       end
     end
 
     def repo_ref_by_name(branch)
-      repo.refs.find_by_name(branch)
+      @refs_cache ||= {}
+      @refs_cache[branch] ||= repo.refs.where(:name => branch).first_or_create
     end
 
     def allow_to_apply_hook?(hook_request)
@@ -156,8 +187,8 @@ module RedmineUndevGit::Services
           Policies::ApplyHooks.allowed?(hook_request.repo_revision.committer, hook_request.issue)
     end
 
-    def find_hooks_revisions(branch)
-      scm.revisions([branch], nil, :grep => fix_keywords)
+    def find_hooks_revisions
+      scm.revisions(nil, nil, :grep => fix_keywords)
     end
 
     def repo_revision_by_git_revision(revision)
@@ -165,7 +196,6 @@ module RedmineUndevGit::Services
       @revisions_cache[revision.sha] ||=
           repo.revisions.find_by_sha(revision.sha) ||
               create_remote_repo_revision(revision)
-      @revisions_cache[revision.sha]
     end
 
     def create_remote_repo_revision(revision)
@@ -179,12 +209,8 @@ module RedmineUndevGit::Services
           :author_date      => revision.adate,
           :committer_date   => revision.cdate
       )
-      add_refs_to_remote_repo_revision(repo_revision)
+      update_remote_repo_revision_refs(repo_revision)
       repo_revision
-    end
-
-    def add_branch_to_revision(branch, repo_revision)
-      repo_revision.refs << repo_ref_by_name(branch) unless repo_revision.branches.include?(branch)
     end
 
     def user_by_email(email)
@@ -195,10 +221,11 @@ module RedmineUndevGit::Services
       @users_by_email[email]
     end
 
-    def add_refs_to_remote_repo_revision(repo_revision)
-      scm.branches(repo_revision.sha).each do |branch|
-        repo_ref = repo.refs.where(:name => branch.name).first_or_create
-        repo_revision.refs << repo_ref
+    def update_remote_repo_revision_refs(repo_revision)
+      old_branches = repo_revision.branches
+      new_branches = scm.branches(repo_revision.sha).map(&:name)
+      (new_branches - old_branches).each do |branch|
+        repo_revision.refs << repo_ref_by_name(branch)
       end
     end
 
@@ -318,11 +345,6 @@ module RedmineUndevGit::Services
       @all_applicable_hooks ||=
           ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
           GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
-    end
-
-    def find_hook_applicable_for(keyword, branch)
-      hook = all_applicable_hooks.detect { |h| h.applicable_for_keyword?(keyword) }
-      hook if hook.applicable_for_branch?(branch)
     end
 
     def parser

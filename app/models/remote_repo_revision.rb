@@ -24,7 +24,7 @@ class RemoteRepoRevision < ActiveRecord::Base
   end
 
   def branches
-    refs.map(&:name)
+    refs.map(&:name).uniq
   end
 
   def ensure_issue_is_related(issue)

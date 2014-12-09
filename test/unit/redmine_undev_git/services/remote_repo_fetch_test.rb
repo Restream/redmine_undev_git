@@ -169,7 +169,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     @service.stubs(:user_by_email).returns(user)
 
     @service.initialize_repository
-    @service.apply_hooks_to_issues_by_revisions
+    @service.apply_hooks_to_issues
 
     repo_revision = @service.repo.revisions.find_by_sha(CMT3)
     assert repo_revision
@@ -186,6 +186,34 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal 3, issue.status_id
   end
 
+  def test_apply_hooks_by_admin_for_every_explicit_branch
+    ProjectHook.create!(
+        :project_id => 1,
+        :branches => 'master',
+        :keywords => 'hook3',
+        :status_id => 3,
+        :done_ratio => '50%'
+    )
+    ProjectHook.create!(
+        :project_id => 1,
+        :branches => 'develop',
+        :keywords => 'hook3',
+        :status_id => 1,
+        :done_ratio => '20%'
+    )
+
+    user = User.find(1) # admin
+    @service.stubs(:user_by_email).returns(user)
+
+    @service.initialize_repository
+    @service.apply_hooks_to_issues
+
+    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
+    assert repo_revision
+
+    assert_equal 2, repo_revision.applied_hooks.count
+  end
+
   def test_not_apply_hooks_by_unknown_user_if_deny
     ProjectHook.create!(
         :project_id => 1,
@@ -197,7 +225,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
 
     @service.initialize_repository
-    @service.apply_hooks_to_issues_by_revisions
+    @service.apply_hooks_to_issues
 
     Policies::ApplyHooks.stubs(:allowed?).returns(false)
 
@@ -225,7 +253,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     Policies::ApplyHooks.stubs(:allowed?).returns(true)
 
     @service.initialize_repository
-    @service.apply_hooks_to_issues_by_revisions
+    @service.apply_hooks_to_issues
 
     issue = Issue.find(5)
 
@@ -261,15 +289,6 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     revisions.map! { |rev| rev.sha[0..6] }
     assert_equal 2, revisions.length
     assert_equal %w{c18df3f 0d8c70c}, revisions
-  end
-
-  def test_find_hooks_revisions
-    @service.repo.url = RD1
-    @service.initialize_repository
-    assert_equal %w{1a81e3a}, shorted(@service.find_hooks_revisions('master'))
-    assert_equal %w{1a81e3a 725bc91}, shorted(@service.find_hooks_revisions('develop'))
-    assert_equal %w{1a81e3a 57096e1 725bc91 a578eac}, shorted(@service.find_hooks_revisions('feature'))
-    assert_equal %w{0b652ac 1a81e3a 57096e1 725bc91 a578eac}, shorted(@service.find_hooks_revisions('staging'))
   end
 
   def test_refetch_dont_add_new_revisions

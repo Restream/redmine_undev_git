@@ -86,6 +86,10 @@ class HookBase < ActiveRecord::Base
     end
   end
 
+  def to_s
+    "keywords: #{keywords.join(',')}; branches: #{branches.join(',')}"
+  end
+
   private
 
   def has_changes_for_issue?(issue)

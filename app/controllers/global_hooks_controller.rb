@@ -22,9 +22,9 @@ class GlobalHooksController < ApplicationController
 
     if @hook.save
       flash[:notice] = l(:notice_successful_create)
-      redirect_to :action => 'index'
+      redirect_to action: 'index'
     else
-      render :action => 'new'
+      render action: 'new'
     end
   end
 
@@ -36,9 +36,9 @@ class GlobalHooksController < ApplicationController
     @hook = GlobalHook.find(params[:id])
     if @hook.update_attributes(params[:global_hook])
       flash[:notice] = l(:notice_successful_update)
-      redirect_to :action => 'index'
+      redirect_to action: 'index'
     else
-      render :action => 'edit'
+      render action: 'edit'
     end
   end
 
@@ -47,6 +47,6 @@ class GlobalHooksController < ApplicationController
     hook.destroy
 
     flash[:notice] = l(:notice_successful_delete)
-    redirect_to :action => 'index'
+    redirect_to action: 'index'
   end
 end

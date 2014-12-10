@@ -5,7 +5,7 @@ class HookTest < ActiveSupport::TestCase
   def test_applied_for
     samples = [
         {
-            :hook => { :keywords => 'refs, fixes', :branches => '*' },
+            hook: { keywords: 'refs, fixes', branches: '*' },
             true => [
                 [%w{refs fixes}, %w{master}],
                 [%w{fixes refs closes}, %w{master}],
@@ -21,7 +21,7 @@ class HookTest < ActiveSupport::TestCase
             ]
         },
         {
-            :hook => { :keywords => 'refs', :branches => 'master' },
+            hook: { keywords: 'refs', branches: 'master' },
             true => [
                 [%w{refs}, %w{master}]
             ],
@@ -30,7 +30,7 @@ class HookTest < ActiveSupport::TestCase
             ]
         },
         {
-            :hook => { :keywords => 'refs', :branches => 'master, develop' },
+            hook: { keywords: 'refs', branches: 'master, develop' },
             true => [
                 [%w{refs}, %w{master}],
                 [%w{refs}, %w{master other}],

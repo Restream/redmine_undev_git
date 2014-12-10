@@ -1,19 +1,19 @@
 class RemoteRepo < ActiveRecord::Base
-  belongs_to :site, :class_name => 'RemoteRepoSite', :foreign_key => 'remote_repo_site_id'
+  belongs_to :site, class_name: 'RemoteRepoSite', foreign_key: 'remote_repo_site_id'
   has_many :revisions,
-           :class_name => 'RemoteRepoRevision',
-           :inverse_of => :repo,
-           :dependent => :destroy # todo: should delete_all for all tails
-  has_many :refs, :class_name => 'RemoteRepoRef', :inverse_of => :repo
-  has_many :applied_hooks, :through => :revisions
-  has_many :time_entries, :through => :revisions
+           class_name: 'RemoteRepoRevision',
+           inverse_of: :repo,
+           dependent: :destroy # todo: should delete_all for all tails
+  has_many :refs, class_name: 'RemoteRepoRef', inverse_of: :repo
+  has_many :applied_hooks, through: :revisions
+  has_many :time_entries, through: :revisions
 
-  validates :site, :presence => true
+  validates :site, presence: true
 
   serialize :tail_revisions, Array
 
   scope :related_to_project, ->(project) {
-    joins(:revisions => :related_issues).where("#{Issue.table_name}.project_id = ?", project.id).uniq
+    joins(revisions: :related_issues).where("#{Issue.table_name}.project_id = ?", project.id).uniq
   }
 
   def fetch
@@ -39,6 +39,6 @@ class RemoteRepo < ActiveRecord::Base
   end
 
   def clear_time_entries
-    TimeEntry.joins(:remote_repo_revision => :repo).where("#{RemoteRepo.table_name}.id = ?", id).destroy_all
+    TimeEntry.joins(remote_repo_revision: :repo).where("#{RemoteRepo.table_name}.id = ?", id).destroy_all
   end
 end

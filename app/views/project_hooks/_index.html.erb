@@ -7,25 +7,25 @@
         <tr class="hooks-header">
           <td colspan="9"><h3><%= l( :label_global_hooks ) %></h3></td>
         </tr>
-        <%= render :partial => 'project_hooks/global_hooks',
-                   :locals => { :hooks => GlobalHook.by_position } %>
+        <%= render partial: 'project_hooks/global_hooks',
+                   locals: { hooks: GlobalHook.by_position } %>
       <% end %>
 
       <% if @project.hooks.global.any? %>
         <tr class="hooks-header">
           <td colspan="9"><h3><%= l( :project_hooks ) %></h3></td>
         </tr>
-        <%= render :partial => 'project_hooks/hooks',
-                   :locals => { :project => @project, :hooks => @project.hooks.global.by_position } %>
+        <%= render partial: 'project_hooks/hooks',
+                   locals: { project: @project, hooks: @project.hooks.global.by_position } %>
       <% end %>
 
       <% @project.repositories.each do |repository| %>
         <% if repository.respond_to?( :hooks ) && repository.hooks.any? %>
           <tr class="hooks-header">
-            <td colspan="9"><h3><%= l(:repository_hooks, :repository => ( repository.name || repository.url )) %></h3></td>
+            <td colspan="9"><h3><%= l(:repository_hooks, repository: ( repository.name || repository.url )) %></h3></td>
           </tr>
-          <%= render :partial => 'project_hooks/hooks',
-                     :locals => { :project => @project, :hooks => repository.hooks.by_position } %>
+          <%= render partial: 'project_hooks/hooks',
+                     locals: { project: @project, hooks: repository.hooks.by_position } %>
         <% end %>
       <% end %>
 
@@ -39,9 +39,9 @@
 <p>
   <%= link_to_if_authorized l( :new_hook ),
                              {
-                                 :controller => 'project_hooks',
-                                 :action => 'new',
-                                 :project_id => @project.id
+                                 controller: 'project_hooks',
+                                 action:     'new',
+                                 project_id: @project.id
                              },
-                             :class => 'icon icon-add' %>
+                             class: 'icon icon-add' %>
 </p>

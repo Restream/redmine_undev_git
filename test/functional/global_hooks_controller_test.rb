@@ -45,17 +45,17 @@ class GlobalHooksControllerTest < ActionController::TestCase
 
   def test_post_create
     assert_difference 'GlobalHook.count', 1 do
-      post :create, :global_hook => {
-          :branches => 'Master',
-          :keywords => 'closes',
-          :done_ratio => '50%' }
+      post :create, global_hook: {
+              branches:   'Master',
+              keywords:   'closes',
+              done_ratio: '50%' }
     end
 
     assert_redirected_to '/hooks'
   end
 
   def test_get_edit
-    get :edit, :id => @hook.id
+    get :edit, id: @hook.id
     assert_response :success
     assert_template 'edit'
     assert_not_nil assigns(:hook)
@@ -63,7 +63,7 @@ class GlobalHooksControllerTest < ActionController::TestCase
 
   def test_put_update
     assert_no_difference 'GlobalHook.count' do
-      put :update, :id => @hook.id, :global_hook => { :branches => 'staging' }
+      put :update, id: @hook.id, global_hook: { branches: 'staging' }
     end
 
     assert_redirected_to '/hooks'
@@ -73,7 +73,7 @@ class GlobalHooksControllerTest < ActionController::TestCase
 
   def test_post_destroy
     assert_difference 'GlobalHook.count', -1 do
-      post :destroy, :id => @hook.id
+      post :destroy, id: @hook.id
     end
 
     assert_redirected_to '/hooks'
@@ -88,7 +88,7 @@ class GlobalHooksControllerTest < ActionController::TestCase
     assert_equal 1, h1.position
     assert_equal 2, h2.position
 
-    put :update, :id => h2.id, :global_hook => { 'move_to' => 'higher' }
+    put :update, id: h2.id, global_hook: { 'move_to' => 'higher' }
 
     assert_response :redirect
 
@@ -106,7 +106,7 @@ class GlobalHooksControllerTest < ActionController::TestCase
     assert_equal 1, h1.position
     assert_equal 2, h2.position
 
-    put :update, :id => h1.id, :global_hook => { 'move_to' => 'lower' }
+    put :update, id: h1.id, global_hook: { 'move_to' => 'lower' }
 
     assert_response :redirect
 

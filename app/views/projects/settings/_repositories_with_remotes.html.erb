@@ -14,10 +14,10 @@
     <% @project.remote_repositories.each do |remote_repo| %>
       <tr class="<%= cycle 'odd', 'even' %>">
         <td>
-          <%= link_to remote_repo.site.server_name, remote_repo.site.uri, :target => '_blank' %>
+          <%= link_to remote_repo.site.server_name, remote_repo.site.uri, target: '_blank' %>
         </td>
         <td>
-          <%= link_to remote_repo.path_to_repo, remote_repo.uri, :target => '_blank' %>
+          <%= link_to remote_repo.path_to_repo, remote_repo.uri, target: '_blank' %>
         </td>
         <td class="buttons">
         </td>

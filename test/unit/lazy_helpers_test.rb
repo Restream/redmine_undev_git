@@ -50,7 +50,7 @@ class LazyControllerTest < ActiveSupport::TestCase
 
   def test_custom_module_included_with_true_condition
     TestController.class_eval do
-      lazy_helper CustomHelper, :if_included => UsualHelper
+      lazy_helper CustomHelper, if_included: UsualHelper
     end
     @controller.send :include_lazy_helpers
     assert @controller._helpers.included_modules.include?(CustomHelper)
@@ -59,7 +59,7 @@ class LazyControllerTest < ActiveSupport::TestCase
   def test_custom_module_doesnt_included_with_false_condition
     some_module = Module.new
     TestController.class_eval do
-      lazy_helper CustomHelper, :if_included => some_module
+      lazy_helper CustomHelper, if_included: some_module
     end
     @controller.send :include_lazy_helpers
     refute @controller._helpers.included_modules.include?(CustomHelper)

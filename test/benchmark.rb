@@ -32,8 +32,8 @@ system "git clone --bare #{TEST_REPO} #{tmpdir}"
 system "git clone --bare #{TEST_REPO} #{tmpdir_undev}"
 
 project = Project.create! \
-  :name => 'Benchmark',
-  :identifier => "benchmark-#{Time.now.to_i}"
+  name: 'Benchmark',
+  identifier: "benchmark-#{Time.now.to_i}"
 
 Setting.enabled_scm = ['Git', 'UndevGit']
 

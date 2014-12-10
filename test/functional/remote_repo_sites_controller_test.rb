@@ -19,14 +19,14 @@ class RemoteRepoSitesControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_match site1.server_name, response.body
-    assert_tag :tag => 'a', :attributes => { :href => site1.uri }
+    assert_tag tag: 'a', attributes: { href: site1.uri }
     assert_match site2.server_name, response.body
-    assert_tag :tag => 'a', :attributes => { :href => site2.uri }
+    assert_tag tag: 'a', attributes: { href: site2.uri }
   end
 
   def test_show_page_success_without_repos
     site = create(:site)
-    get :show, :id => site.id
+    get :show, id: site.id
     assert_response :success
   end
 end

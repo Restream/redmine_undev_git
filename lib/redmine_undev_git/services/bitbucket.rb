@@ -4,7 +4,7 @@ module RedmineUndevGit::Services
     private
 
     def find_or_create_remote_repo_site
-      RemoteRepoSite::Bitbucket.first_or_create!(:server_name => server_name)
+      RemoteRepoSite::Bitbucket.first_or_create!(server_name: server_name)
     end
 
     def all_urls
@@ -39,10 +39,10 @@ module RedmineUndevGit::Services
           raise RedmineUndevGit::Services::WrongRepoUrl
         end
         {
-            :user => 'git',
-            :host => host,
-            :path_to_repo => path_to_repo,
-            :repo_owner => repo_owner
+            user:         'git',
+            host:         host,
+            path_to_repo: path_to_repo,
+            repo_owner:   repo_owner
         }
       end
     end

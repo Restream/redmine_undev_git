@@ -1,6 +1,6 @@
 namespace :undev do
   desc 'Migrates Git repos to UndevGit. Provide mapping file with "old_url;new_url" content as argument.'
-  task :migrate_to_undev_git, [:mapping_filename] => [:environment] do |t, args|
+  task :migrate_to_undev_git, [mapping_filename]: [:environment] do |t, args|
 
     mfile = args[:mapping_filename]
 
@@ -11,7 +11,7 @@ namespace :undev do
   end
 
   desc 'Prepare full mapping for migration'
-  task :migrate_to_undev_git_mappings, [:url_mapping_filename] => [:environment] do |t, args|
+  task :migrate_to_undev_git_mappings, [url_mapping_filename]: [:environment] do |t, args|
     mfile = args[:url_mapping_filename]
 
     raise 'Provide mapping url file with "old_url;new_url" content as argument.' unless mfile && File.exists?(mfile)

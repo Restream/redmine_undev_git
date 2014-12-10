@@ -21,9 +21,11 @@ class ChangeIssueByHookTest < ActionDispatch::IntegrationTest
     make_temp_dir
     @project = Project.find(3)
     Setting.enabled_scm << 'UndevGit'
-    @repo = Repository::UndevGit.create!(:project => @project,
-                                         :url => RD4,
-                                         :use_init_hooks => 1)
+    @repo = Repository::UndevGit.create!(
+        project: @project,
+        url: RD4,
+        use_init_hooks: 1
+    )
     @issue = Issue.find(5)
   end
 
@@ -33,13 +35,13 @@ class ChangeIssueByHookTest < ActionDispatch::IntegrationTest
 
   def test_issue_changed_by_hook
     hook = GlobalHook.create!(
-        :keywords => 'hook9',
-        :branches => '*',
-        :status => IssueStatus.find(2),
-        :done_ratio => '16%',
-        :assignee_type => GlobalHook::USER,
-        :assigned_to => User.find(2),
-        :custom_field_values => {
+        keywords: 'hook9',
+        branches: '*',
+        status: IssueStatus.find(2),
+        done_ratio: '16%',
+        assignee_type: GlobalHook::USER,
+        assigned_to: User.find(2),
+        custom_field_values: {
             1 => 'PostgreSQL'
         }
     )
@@ -68,9 +70,9 @@ class ChangeIssueByHookTest < ActionDispatch::IntegrationTest
 
   def test_issue_changed_by_hook_to_author
     GlobalHook.create!(
-        :keywords => 'hook9',
-        :branches => '*',
-        :assignee_type => GlobalHook::AUTHOR
+        keywords: 'hook9',
+        branches: '*',
+        assignee_type: GlobalHook::AUTHOR
     )
     assert_not_equal @issue.author, @issue.assigned_to
 

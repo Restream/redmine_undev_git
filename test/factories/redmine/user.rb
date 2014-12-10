@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :user, :aliases => [:author, :committer], :class => User do
+  factory :user, aliases: [:author, :committer], class: User do
     login     { generate :name }
     firstname { generate :name }
     lastname  { generate :name }

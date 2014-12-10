@@ -4,7 +4,7 @@ module RedmineUndevGit::Services
     private
 
     def find_or_create_remote_repo_site
-      RemoteRepoSite::Github.first_or_create!(:server_name => server_name)
+      RemoteRepoSite::Github.first_or_create!(server_name: server_name)
     end
 
     def all_urls

@@ -2,7 +2,7 @@ namespace :test do
   namespace :scm do
     namespace :setup do
       desc 'Creates a test git repository for undev_git'
-      task :undev_git => :create_dir do
+      task undev_git: :create_dir do
         extract_repo('undev_git_repository')
         extract_repo('rebase_test_before.git')
         extract_repo('rebase_test_after.git')

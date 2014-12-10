@@ -137,7 +137,7 @@ module RedmineUndevGit::Services
 
       result = []
 
-      git(*cmd_args, { :write_stdin => true }) do |io|
+      git(*cmd_args, { write_stdin: true }) do |io|
 
         # includes and excludes
         io.binmode

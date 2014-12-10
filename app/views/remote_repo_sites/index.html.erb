@@ -2,7 +2,7 @@
 <% if remote_repo_sites.any? %>
   <% remote_repo_sites.sort.each do |site| %>
   <h2><%= site.server_name %></h2>
-    <%= link_to site.uri, site.uri, :target => '_blank' %><br>
+    <%= link_to site.uri, site.uri, target: '_blank' %><br>
     <%= l(:field_created_on) %>: <%= site.created_at %><br>
   <table class="list">
     <thead>
@@ -16,7 +16,7 @@
     <% site.repos.each do |repo| %>
       <tr class="<%= cycle 'odd', 'even' %>">
         <td>
-          <%= link_to repo.uri, repo.uri, :target => '_blank' %>
+          <%= link_to repo.uri, repo.uri, target: '_blank' %>
         </td>
         <td>
           <%= repo.created_at %>

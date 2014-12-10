@@ -24,9 +24,9 @@ class Repository::UndevGit < Repository
   end
 
   has_many :hooks,
-           :class_name => 'ProjectHook',
-           :foreign_key => 'repository_id',
-           :dependent => :destroy
+           class_name: 'ProjectHook',
+           foreign_key: 'repository_id',
+           dependent: :destroy
 
   validates :project, presence: true
   validates :url, presence: true, url: true
@@ -120,13 +120,13 @@ class Repository::UndevGit < Repository
 
   def find_changeset_by_name(name)
     if name.present?
-      changesets.where(:revision => name.to_s).first ||
+      changesets.where(revision: name.to_s).first ||
           changesets.where('scmid LIKE ?', "#{name}%").first
     end
   end
 
   def entries(path=nil, identifier=nil)
-    entries = scm.entries(path, identifier, :report_last_commit => extra_report_last_commit)
+    entries = scm.entries(path, identifier, report_last_commit: extra_report_last_commit)
     load_entries_changesets(entries)
     entries
   end
@@ -156,26 +156,26 @@ class Repository::UndevGit < Repository
     repo_branches.each { |b| h['branches'][b.to_s] = b.scmid }
     merge_extra_info(h)
     self.save
-    fetch_events.create(:successful => true,
-                        :duration => Time.now - fetch_start)
+    fetch_events.create(successful: true,
+                        duration: Time.now - fetch_start)
   rescue Exception => e
-    fetch_events.create(:successful => false,
-                        :duration => Time.now - fetch_start,
-                        :error_message => e.message)
+    fetch_events.create(successful: false,
+                        duration: Time.now - fetch_start,
+                        error_message: e.message)
     raise
   end
 
   def latest_changesets(path,rev,limit=10)
-    revisions = scm.revisions(path, nil, rev, :limit => limit, :all => false)
+    revisions = scm.revisions(path, nil, rev, limit: limit, all: false)
     return [] if revisions.nil? || revisions.empty?
 
     changesets.find(
         :all,
-        :conditions => [
+        conditions: [
             'scmid IN (?)',
             revisions.map! { |c| c.scmid }
         ],
-        :order => 'committed_on DESC'
+        order: 'committed_on DESC'
     )
   end
 
@@ -188,7 +188,7 @@ class Repository::UndevGit < Repository
   end
 
   def use_init_hooks=(val)
-    merge_extra_info(:use_init_hooks => val)
+    merge_extra_info(use_init_hooks: val)
   end
 
   def use_init_refs
@@ -200,7 +200,7 @@ class Repository::UndevGit < Repository
   end
 
   def use_init_refs=(val)
-    merge_extra_info(:use_init_refs => val)
+    merge_extra_info(use_init_refs: val)
   end
 
   def fetch_by_web_hook
@@ -212,7 +212,7 @@ class Repository::UndevGit < Repository
   end
 
   def fetch_by_web_hook=(val)
-    merge_extra_info(:fetch_by_web_hook => val)
+    merge_extra_info(fetch_by_web_hook: val)
   end
 
   def initialization_done?
@@ -258,7 +258,7 @@ class Repository::UndevGit < Repository
     while offset < revisions_copy.size
       recent_changesets_slice = changesets.find(
           :all,
-          :conditions => [
+          conditions: [
               'scmid IN (?)',
               revisions_copy.slice(offset, limit).map{|x| x.scmid}
           ]
@@ -284,17 +284,17 @@ class Repository::UndevGit < Repository
     rebased_from = find_original_changeset(rev) if rev.looks_like_rebased?
 
     changeset = Changeset.create(
-        :repository   => self,
-        :revision     => rev.identifier,
-        :scmid        => rev.scmid,
-        :committer    => rev.author,
-        :committed_on => rev.time,
-        :comments     => rev.message,
-        :parents      => parents,
-        :branches     => rev.branches,
-        :patch_id     => rev.patch_id,
-        :authored_on  => rev.authored_on,
-        :rebased_from => rebased_from
+        repository: self,
+        revision: rev.identifier,
+        scmid: rev.scmid,
+        committer: rev.author,
+        committed_on: rev.time,
+        comments: rev.message,
+        parents: parents,
+        branches: rev.branches,
+        patch_id: rev.patch_id,
+        authored_on: rev.authored_on,
+        rebased_from: rebased_from
     )
 
     unless changeset.new_record?
@@ -442,11 +442,11 @@ class Repository::UndevGit < Repository
   def apply_for_issue_by_changeset(hook, issue, changeset)
     hook.apply_for_issue(
         issue,
-        :user => changeset.user,
-        :notes => ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
+        user: changeset.user,
+        notes: ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
     ) do
       Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
-                              { :changeset => changeset, :issue => issue, :hook => hook })
+                              { changeset: changeset, issue: issue, hook: hook })
     end
   end
 
@@ -457,7 +457,7 @@ class Repository::UndevGit < Repository
     h = {}
     h['extra_report_last_commit'] = v
     merge_extra_info(h)
-    self.save(:validate => false)
+    self.save(validate: false)
   end
 
   def url_uniqueness_check

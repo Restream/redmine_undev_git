@@ -14,12 +14,12 @@ class HookBase < ActiveRecord::Base
 
   safe_attributes %w{branches keywords status_id done_ratio assigned_to_id custom_field_values}
 
-  belongs_to :status, :class_name => 'IssueStatus'
-  belongs_to :assigned_to, :class_name => 'Principal'
+  belongs_to :status, class_name: 'IssueStatus'
+  belongs_to :assigned_to, class_name: 'Principal'
 
-  validates :branches, :presence => true
-  validates :keywords, :presence => true
-  validates :assignee_type, :presence => true, :inclusion => { :in => ASSIGNEE_TYPES }
+  validates :branches, presence: true
+  validates :keywords, presence: true
+  validates :assignee_type, presence: true, inclusion: { in: ASSIGNEE_TYPES }
 
   scope :by_position, order("#{table_name}.position")
 

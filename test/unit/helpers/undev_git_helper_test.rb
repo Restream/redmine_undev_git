@@ -10,16 +10,16 @@ class UndevGitHelperTest < ActionView::TestCase
     super
     make_temp_dir
     @project = Project.find(3)
-    @repository = create_test_repository(:project => @project)
-    @named_repository = create_test_repository(:project => @project,
-                                               :identifier => 'named')
+    @repository = create_test_repository(project: @project)
+    @named_repository = create_test_repository(project: @project,
+                                               identifier: 'named')
     fake_rev = '1234567890123456789012345678901234567890'
     branches = Array.new(15) { |i| "branch#{i}" }
     @changeset = Changeset.new(
-        :repository   => @repository,
-        :revision     => fake_rev,
-        :scmid        => fake_rev,
-        :branches     => branches
+        repository: @repository,
+        revision: fake_rev,
+        scmid: fake_rev,
+        branches: branches
     )
   end
 
@@ -88,12 +88,12 @@ class UndevGitHelperTest < ActionView::TestCase
     branches = %w{master develop staging}
     repo = create_remote_repo
     revision = repo.revisions.create!(
-        :sha => '83ca5fd',
-        :committer => User.find(1),
-        :message => 'reference #1'
+        sha: '83ca5fd',
+        committer: User.find(1),
+        message: 'reference #1'
     )
     branches.each do |branch|
-      ref = repo.refs.create!(:name => branch)
+      ref = repo.refs.create!(name: branch)
       revision.refs << ref
     end
     link = link_to_remote_revision(revision)
@@ -107,12 +107,12 @@ class UndevGitHelperTest < ActionView::TestCase
     branches = %w{master develop staging}
     repo = create_remote_repo
     revision = repo.revisions.create!(
-        :sha => '83ca5fd',
-        :committer => User.find(1),
-        :message => 'reference #1'
+        sha: '83ca5fd',
+        committer: User.find(1),
+        message: 'reference #1'
     )
     branches.each do |branch|
-      ref = repo.refs.create!(:name => branch)
+      ref = repo.refs.create!(name: branch)
       revision.refs << ref
     end
     links = links_to_remote_branches(revision)
@@ -123,8 +123,8 @@ class UndevGitHelperTest < ActionView::TestCase
   end
 
   def create_remote_repo
-    site = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
-    site.repos.create!(:url => REPOSITORY_PATH)
+    site = RemoteRepoSite::Gitlab.create!(server_name: 'gitlab.com')
+    site.repos.create!(url: REPOSITORY_PATH)
   end
 
 end

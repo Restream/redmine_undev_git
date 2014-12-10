@@ -150,7 +150,7 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
   def test_revisions_with_one_grep
     adapter = create_adapter
     adapter.clone_repository
-    revs = adapter.revisions(nil, nil, :grep => 'initial')
+    revs = adapter.revisions(nil, nil, grep: 'initial')
     assert revs
     assert_equal 1, revs.length
     assert_equal '7234cb2', revs[0].sha[0..6]
@@ -159,7 +159,7 @@ class RedmineUndevGit::Services::GitAdapterTest < ActiveSupport::TestCase
   def test_revisions_with_several_greps
     adapter = create_adapter
     adapter.clone_repository
-    revs = adapter.revisions(nil, nil, :grep => %w{readme added initial})
+    revs = adapter.revisions(nil, nil, grep: %w{readme added initial})
     assert revs
     assert_equal 7, revs.length
     revs_hashes = revs.map { |rev| rev.sha[0..6] }.sort

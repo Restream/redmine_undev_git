@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :remote_repo_site, :aliases => [:site] do
+  factory :remote_repo_site, aliases: [:site] do
     sequence(:server_name) { |n| "server#{n}.com" }
 
     factory :remote_repo_site_with_repos do

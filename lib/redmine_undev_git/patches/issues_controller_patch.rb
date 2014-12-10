@@ -4,7 +4,7 @@ module RedmineUndevGit::Patches::IssuesControllerPatch
   extend ActiveSupport::Concern
 
   included do
-    before_filter :read_remote_revisions, :only => [:show]
+    before_filter :read_remote_revisions, only: [:show]
   end
 
   def read_remote_revisions

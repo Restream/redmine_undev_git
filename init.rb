@@ -23,39 +23,39 @@ Redmine::Plugin.register :redmine_undev_git do
   version     '0.2.9'
   url         'https://github.com/Undev/redmine_undev_git'
 
-  requires_redmine :version_or_higher => '2.1'
+  requires_redmine version_or_higher: '2.1'
 
   # Global hooks
   menu :admin_menu,
        :global_hooks,
-       { :controller => 'global_hooks', :action => 'index' },
-       :html => { :class => 'global_hooks_label' }
+       { controller: 'global_hooks', action: 'index' },
+       html: { class: 'global_hooks_label' }
   permission :edit_global_hooks,
-             { :global_hooks => [:index, :new, :create, :edit, :update, :destroy] },
-             :require => :admin
+             { global_hooks: [:index, :new, :create, :edit, :update, :destroy] },
+             require: :admin
 
   # Project hooks
   project_module :hooks do
     permission :edit_hooks,
-               { :project_hooks => [:new, :create, :edit, :update, :destroy] },
-               :require => :member
+               { project_hooks: [:new, :create, :edit, :update, :destroy] },
+               require: :member
   end
 
   # Plugin settings
-  settings :partial => 'settings/undev_git_settings',
-           :default => {
-               :max_branches_in_assoc => 5,
-               :fetch_by_web_hook => '0'
+  settings partial: 'settings/undev_git_settings',
+           default: {
+               max_branches_in_assoc: 5,
+               fetch_by_web_hook:     '0'
            }
 
   # Remote repositories
   menu :admin_menu,
       :remote_repo_sites,
-      { :controller => 'remote_repo_sites', :action => 'index' },
-      :html => { :class => 'remote_repo_sites_label' }
+      { controller: 'remote_repo_sites', action: 'index' },
+      html: { class: 'remote_repo_sites_label' }
   permission :edit_remote_repo_sites,
-      { :remote_repo_sites => [:index, :show] },
-      :require => :admin
+      { remote_repo_sites: [:index, :show] },
+      require: :admin
 end
 
 Redmine::Scm::Base.insert 0, 'UndevGit'

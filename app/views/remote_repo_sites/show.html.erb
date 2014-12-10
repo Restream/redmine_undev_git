@@ -13,7 +13,7 @@
     <% remote_repo_site.repos.each do |remote_repo| %>
       <tr class="<%= cycle 'odd', 'even' %>">
         <td>
-          <%= link_to remote_repo.path_to_repo, remote_repo.uri, :target => '_blank' %>
+          <%= link_to remote_repo.path_to_repo, remote_repo.uri, target: '_blank' %>
         </td>
         <td class="buttons">
         </td>

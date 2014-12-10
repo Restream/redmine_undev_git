@@ -99,45 +99,45 @@ class ActiveSupport::TestCase
   def create_hooks!(options = {})
     repository_id = options[:repository_id] || 1
     GlobalHook.create!(
-        :branches => 'master',
-        :keywords => 'close,fix',
-        :status_id => 1,
-        :done_ratio => '90%'
+        branches: 'master',
+        keywords: 'close,fix',
+        status_id: 1,
+        done_ratio: '90%'
     )
     GlobalHook.create!(
-        :branches => 'production',
-        :keywords => 'close,fix,closes',
-        :status_id => 2,
-        :done_ratio => '80%'
+        branches: 'production',
+        keywords: 'close,fix,closes',
+        status_id: 2,
+        done_ratio: '80%'
     )
     ProjectHook.create!(
-        :project_id => 3,
-        :repository_id => repository_id,
-        :branches => 'master',
-        :keywords => 'close,fix',
-        :status_id => 1,
-        :done_ratio => '70%'
+        project_id: 3,
+        repository_id: repository_id,
+        branches: 'master',
+        keywords: 'close,fix',
+        status_id: 1,
+        done_ratio: '70%'
     )
     ProjectHook.create!(
-        :project_id => 3,
-        :repository_id => repository_id,
-        :branches => 'production',
-        :keywords => 'close,fix',
-        :status_id => 2,
-        :done_ratio => '60%'
+        project_id: 3,
+        repository_id: repository_id,
+        branches: 'production',
+        keywords: 'close,fix',
+        status_id: 2,
+        done_ratio: '60%'
     )
     ProjectHook.create!(
-        :project_id => 3,
-        :branches => 'production',
-        :keywords => 'fix',
-        :status_id => 3,
-        :done_ratio => '50%'
+        project_id: 3,
+        branches: 'production',
+        keywords: 'fix',
+        status_id: 3,
+        done_ratio: '50%'
     )
   end
 
   def create_rebased_repository
-    repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
-                                  :path_encoding => 'UTF-8')
+    repo = create_test_repository(url: R_BEFORE_REBASE_PATH,
+                                  path_encoding: 'UTF-8')
     repo.fetch_changesets
 
     # replace origin url to fetch rebased commits
@@ -152,21 +152,21 @@ class ActiveSupport::TestCase
     repo ||= create_rebased_repository
 
     cs = {
-        :c1 => '21d88b7',
-        :c2 => 'ac7080c',
-        :c3 => '8455e27',
-        :c4 => '40a5965',
-        :c5 => '43784cc',
-        :c6 => 'b278ae2',
-        :c8 => 'd2815cb',
-        :c9 => 'ad445de',
-        :c10 => '2b91d81',
+        c1:   '21d88b7',
+        c2:   'ac7080c',
+        c3:   '8455e27',
+        c4:   '40a5965',
+        c5:   '43784cc',
+        c6:   'b278ae2',
+        c8:   'd2815cb',
+        c9:   'ad445de',
+        c10:  '2b91d81',
         # rebased
-        :c3r => 'c906d8f',
-        :c4r => '1bb0a5f',
-        :c8r => 'e679660',
-        :c9r => '3cd80ef',
-        :c10r => 'feeb6b1',
+        c3r:  'c906d8f',
+        c4r:  '1bb0a5f',
+        c8r:  'e679660',
+        c9r:  '3cd80ef',
+        c10r: 'feeb6b1',
     }
 
     cs.each_key { |key| cs[key] = repo.find_changeset_by_name(cs[key]) }

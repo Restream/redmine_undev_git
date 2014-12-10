@@ -32,22 +32,22 @@ class RedmineUndevGit::ProjectsControllerTest < ActionController::TestCase
 
   def test_repositories_settings_tab_will_show_remote_repos
     GlobalHook.create!(
-        :branches   => '*',
-        :keywords   => 'fixes',
-        :status_id  => 3,
-        :done_ratio => '100%'
+        branches: '*',
+        keywords: 'fixes',
+        status_id: 3,
+        done_ratio: '100%'
     )
     repo = create_stubbed_remote_repo
-    get :settings, :id => @project.id, :tab => 'repositories'
+    get :settings, id: @project.id, tab: 'repositories'
     assert_response :success
     assert_match repo.uri, response.body
   end
 
   def create_stubbed_remote_repo
-    site         = RemoteRepoSite::Gitlab.create!(:server_name => 'gitlab.com')
-    remote_repo = site.repos.create!(:url => RD1)
-    revisions = [
-        fake_revision(:message => "refs ##{@issue.id} fixes ##{@issue.id}")
+    site        = RemoteRepoSite::Gitlab.create!(server_name: 'gitlab.com')
+    remote_repo = site.repos.create!(url: RD1)
+    revisions   = [
+        fake_revision(message: "refs ##{@issue.id} fixes ##{@issue.id}")
     ]
     stubs_scm_revisions(revisions)
     remote_repo.fetch

@@ -3,19 +3,19 @@ FactoryGirl.define do
     repo
     sequence(:sha) { |n| Digest::SHA1.hexdigest "sha#{n}" }
 
-    trait :author do
+    trait :author_info do
       author
       author_string { "#{author.name} <#{author.email}>" }
       author_date { generate :time_seq }
     end
 
-    trait :committer do
+    trait :committer_info do
       committer
       committer_string { "#{committer.name} <#{committer.email}>" }
       committer_date { generate :time_seq }
     end
 
-    factory :full_repo_revision, traits: [:author, :committer] do
+    factory :full_repo_revision, traits: [:author_info, :committer_info] do
       message
     end
   end

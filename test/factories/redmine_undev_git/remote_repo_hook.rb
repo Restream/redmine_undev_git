@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory :remote_repo_hook do
     issue
-    repo
-    hook { generate :global_hook }
+    revision { create :remote_repo_revision }
+    hook     { create :global_hook }
   end
 end

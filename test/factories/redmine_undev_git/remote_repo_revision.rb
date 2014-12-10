@@ -5,13 +5,13 @@ FactoryGirl.define do
 
     trait :author_info do
       author
-      author_string { "#{author.name} <#{author.email}>" }
+      author_string { "#{author.name} <#{author.mail}>" }
       author_date { generate :time_seq }
     end
 
     trait :committer_info do
       committer
-      committer_string { "#{committer.name} <#{committer.email}>" }
+      committer_string { "#{committer.name} <#{committer.mail}>" }
       committer_date { generate :time_seq }
     end
 

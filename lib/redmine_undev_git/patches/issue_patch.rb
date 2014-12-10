@@ -7,6 +7,8 @@ module RedmineUndevGit::Patches
                               :class_name => 'RemoteRepoRevision',
                               :join_table => 'remote_repo_related_issues'
 
+      has_many :applied_hooks, :class_name => 'RemoteRepoHook', :dependent => :delete_all
+
     end
   end
 end

@@ -3,9 +3,13 @@ module RedmineUndevGit::Services
   class RemoteRepoFetch
     attr_reader :repo
 
-    HookRequest = Struct.new(:issue, :hook, :repo_revision, :ref) do
+    HookRequest = Struct.new(:issue, :hook, :repo_revision, :keyword, :branch) do
       def valid?
-        issue && hook && repo_revision && (hook.any_branch? || ref)
+        issue && hook && repo_revision && keyword.present? && (hook.any_branch? == branch.blank?)
+      end
+
+      def validate!
+        raise "HookRequest #{self} invalid." unless valid?
       end
     end
 
@@ -117,7 +121,7 @@ module RedmineUndevGit::Services
       time_entry.activity = log_time_activity unless log_time_activity.nil?
 
       unless time_entry.save
-        Rails.logger.warn("TimeEntry could not be created by remote revision (#{options.inspect}): #{time_entry.errors.full_messages}") if Rails.logger
+        log "TimeEntry could not be created by remote revision (#{options.inspect}): #{time_entry.errors.full_messages}"
       end
     end
 
@@ -141,37 +145,36 @@ module RedmineUndevGit::Services
     end
 
     def apply_hooks_to_issue_by_repo_revision(issue_id, action, repo_revision)
-      # find all hooks that applicable for revision
-      hooks = all_applicable_hooks.find_all { |h| h.applicable_for?(action, repo_revision.branches) }
-      applied_branches = []
 
-      hooks.each do |hook|
+      issue = Issue.find_by_id(issue_id)
 
-        apply_hook = ->(branch = nil) {
-          req               = HookRequest.new
-          req.issue         = Issue.find_by_id(issue_id)
-          req.hook          = hook
-          req.repo_revision = repo_revision
-          req.ref           = repo_ref_by_name(branch) if branch
+      unless Policies::ApplyHooks.allowed?(repo_revision.committer, issue)
+        log "Forbidden. User (redmine: #{repo_revision.committer.try(:login)}; git: #{repo_revision.committer_string}) try to change #{issue_id} by remote commit: #{repo_revision.uri}"
+        return
+      end
 
-          if allow_to_apply_hook?(req)
-            apply_hook(req)
-            applied_branches << branch if branch
-          end
-        }
+      # find one hook with higher priority
+      hook = all_applicable_hooks.detect { |h| h.applicable_for?(action, repo_revision.branches) }
 
-        if hook.any_branch?
-          apply_hook.call
-          return
-        end
+      return unless hook
 
+      apply_hook_proc = ->(branch) {
+        req               = HookRequest.new
+        req.issue         = issue
+        req.hook          = hook
+        req.repo_revision = repo_revision
+        req.keyword       = action
+        req.branch        = branch
+        req.validate!
+
+        apply_hook(req)
+      }
+
+      if hook.any_branch?
+        apply_hook_proc.call(nil)
+      else
         repo_revision.branches.each do |branch|
-
-          next if applied_branches.include?(branch)
-
-          next unless hook.applicable_for_branch?(branch)
-
-          apply_hook.call(branch)
+          apply_hook_proc.call(branch) if hook.applicable_for_branch?(branch)
         end
       end
     end
@@ -179,12 +182,6 @@ module RedmineUndevGit::Services
     def repo_ref_by_name(branch)
       @refs_cache ||= {}
       @refs_cache[branch] ||= repo.refs.where(:name => branch).first_or_create
-    end
-
-    def allow_to_apply_hook?(hook_request)
-      hook_request.valid? &&
-          !hook_was_applied?(hook_request) &&
-          Policies::ApplyHooks.allowed?(hook_request.repo_revision.committer, hook_request.issue)
     end
 
     def find_hooks_revisions
@@ -242,31 +239,45 @@ module RedmineUndevGit::Services
     end
 
     def apply_hook(req)
+      return if hook_was_applied?(req)
+
       req.hook.apply_for_issue(
           req.issue,
-          :user => req.repo_revision.committer,
+          :user  => req.repo_revision.committer,
           :notes => notes_for_issue_change(req.repo_revision)
       )
 
       journal_id = req.issue.last_journal_id
 
-      req.repo_revision.applied_hooks.create!(
-          :hook => req.hook,
-          :ref => req.ref,
-          :issue => req.issue,
-          :journal_id => journal_id)
+      save_fact_of_applying_hook(req, journal_id)
+    end
+
+    def save_fact_of_applying_hook(req, journal_id)
+      Array(req.branch || req.repo_revision.branches).each do |branch|
+        req.repo_revision.applied_hooks.create!(
+            :hook          => req.hook,
+            :ref           => repo_ref_by_name(branch),
+            :issue         => req.issue,
+            :journal_id    => journal_id,
+            :author_string => req.repo_revision.author_string,
+            :author_date   => req.repo_revision.author_date,
+            :keyword       => req.keyword,
+            :branch        => branch
+        )
+      end
     end
 
     def hook_was_applied?(req)
+      applied = repo.applied_hooks.where(
+          :issue_id      => req.issue.id,
+          :author_string => req.repo_revision.author_string,
+          :author_date   => req.repo_revision.author_date,
+          :keyword       => req.keyword
+      )
       if req.hook.any_branch?
-        repo.applied_hooks.where(
-            :issue_id                => req.issue.id,
-            :remote_repo_revision_id => req.repo_revision.id).any?
+        applied.any?
       else
-        repo.applied_hooks.where(
-            :issue_id                => req.issue.id,
-            :remote_repo_revision_id => req.repo_revision.id,
-            :remote_repo_ref_id      => req.ref.id).any?
+        applied.where(:branch => req.branch).any?
       end
     end
 
@@ -349,6 +360,10 @@ module RedmineUndevGit::Services
 
     def parser
       @parser ||= MessageParser.new(any_ref_keyword? ? nil : ref_keywords, fix_keywords)
+    end
+
+    def log(message)
+      Rails.logger.warn(message) if Rails.logger
     end
   end
 end

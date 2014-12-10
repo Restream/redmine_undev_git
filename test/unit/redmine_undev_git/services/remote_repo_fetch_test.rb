@@ -152,7 +152,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     hook1 = ProjectHook.create!(
         :project_id => 1,
         :branches => 'master',
-        :keywords => 'hook3',
+        :keywords => 'hook9',
         :status_id => 3,
         :done_ratio => '50%'
     )
@@ -160,7 +160,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     ProjectHook.create!(
         :project_id => 1,
         :branches => '*',
-        :keywords => 'hook3',
+        :keywords => 'hook9',
         :status_id => 1,
         :done_ratio => '20%'
     )
@@ -171,7 +171,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     @service.initialize_repository
     @service.apply_hooks_to_issues
 
-    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
+    repo_revision = @service.repo.revisions.find_by_sha(CMT9)
     assert repo_revision
 
     assert_equal 1, repo_revision.applied_hooks.count
@@ -184,34 +184,6 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
     assert_equal 50, issue.done_ratio
     assert_equal 3, issue.status_id
-  end
-
-  def test_apply_hooks_by_admin_for_every_explicit_branch
-    ProjectHook.create!(
-        :project_id => 1,
-        :branches => 'master',
-        :keywords => 'hook3',
-        :status_id => 3,
-        :done_ratio => '50%'
-    )
-    ProjectHook.create!(
-        :project_id => 1,
-        :branches => 'develop',
-        :keywords => 'hook3',
-        :status_id => 1,
-        :done_ratio => '20%'
-    )
-
-    user = User.find(1) # admin
-    @service.stubs(:user_by_email).returns(user)
-
-    @service.initialize_repository
-    @service.apply_hooks_to_issues
-
-    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
-    assert repo_revision
-
-    assert_equal 2, repo_revision.applied_hooks.count
   end
 
   def test_not_apply_hooks_by_unknown_user_if_deny
@@ -337,6 +309,92 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal 2, hooks_count
     @service.refetch
     assert_equal hooks_count, @service.repo.applied_hooks.count
+  end
+
+  def test_hook_was_applied_finds_applied_hook_for_particular_branch
+    repo = @service.repo
+    branch = 'master'
+    repo_ref = create(:remote_repo_ref, :repo => repo, :name => branch)
+    hook = create(:project_hook)
+    keyword = hook.keywords.first
+    rev = create(:full_repo_revision, :repo => repo)
+    applied_hook = create(:remote_repo_hook,
+        :revision => rev,
+        :ref => repo_ref,
+        :author_string => rev.author_string,
+        :author_date => rev.author_date,
+        :keyword => keyword,
+        :branch => branch
+    )
+
+    req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
+    req.issue         = applied_hook.issue
+    req.hook          = hook
+    req.repo_revision = applied_hook.revision
+    req.keyword       = applied_hook.keyword
+    req.branch        = applied_hook.branch
+
+    assert @service.hook_was_applied?(req)
+
+    other_repo = create(:remote_repo)
+    other_hook = create(:project_hook)
+    other_revision = create(:remote_repo_revision,
+        :repo => other_repo,
+        :sha => 'OTHERSHA',
+        :author_string => rev.author_string,
+        :author_date => rev.author_date
+    )
+
+    req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
+    req.issue         = applied_hook.issue
+    req.hook          = other_hook
+    req.repo_revision = other_revision
+    req.keyword       = applied_hook.keyword
+    req.branch        = applied_hook.branch
+
+    assert @service.hook_was_applied?(req)
+  end
+
+  def test_hook_was_applied_finds_applied_hook_for_any_branch
+    repo = @service.repo
+    hook = create(:project_hook, :branches => '*')
+    keyword = hook.keywords.first
+    rev = create(:full_repo_revision, :repo => repo)
+    applied_hook = create(:remote_repo_hook,
+        :revision => rev,
+        :ref => nil,
+        :author_string => rev.author_string,
+        :author_date => rev.author_date,
+        :keyword => keyword,
+        :branch => 'master'
+    )
+
+    req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
+    req.issue         = applied_hook.issue
+    req.hook          = hook
+    req.repo_revision = applied_hook.revision
+    req.keyword       = applied_hook.keyword
+    req.branch        = nil
+
+    assert @service.hook_was_applied?(req)
+
+    other_repo = create(:remote_repo)
+    other_hook = create(:project_hook, :branches => '*')
+    other_revision = create(:remote_repo_revision,
+        :repo => other_repo,
+        :sha => 'OTHERSHA',
+        :author_string => rev.author_string,
+        :author_date => rev.author_date
+    )
+
+    req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
+    req.issue         = applied_hook.issue
+    req.hook          = other_hook
+    req.repo_revision = other_revision
+    req.keyword       = applied_hook.keyword
+    req.branch        = nil
+
+    assert @service.hook_was_applied?(req)
   end
 
   def shorted(revisions)

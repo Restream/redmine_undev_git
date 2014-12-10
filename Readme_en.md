@@ -24,7 +24,7 @@ and then works with the created copy.
 
 ### Configuration
 
-To enable UndevGit, go to the Redmine administrative menu > *Repositories* tab > *Enabled SCM* group.
+To enable UndevGit, go to the **Administration** menu > *Repositories* tab > *Enabled SCM* group.
 
 The plugin settings allow you to specify the maximum number of branches to be displayed on 
 the issue page in the *Associated revisions* section.

@@ -101,7 +101,6 @@ module RedmineUndevGit::Services
           issue = Issue.find_by_id(issue_id)
           if committer && issue
             log_time(:issue => issue, :user => committer, :hours => hours, :revision => revision)
-            link_revision_to_issue(revision, issue_id)
           end
         end
       end
@@ -120,7 +119,9 @@ module RedmineUndevGit::Services
       time_entry.remote_repo_revision = repo_revision
       time_entry.activity = log_time_activity unless log_time_activity.nil?
 
-      unless time_entry.save
+      if time_entry.save
+        repo_revision.ensure_issue_is_related(options[:issue])
+      else
         log "TimeEntry could not be created by remote revision (#{options.inspect}): #{time_entry.errors.full_messages}"
       end
     end
@@ -248,6 +249,8 @@ module RedmineUndevGit::Services
       )
 
       journal_id = req.issue.last_journal_id
+
+      req.repo_revision.ensure_issue_is_related(req.issue)
 
       save_fact_of_applying_hook(req, journal_id)
     end

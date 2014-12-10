@@ -1,9 +1,9 @@
 FactoryGirl.define do
   factory :issue do
     subject { generate(:name) }
-    association :priority, :factory => :enum_issue_priority
-    project
+    priority
     tracker
+    project { create(:project_with_tracker, tracker: tracker) }
     author
     status
   end

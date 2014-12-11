@@ -319,12 +319,12 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     keyword = hook.keywords.first
     rev = create(:full_repo_revision, repo: repo)
     applied_hook = create(:remote_repo_hook,
-        revision: rev,
-        ref: repo_ref,
-        author_string: rev.author_string,
-        author_date: rev.author_date,
-        keyword: keyword,
-        branch: branch
+        revision:     rev,
+        ref:          repo_ref,
+        author_email: rev.author_email,
+        author_date:  rev.author_date,
+        keyword:      keyword,
+        branch:       branch
     )
 
     req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
@@ -339,10 +339,10 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     other_repo = create(:remote_repo)
     other_hook = create(:project_hook)
     other_revision = create(:remote_repo_revision,
-        repo: other_repo,
-        sha: 'OTHERSHA',
-        author_string: rev.author_string,
-        author_date: rev.author_date
+        repo:         other_repo,
+        sha:          'OTHERSHA',
+        author_email: rev.author_email,
+        author_date:  rev.author_date
     )
 
     req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
@@ -361,12 +361,12 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     keyword = hook.keywords.first
     rev = create(:full_repo_revision, repo: repo)
     applied_hook = create(:remote_repo_hook,
-        revision: rev,
-        ref: nil,
-        author_string: rev.author_string,
-        author_date: rev.author_date,
-        keyword: keyword,
-        branch: 'master'
+        revision:     rev,
+        ref:          nil,
+        author_email: rev.author_email,
+        author_date:  rev.author_date,
+        keyword:      keyword,
+        branch:       'master'
     )
 
     req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
@@ -381,10 +381,10 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     other_repo = create(:remote_repo)
     other_hook = create(:project_hook, branches: '*')
     other_revision = create(:remote_repo_revision,
-        repo: other_repo,
-        sha: 'OTHERSHA',
-        author_string: rev.author_string,
-        author_date: rev.author_date
+        repo:         other_repo,
+        sha:          'OTHERSHA',
+        author_email: rev.author_email,
+        author_date:  rev.author_date
     )
 
     req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new
@@ -395,6 +395,21 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     req.branch        = nil
 
     assert @service.hook_was_applied?(req)
+  end
+
+  def test_create_remote_repo_revision_stores_committer_email_and_name
+    revision        = RedmineUndevGit::Services::GitRevision.new
+    revision.sha    = '111'
+    revision.aname  = 'aname'
+    revision.aemail = 'aemail'
+    revision.cname  = 'cname'
+    revision.cemail = 'cemail'
+    @service.stubs(:update_remote_repo_revision_refs).returns(nil)
+    repo_revision = @service.create_remote_repo_revision(revision)
+    assert_equal 'aname', repo_revision.author_name
+    assert_equal 'aemail', repo_revision.author_email
+    assert_equal 'cname', repo_revision.committer_name
+    assert_equal 'cemail', repo_revision.committer_email
   end
 
   def shorted(revisions)

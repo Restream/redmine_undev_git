@@ -5,14 +5,7 @@ module RedmineUndevGit::Services
   end
 
   GitBranchRef = Struct.new(:name, :sha)
-  GitRevision = Struct.new(:sha, :aname, :aemail, :adate, :cname, :cemail, :cdate, :message) do
-    def author
-      "#{aname} <#{aemail}>"
-    end
-    def committer
-      "#{cname} <#{cemail}>"
-    end
-  end
+  GitRevision = Struct.new(:sha, :aname, :aemail, :adate, :cname, :cemail, :cdate, :message)
 
   class GitAdapter
 

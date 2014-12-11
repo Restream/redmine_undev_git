@@ -198,14 +198,16 @@ module RedmineUndevGit::Services
 
     def create_remote_repo_revision(revision)
       repo_revision = repo.revisions.create!(
-          author: user_by_email(revision.aemail),
-          committer: user_by_email(revision.cemail),
-          sha: revision.sha,
-          author_string: revision.author,
-          committer_string: revision.committer,
-          message: revision.message,
-          author_date: revision.adate,
-          committer_date: revision.cdate
+          author:          user_by_email(revision.aemail),
+          committer:       user_by_email(revision.cemail),
+          sha:             revision.sha,
+          author_name:     revision.aname,
+          author_email:    revision.aemail,
+          committer_name:  revision.cname,
+          committer_email: revision.cemail,
+          message:         revision.message,
+          author_date:     revision.adate,
+          committer_date:  revision.cdate
       )
       update_remote_repo_revision_refs(repo_revision)
       repo_revision
@@ -258,14 +260,14 @@ module RedmineUndevGit::Services
     def save_fact_of_applying_hook(req, journal_id)
       Array(req.branch || req.repo_revision.branches).each do |branch|
         req.repo_revision.applied_hooks.create!(
-            hook: req.hook,
-            ref: repo_ref_by_name(branch),
-            issue: req.issue,
-            journal_id: journal_id,
-            author_string: req.repo_revision.author_string,
-            author_date: req.repo_revision.author_date,
-            keyword: req.keyword,
-            branch: branch
+            hook:         req.hook,
+            ref:          repo_ref_by_name(branch),
+            issue:        req.issue,
+            journal_id:   journal_id,
+            author_email: req.repo_revision.author_email,
+            author_date:  req.repo_revision.author_date,
+            keyword:      req.keyword,
+            branch:       branch
         )
       end
     end
@@ -273,7 +275,7 @@ module RedmineUndevGit::Services
     def hook_was_applied?(req)
       applied = repo.applied_hooks.where(
           issue_id: req.issue.id,
-          author_string: req.repo_revision.author_string,
+          author_email: req.repo_revision.author_email,
           author_date: req.repo_revision.author_date,
           keyword: req.keyword
       )

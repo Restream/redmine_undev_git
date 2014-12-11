@@ -31,4 +31,11 @@ class RemoteRepoRevision < ActiveRecord::Base
     related_issues << issue unless related_issues.exists?(issue)
   end
 
+  def author_string
+    "#{author_name} <#{author_email}>"
+  end
+
+  def committer_string
+    "#{committer_name} <#{committer_email}>"
+  end
 end

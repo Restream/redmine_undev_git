@@ -5,14 +5,16 @@ FactoryGirl.define do
 
     trait :author_info do
       author
-      author_string { "#{author.name} <#{author.mail}>" }
-      author_date { generate :time_seq }
+      author_name  { author.name }
+      author_email { author.mail }
+      author_date  { generate :time_seq }
     end
 
     trait :committer_info do
       committer
-      committer_string { "#{committer.name} <#{committer.mail}>" }
-      committer_date { generate :time_seq }
+      committer_name  { committer.name }
+      committer_email { committer.mail }
+      committer_date  { generate :time_seq }
     end
 
     factory :full_repo_revision, traits: [:author_info, :committer_info] do

@@ -3,8 +3,8 @@ class RemoteRepo < ActiveRecord::Base
   has_many :revisions,
            class_name: 'RemoteRepoRevision',
            inverse_of: :repo,
-           dependent: :destroy # todo: should delete_all for all tails
-  has_many :refs, class_name: 'RemoteRepoRef', inverse_of: :repo
+           dependent: :destroy
+  has_many :refs, class_name: 'RemoteRepoRef', inverse_of: :repo, dependent: :destroy
   has_many :applied_hooks, through: :revisions
   has_many :time_entries, through: :revisions
 
@@ -40,5 +40,11 @@ class RemoteRepo < ActiveRecord::Base
 
   def clear_time_entries
     TimeEntry.joins(remote_repo_revision: :repo).where("#{RemoteRepo.table_name}.id = ?", id).destroy_all
+  end
+
+  def clear_all
+    clear_time_entries
+    refs.clear
+    revisions.clear
   end
 end

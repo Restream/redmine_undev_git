@@ -5,6 +5,5 @@ class RemoteRepoSiteUser < ActiveRecord::Base
 
   validates :site, presence: true
   validates :email, presence: true, uniqueness: { scope: :remote_repo_site_id }
-  validates :user, presence: true
 
 end

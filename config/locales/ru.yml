@@ -22,6 +22,8 @@ ru:
   label_associated_remote_site: Сервер внешнего репозитория
   label_remote_repo_sites: Сервера внешних репозиториев
   label_remote_repo: Внешний репозиторий
+  label_remote_user_mappings: Маппинг пользователей Redmine с коммиттерами во внешних репах
+  label_refetch: Перечитать хранилище
 
   new_hook: "Новый хук"
 
@@ -43,8 +45,12 @@ ru:
   text_undev_git_repository_note: "Ссылка или путь к локальному репозиторию<br />(например, git://example.com/repo.git, https://example.com/repo.git или /repos/gitrepo)"
   text_commit_was_rebased_from: "Это перемещенный коммит. Старый коммит %{rebased_from}"
   text_commit_was_rebased_to: "Этот коммит был перемещен. Новый коммит %{rebased_to}"
+  text_remote_user_mappings: "Выберите или обновите пользователя Redmine, связанного с найденными email во внешнем хранилище при изменении тикета или связи с ним.\nПользователи с одинаковыми email в Redmine и хранилище связываются автоматически."
+
+  notice_refetch_started: Хранилище будет скоро перечитано
 
   field_assignee_type: На кого назначить задачу
+  field_committer: Коммиттер
 
   assignee_type:
     nobody: Назначенный не изменяется

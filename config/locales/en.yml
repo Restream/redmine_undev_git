@@ -21,7 +21,9 @@ en:
   label_associated_remote_repository: Associated remote repository
   label_associated_remote_site: Remote repository server
   label_remote_repo_sites: Remote repository servers
-  label_remote_repo: Внешний репозиторий
+  label_remote_repo: Remote repository
+  label_remote_user_mappings: Remote repository server user mappings
+  label_refetch: Refetch repository
 
   new_hook: "New hook"
 
@@ -43,8 +45,12 @@ en:
   text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
   text_commit_was_rebased_from: "This revision was rebased from %{rebased_from}"
   text_commit_was_rebased_to: "This revision was rebased to %{rebased_to}"
+  text_remote_user_mappings: "Select or update the Redmine user mapped to each email found in the remote repository when changed issue or linked to.\nUsers with the same Redmine and repository email are automatically mapped."
+
+  notice_refetch_started: Repository will be refetched soon
 
   field_assignee_type: New assignee
+  field_committer: Committer
 
   assignee_type:
     nobody: Assignee will not change

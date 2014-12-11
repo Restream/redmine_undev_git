@@ -1,14 +1,18 @@
 <h1><%= l(:label_remote_repo_sites) %></h1>
 <% if remote_repo_sites.any? %>
   <% remote_repo_sites.sort.each do |site| %>
-  <h2><%= site.server_name %></h2>
-    <%= link_to site.uri, site.uri, target: '_blank' %><br>
-    <%= l(:field_created_on) %>: <%= site.created_at %><br>
+  <h2>
+    <%= link_to site.uri, site.uri, target: '_blank' %>
+    <small>
+      <%= link_to(l(:label_user_plural), remote_repo_site_committers_path(site), class: 'icon icon-user') %>
+    </small>
+  </h2>
   <table class="list">
     <thead>
     <tr>
       <th><%= l(:label_remote_repo) %></th>
       <th><%= l(:field_created_on) %></th>
+      <th><%= l(:field_updated_on) %></th>
       <th></th>
     </tr>
     </thead>
@@ -21,7 +25,14 @@
         <td>
           <%= repo.created_at %>
         </td>
+        <td>
+          <%= repo.updated_at %>
+        </td>
         <td class="buttons">
+          <%= link_to(l(:label_refetch),
+              refetch_remote_repo_site_repo_path(site, repo),
+              method: :put,
+              class:  'icon icon-reload') %>
         </td>
       </tr>
     <% end %>

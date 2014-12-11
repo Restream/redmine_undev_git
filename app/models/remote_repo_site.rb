@@ -16,10 +16,17 @@ class RemoteRepoSite < ActiveRecord::Base
 
   # find user by committer or author email with site mappings (email on site => redmine user)
   def find_user_by_email(email)
-    mapping = user_mappings.where(email: email).first
-    return mapping.user if mapping
+    User.find_by_mail(email) || find_mapped_user_by_email(email)
+  end
 
-    User.find_by_mail(email)
+  def find_mapped_user_by_email(email)
+    user_mappings.where(email: email).first_or_create.user
+  end
+
+  def update_user_mapping(email, user_id)
+    mapping = user_mappings.where(email: email).first_or_create
+    mapping.user_id = user_id
+    mapping.save
   end
 
   def uri

@@ -27,6 +27,7 @@ module RedmineUndevGit::Services
     end
 
     def fetch
+      clear_cache
       initialize_repository
       download_changes
       repo.transaction do
@@ -46,7 +47,7 @@ module RedmineUndevGit::Services
     def refetch
       repo.transaction do
         clear_tail
-        repo.clear_time_entries
+        repo.clear_all
         scm.remove_repo
         fetch
       end
@@ -214,11 +215,11 @@ module RedmineUndevGit::Services
     end
 
     def user_by_email(email)
-      @users_by_email ||= {}
-      unless @users_by_email.has_key?(email)
-        @users_by_email[email] = repo.site.find_user_by_email(email)
+      @users_by_email_cache ||= {}
+      unless @users_by_email_cache.has_key?(email)
+        @users_by_email_cache[email] = repo.site.find_user_by_email(email)
       end
-      @users_by_email[email]
+      @users_by_email_cache[email]
     end
 
     def update_remote_repo_revision_refs(repo_revision)
@@ -242,17 +243,18 @@ module RedmineUndevGit::Services
     end
 
     def apply_hook(req)
+      # link always
+      req.repo_revision.ensure_issue_is_related(req.issue)
+
+      # change issue only if hook was not applied
       return if hook_was_applied?(req)
 
       req.hook.apply_for_issue(
           req.issue,
-          user: req.repo_revision.committer,
+          user:  req.repo_revision.committer,
           notes: notes_for_issue_change(req.repo_revision)
       )
-
       journal_id = req.issue.last_journal_id
-
-      req.repo_revision.ensure_issue_is_related(req.issue)
 
       save_fact_of_applying_hook(req, journal_id)
     end
@@ -299,7 +301,7 @@ module RedmineUndevGit::Services
     end
 
     def local_path
-      @local_path ||= File.join(self.repo_storage_dir, 'REMOTE_REPOS', repo.id.to_s)
+      @local_path_cache ||= File.join(self.repo_storage_dir, 'REMOTE_REPOS', repo.id.to_s)
     end
 
     def initialize_repository
@@ -312,7 +314,7 @@ module RedmineUndevGit::Services
     end
 
     def scm
-      @scm ||= begin
+      @scm_cache ||= begin
         repo.update_attribute(:root_url, local_path) if repo.root_url.blank?
         RedmineUndevGit::Services::GitAdapter.new(repo.url, repo.root_url)
       end
@@ -328,26 +330,26 @@ module RedmineUndevGit::Services
 
     # keywords used to fix issues
     def fix_keywords
-      @fix_keywords ||= all_applicable_hooks.map do |hook|
+      @fix_keywords_cache ||= all_applicable_hooks.map do |hook|
         hook.keywords.map { |keyword| keyword.downcase.strip }
       end.flatten.uniq
     end
 
     # is there asterisk in reference keywords?
     def any_ref_keyword?
-      if @any_ref_keyword.nil?
-        @any_ref_keyword = Setting.commit_ref_keywords.split(',').collect(&:strip).include?('*')
+      if @any_ref_keyword_cache.nil?
+        @any_ref_keyword_cache = Setting.commit_ref_keywords.split(',').collect(&:strip).include?('*')
       end
-      @any_ref_keyword
+      @any_ref_keyword_cache
     end
 
     # keywords used to reference issues
     def ref_keywords
-      unless @ref_keywords
-        @ref_keywords = Setting.commit_ref_keywords.downcase.split(',').collect(&:strip)
-        @ref_keywords.delete('*')
+      unless @ref_keywords_cache
+        @ref_keywords_cache = Setting.commit_ref_keywords.downcase.split(',').collect(&:strip)
+        @ref_keywords_cache.delete('*')
       end
-      @ref_keywords
+      @ref_keywords_cache
     end
 
     # return all applicable hooks in that order:
@@ -358,17 +360,23 @@ module RedmineUndevGit::Services
     # 2.1. for specific branch
     # 2.2. for any branch
     def all_applicable_hooks
-      @all_applicable_hooks ||=
+      @all_applicable_hooks_cache ||=
           ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
           GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
     end
 
     def parser
-      @parser ||= MessageParser.new(any_ref_keyword? ? nil : ref_keywords, fix_keywords)
+      @parser_cache ||= MessageParser.new(any_ref_keyword? ? nil : ref_keywords, fix_keywords)
     end
 
     def log(message)
       Rails.logger.warn(message) if Rails.logger
+    end
+
+    def clear_cache
+      instance_variables.each do |var|
+        instance_variable_set(var, nil) if var.to_s =~ /_cache$/
+      end
     end
   end
 end

@@ -4,7 +4,7 @@ class RemoteRepoSitesControllerTest < ActionController::TestCase
   tests RemoteRepoSitesController
 
   def setup
-    @user = User.find(1)
+    @user = create(:admin_user)
     request.session[:user_id] = @user.id
   end
 

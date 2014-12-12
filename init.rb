@@ -56,6 +56,12 @@ Redmine::Plugin.register :redmine_undev_git do
   permission :edit_remote_repo_sites,
       { remote_repo_sites: [:index, :show] },
       require: :admin
+
+  # permission for custom buttons the same as :edit_issues
+  Redmine::AccessControl.permission(:manage_related_issues).actions.push *%w{
+      issues/remove_remote_revision
+  }
+
 end
 
 Redmine::Scm::Base.insert 0, 'UndevGit'

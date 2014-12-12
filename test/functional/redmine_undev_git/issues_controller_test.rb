@@ -86,4 +86,35 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
 
     assert_select 'div#issue-changesets a', { text: /#{revision.short_sha}/ }
   end
+
+  def test_user_with_permission_can_unlink_revision
+    user = User.find(3)
+    Role.find(2).add_permission!(:manage_related_issues)
+    request.session[:user_id] = user.id
+    issue = Issue.find(1)
+    assert user.allowed_to?(:manage_related_issues, issue.project)
+
+    rev = create(:full_repo_revision)
+    rev.related_issues << issue
+
+    put :remove_remote_revision, id: issue.id, remote_repo_id: rev.repo.id, sha: rev.sha
+
+    assert_response :redirect
+    refute rev.related_issues.include?(issue)
+  end
+
+  def test_user_without_permission_cant_unlink_revision
+    user = User.find(9)
+    request.session[:user_id] = user.id
+    issue = Issue.find(1)
+    refute user.allowed_to?(:manage_related_issues, issue.project)
+
+    rev = create(:full_repo_revision)
+    rev.related_issues << issue
+
+    put :remove_remote_revision, id: issue.id, sha: rev.sha
+
+    assert_response 403
+    assert rev.related_issues.include?(issue)
+  end
 end

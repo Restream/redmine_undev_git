@@ -8,5 +8,15 @@
     <div class="wiki">
       <%= textilizable(revision, :message) %>
     </div>
+    <% if User.current.allowed_to?(:manage_related_issues, @project) %>
+    <div class="right-bottom-buttons">
+      <%= link_to(image_tag('link_break.png'),
+          remove_remote_revision_issue_path(@issue, remote_repo_id: revision.repo.id, sha: revision.sha),
+          # remote: true,
+          method: :put,
+          data:   { confirm: l(:text_are_you_sure) },
+          title:  l(:label_relation_delete)) %>
+    </div>
+    <% end %>
   </div>
 <% end %>

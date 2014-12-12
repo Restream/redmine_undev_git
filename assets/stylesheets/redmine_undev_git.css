@@ -37,3 +37,8 @@ tr.hooks-header {
 .icon-yellow { background-image: url(/plugin_assets/redmine_undev_git/images/bullet_yellow.png); }
 .icon-red    { background-image: url(/plugin_assets/redmine_undev_git/images/bullet_red.png); }
 .icon-black  { background-image: url(/plugin_assets/redmine_undev_git/images/bullet_black.png); }
+
+.right-bottom-buttons {
+  float: right;
+  margin-top: -16px;
+}

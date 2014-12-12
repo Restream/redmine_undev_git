@@ -17,4 +17,10 @@ RedmineApp::Application.routes.draw do
       end
     end
   end
+
+  resources :issues do
+    member do
+      put :remove_remote_revision
+    end
+  end
 end

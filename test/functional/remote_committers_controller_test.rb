@@ -4,7 +4,7 @@ class RemoteCommittersControllerTest < ActionController::TestCase
   tests RemoteCommittersController
 
   def setup
-    @user = User.find(1)
+    @user = create(:admin_user)
     request.session[:user_id] = @user.id
   end
 

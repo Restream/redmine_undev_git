@@ -30,6 +30,7 @@ module RedmineUndevGit::Services
       clear_cache
       initialize_repository
       download_changes
+      return if head_revisions == repo.tail_revisions
       repo.transaction do
         update_repo_refs
         update_revisions_refs

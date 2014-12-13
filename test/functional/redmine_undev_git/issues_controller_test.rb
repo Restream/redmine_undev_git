@@ -70,21 +70,32 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   end
 
   def test_show_remote_revisions_block
-    Setting.commit_ref_keywords = 'hook4'
+    user = User.find(3)
+    @request.session[:user_id] = user.id
 
-    user = User.find(1)
-    site = RemoteRepoSite::Gitlab.create!(server_name: 'gitlab.com')
-    site.stubs(:find_user_by_email).returns(user)
-    repo = site.repos.create!(url: RD4)
-    repo.fetch
+    issue = Issue.find(1)
+    revision = create(:full_repo_revision)
+    revision.related_issues << issue
 
-    revision = repo.find_revision('57096e1')
-    assert revision
-
-    get :show, id: 5
+    get :show, id: issue.id
     assert_response :success
 
     assert_select 'div#issue-changesets a', { text: /#{revision.short_sha}/ }
+  end
+
+  def test_user_without_permission_cant_see_revisions
+    user = User.find(3)
+    @request.session[:user_id] = user.id
+    Role.find(2).remove_permission!(:view_changesets)
+
+    issue = Issue.find(1)
+    revision = create(:full_repo_revision)
+    revision.related_issues << issue
+
+    get :show, id: issue.id
+    assert_response :success
+
+    assert_select 'div#issue-changesets a', { :count => 0, text: /#{revision.short_sha}/ }
   end
 
   def test_user_with_permission_can_unlink_revision

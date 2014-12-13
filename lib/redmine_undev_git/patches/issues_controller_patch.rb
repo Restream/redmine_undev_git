@@ -4,7 +4,7 @@ module RedmineUndevGit::Patches::IssuesControllerPatch
   extend ActiveSupport::Concern
 
   included do
-    before_filter :read_remote_revisions, only: [:show]
+    helper_method :remote_revisions
 
     # authorize remote_revision after find project and issue
     skip_before_filter :authorize, only: [:remove_remote_revision]
@@ -26,8 +26,9 @@ module RedmineUndevGit::Patches::IssuesControllerPatch
 
   private
 
-  def read_remote_revisions
-    @remote_revisions = @issue.remote_revisions.all
+  def remote_revisions
+    @remote_revisions ||=
+        User.current.allowed_to?(:view_changesets, @issue.project) ? @issue.remote_revisions.all : nil
   end
 
 end

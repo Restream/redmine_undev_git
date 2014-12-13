@@ -156,12 +156,7 @@ module RedmineUndevGit::Services
         return
       end
 
-      # find one hook with higher priority
-      hook = all_applicable_hooks.detect { |h| h.applicable_for?(action, repo_revision.branches) }
-
-      return unless hook
-
-      apply_hook_proc = ->(branch) {
+      apply_hook_proc = ->(hook, branch) {
         req               = HookRequest.new
         req.issue         = issue
         req.hook          = hook
@@ -173,11 +168,17 @@ module RedmineUndevGit::Services
         apply_hook(req)
       }
 
-      if hook.any_branch?
-        apply_hook_proc.call(nil)
-      else
-        repo_revision.branches.each do |branch|
-          apply_hook_proc.call(branch) if hook.applicable_for_branch?(branch)
+      any_branch_applied = false
+
+      repo_revision.branches.each do |branch|
+        hook = all_applicable_hooks.detect { |h| h.applicable_for?(action, branch) }
+        next unless hook
+
+        if hook.any_branch?
+          apply_hook_proc.call(hook, nil) unless any_branch_applied
+          any_branch_applied = true
+        else
+          apply_hook_proc.call(hook, branch)
         end
       end
     end
@@ -261,32 +262,26 @@ module RedmineUndevGit::Services
     end
 
     def save_fact_of_applying_hook(req, journal_id)
-      Array(req.branch || req.repo_revision.branches).each do |branch|
-        req.repo_revision.applied_hooks.create!(
-            hook:         req.hook,
-            ref:          repo_ref_by_name(branch),
-            issue:        req.issue,
-            journal_id:   journal_id,
-            author_email: req.repo_revision.author_email,
-            author_date:  req.repo_revision.author_date,
-            keyword:      req.keyword,
-            branch:       branch
-        )
-      end
+      req.repo_revision.applied_hooks.create!(
+          hook:         req.hook,
+          ref:          req.branch && repo_ref_by_name(req.branch),
+          issue:        req.issue,
+          journal_id:   journal_id,
+          author_email: req.repo_revision.author_email,
+          author_date:  req.repo_revision.author_date,
+          keyword:      req.keyword,
+          branch:       req.branch
+      )
     end
 
     def hook_was_applied?(req)
-      applied = repo.applied_hooks.where(
+      repo.applied_hooks.where(
           issue_id: req.issue.id,
           author_email: req.repo_revision.author_email,
           author_date: req.repo_revision.author_date,
-          keyword: req.keyword
-      )
-      if req.hook.any_branch?
-        applied.any?
-      else
-        applied.where(branch: req.branch).any?
-      end
+          keyword: req.keyword,
+          branch: req.branch
+      ).any?
     end
 
     def notes_for_issue_change(repo_revision)

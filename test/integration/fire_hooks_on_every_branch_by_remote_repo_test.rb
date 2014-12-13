@@ -94,7 +94,7 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     fetch_step_by_step
 
     issue = Issue.find(5)
-    assert_equal 12, issue.done_ratio
+    assert_equal 11, issue.done_ratio
   end
 
   def test_project_hooks_has_higher_priority
@@ -122,6 +122,27 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     applied_keywords = RemoteRepoHook.order(:id).all.map { |ah| ah.hook.keywords.join }
 
     assert_equal %w{hook1 hook2 hook3 hook4 hook6}, applied_keywords
+  end
+
+  def test_works_with_many_hooks
+    gh1 = GlobalHook.create!(keywords: 'hook3', branches: 'feature', done_ratio: '11%')
+    gh2 = GlobalHook.create!(keywords: 'hook3', branches: '*',       done_ratio: '12%')
+    ph1 = @project.hooks.create(keywords: 'hook3', branches: 'feature', done_ratio: '22%')
+    ph2 = @project.hooks.create(keywords: 'hook3', branches: 'master',  done_ratio: '23%')
+    ph3 = @project.hooks.create(keywords: 'hook3', branches: 'develop', done_ratio: '24%')
+    ph4 = @project.hooks.create(keywords: 'hook3', branches: '*',       done_ratio: '25%')
+
+    fetch_step_by_step
+
+    issue = Issue.find(5)
+    assert_equal 23, issue.done_ratio
+
+    applied_hooks = ->(applied) { applied.map { |ah| ah.hook }.sort_by(&:id) }
+
+    assert_equal [ph1, ph4], applied_hooks.call(@applied1)
+    assert_equal [],         applied_hooks.call(@applied2)
+    assert_equal [ph3],      applied_hooks.call(@applied3)
+    assert_equal [ph2],      applied_hooks.call(@applied4)
   end
 
   def create_global_hooks

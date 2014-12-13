@@ -366,7 +366,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
         author_email: rev.author_email,
         author_date:  rev.author_date,
         keyword:      keyword,
-        branch:       'master'
+        branch:       nil
     )
 
     req               = RedmineUndevGit::Services::RemoteRepoFetch::HookRequest.new

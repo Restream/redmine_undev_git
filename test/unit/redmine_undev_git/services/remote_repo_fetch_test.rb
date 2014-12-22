@@ -150,7 +150,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
   def test_apply_hooks_by_admin
     # this hook should apply
     hook1 = ProjectHook.create!(
-        project_id: 1,
+        project_id: 3,
         branches: 'master',
         keywords: 'hook9',
         status_id: 3,
@@ -158,7 +158,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     )
     # this hook should not apply
     ProjectHook.create!(
-        project_id: 1,
+        project_id: 3,
         branches: '*',
         keywords: 'hook9',
         status_id: 1,
@@ -188,7 +188,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
   def test_not_apply_hooks_by_unknown_user_if_deny
     ProjectHook.create!(
-        project_id: 1,
+        project_id: 3,
         branches: 'master',
         keywords: 'hook3',
         status_id: 3,
@@ -215,7 +215,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
 
   def test_apply_hooks_by_unknown_user_if_allowed
     hook1 = ProjectHook.create!(
-        project_id: 1,
+        project_id: 3,
         branches: 'master',
         keywords: 'hook3',
         status_id: 3,
@@ -410,6 +410,38 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     assert_equal 'aemail', repo_revision.author_email
     assert_equal 'cname', repo_revision.committer_name
     assert_equal 'cemail', repo_revision.committer_email
+  end
+
+  def test_apply_hooks_by_hook_from_issue_project
+    hook1 = ProjectHook.create!(
+        project_id: 1,
+        branches: 'master',
+        keywords: 'hook3',
+        status_id: 3,
+        done_ratio: '30%'
+    )
+    hook2 = ProjectHook.create!(
+        project_id: 3,
+        branches: 'master',
+        keywords: 'hook3',
+        status_id: 3,
+        done_ratio: '50%'
+    )
+
+    Policies::ApplyHooks.stubs(:allowed?).returns(true)
+
+    @service.initialize_repository
+    @service.apply_hooks_to_issues
+
+    issue = Issue.find(5) # project_id: 3
+
+    assert_equal 50, issue.done_ratio
+    assert_equal 3, issue.status_id
+
+    repo_revision = @service.repo.revisions.find_by_sha(CMT3)
+
+    assert repo_revision
+    assert_equal [hook2], repo_revision.applied_hooks.map { |ah| ah.hook }
   end
 
   def shorted(revisions)

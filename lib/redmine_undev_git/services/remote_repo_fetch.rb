@@ -170,8 +170,12 @@ module RedmineUndevGit::Services
 
       any_branch_applied = false
 
+      project_hooks = all_applicable_hooks.find_all do |h|
+        h.is_a?(ProjectHook) ? h.project_id == issue.project_id : true
+      end
+
       repo_revision.branches.each do |branch|
-        hook = all_applicable_hooks.detect { |h| h.applicable_for?(action, branch) }
+        hook = project_hooks.detect { |h| h.applicable_for?(action, branch) }
         next unless hook
 
         if hook.any_branch?

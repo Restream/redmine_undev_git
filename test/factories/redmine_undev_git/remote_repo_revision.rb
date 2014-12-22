@@ -17,7 +17,7 @@ FactoryGirl.define do
       committer_date  { generate :time_seq }
     end
 
-    factory :full_repo_revision, traits: [:author_info, :committer_info] do
+    factory :remote_repo_revision_full, traits: [:author_info, :committer_info] do
       message
     end
   end

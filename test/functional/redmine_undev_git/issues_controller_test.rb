@@ -74,7 +74,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     @request.session[:user_id] = user.id
 
     issue = Issue.find(1)
-    revision = create(:full_repo_revision)
+    revision = create(:remote_repo_revision_full)
     revision.related_issues << issue
 
     get :show, id: issue.id
@@ -89,7 +89,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     Role.find(2).remove_permission!(:view_changesets)
 
     issue = Issue.find(1)
-    revision = create(:full_repo_revision)
+    revision = create(:remote_repo_revision_full)
     revision.related_issues << issue
 
     get :show, id: issue.id
@@ -105,7 +105,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     issue = Issue.find(1)
     assert user.allowed_to?(:manage_related_issues, issue.project)
 
-    rev = create(:full_repo_revision)
+    rev = create(:remote_repo_revision_full)
     rev.related_issues << issue
 
     put :remove_remote_revision, id: issue.id, remote_repo_id: rev.repo.id, sha: rev.sha
@@ -120,7 +120,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     issue = Issue.find(1)
     refute user.allowed_to?(:manage_related_issues, issue.project)
 
-    rev = create(:full_repo_revision)
+    rev = create(:remote_repo_revision_full)
     rev.related_issues << issue
 
     put :remove_remote_revision, id: issue.id, sha: rev.sha

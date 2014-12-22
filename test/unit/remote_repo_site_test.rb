@@ -27,4 +27,26 @@ class RemoteRepoSiteTest < ActiveSupport::TestCase
     user = @site.find_user_by_email(redmine_user.mail)
     assert_equal redmine_user, user
   end
+
+  def test_all_committers_with_mappings_returns_unique_mappings
+    repo = create(:remote_repo, site: @site)
+    committer_email = 'committer@example.org'
+    create_list(:remote_repo_revision, 5, repo: repo, committer_email: committer_email)
+
+    mappings = @site.all_committers_with_mappings
+
+    assert_equal [[committer_email, nil]], mappings
+  end
+
+  def test_all_committers_with_mappings_returns_email_with_mapped_user_id
+    repo = create(:remote_repo, site: @site)
+    committer_email = 'committer@example.org'
+    create_list(:remote_repo_revision, 5, repo: repo, committer_email: committer_email)
+    user = User.find(1)
+    @site.user_mappings.create(email: committer_email, user: user)
+
+    mappings = @site.all_committers_with_mappings
+
+    assert_equal [[committer_email, user.id]], mappings
+  end
 end

@@ -317,7 +317,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     repo_ref = create(:remote_repo_ref, repo: repo, name: branch)
     hook = create(:project_hook)
     keyword = hook.keywords.first
-    rev = create(:full_repo_revision, repo: repo)
+    rev = create(:remote_repo_revision_full, repo: repo)
     applied_hook = create(:remote_repo_hook,
         revision:     rev,
         ref:          repo_ref,
@@ -359,7 +359,7 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
     repo = @service.repo
     hook = create(:project_hook, branches: '*')
     keyword = hook.keywords.first
-    rev = create(:full_repo_revision, repo: repo)
+    rev = create(:remote_repo_revision_full, repo: repo)
     applied_hook = create(:remote_repo_hook,
         revision:     rev,
         ref:          nil,

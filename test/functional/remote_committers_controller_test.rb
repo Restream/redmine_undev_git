@@ -10,7 +10,7 @@ class RemoteCommittersControllerTest < ActionController::TestCase
 
   def test_committers_show_mapping_committers
     repo = create(:remote_repo)
-    rev = create(:full_repo_revision, repo: repo)
+    rev = create(:remote_repo_revision_full, repo: repo)
     mapping = create(:remote_repo_site_user, site: repo.site, email: rev.committer_email)
     get :index, remote_repo_site_id: repo.site.id
     assert_response :success

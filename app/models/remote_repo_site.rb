@@ -34,9 +34,11 @@ class RemoteRepoSite < ActiveRecord::Base
   end
 
   def all_committers_with_mappings
-    unmapped = revisions.where(:committer_id => nil).pluck(:committer_email)
+    unmapped = revisions.where(committer_id: nil).uniq.pluck(:committer_email)
+    mapped = user_mappings.all
+    unmapped = unmapped - mapped.map(&:email)
     unmapped.map! { |e| [e, nil] }
-    mapped = user_mappings.all.map { |m| [m.email, m.user_id] }
+    mapped.map! { |m| [m.email, m.user_id] }
     (mapped + unmapped).sort_by { |e| e[0] }
   end
 

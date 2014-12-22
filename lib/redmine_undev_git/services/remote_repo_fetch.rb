@@ -101,8 +101,11 @@ module RedmineUndevGit::Services
         parser.parse_message_for_logtime(revision.message).each do |issue_id, hours|
           committer = user_by_email(revision.cemail)
           issue = Issue.find_by_id(issue_id)
-          if committer && issue
+          if Policies::LogtimeByCommit.allowed?(committer, issue)
             log_time(issue: issue, user: committer, hours: hours, revision: revision)
+          else
+            repo_revision = repo_revision_by_git_revision(revision)
+            log_forbidden("try to logtime for #{issue_id}", repo_revision)
           end
         end
       end
@@ -152,7 +155,7 @@ module RedmineUndevGit::Services
       issue = Issue.find_by_id(issue_id)
 
       unless Policies::ApplyHooks.allowed?(repo_revision.committer, issue)
-        log "Forbidden. User (redmine: #{repo_revision.committer.try(:login)}; git: #{repo_revision.committer_string}) try to change #{issue_id} by remote commit: #{repo_revision.uri}"
+        log_forbidden("try to change #{issue_id}", repo_revision)
         return
       end
 
@@ -242,9 +245,13 @@ module RedmineUndevGit::Services
       user = user_by_email(revision.cemail) || User.anonymous
 
       issue = Issue.find_by_id(issue_id, include: :project)
-      if issue && Policies::ReferenceToIssue.allowed?(user, issue)
-        repo_revision = repo_revision_by_git_revision(revision)
+      return unless issue
+
+      repo_revision = repo_revision_by_git_revision(revision)
+      if Policies::ReferenceToIssue.allowed?(user, issue)
         repo_revision.ensure_issue_is_related(issue)
+      else
+        log_forbidden("try to link to #{issue_id}", repo_revision)
       end
     end
 
@@ -367,6 +374,10 @@ module RedmineUndevGit::Services
 
     def parser
       @parser_cache ||= MessageParser.new(any_ref_keyword? ? nil : ref_keywords, fix_keywords)
+    end
+
+    def log_forbidden(action, repo_revision)
+      log "Forbidden. User (redmine: #{repo_revision.committer.try(:login)}; git: #{repo_revision.committer_string}) #{action} by remote commit: #{repo_revision.uri}"
     end
 
     def log(message)

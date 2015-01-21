@@ -1,9 +1,12 @@
 module Policies
   class ReferenceToIssue
     class << self
+
+      # When commit will be associated with issue
+      #
+      # Allow referencing to issue any user
       def allowed?(user, issue)
-        user ||= User.anonymous
-        user.logged? && issue && user.allowed_to?(:edit_issues, issue.project)
+        !!issue
       end
     end
   end

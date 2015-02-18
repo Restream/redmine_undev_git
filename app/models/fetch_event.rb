@@ -1,7 +1,7 @@
 class FetchEvent < ActiveRecord::Base
   belongs_to :repository
 
-  after_commit :cleanup_fetch_events, :on => :create
+  after_commit :cleanup_fetch_events, on: :create
 
   scope :sorted, order('id desc')
 

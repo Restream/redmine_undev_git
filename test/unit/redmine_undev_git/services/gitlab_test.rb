@@ -7,7 +7,7 @@ class RedmineUndevGit::Services::GitlabTest < ActiveSupport::TestCase
         gitlab_payload('git@example.com:path_to/diaspora.git')
     )
     service = RedmineUndevGit::Services::Gitlab.new(nil)
-    urls = service.all_urls
+    urls = service.send :all_urls
     assert_include 'git@example.com:path_to/diaspora.git', urls
     assert_include 'https://example.com/path_to/diaspora.git', urls
     assert_include 'git://example.com/path_to/diaspora.git', urls
@@ -18,7 +18,7 @@ class RedmineUndevGit::Services::GitlabTest < ActiveSupport::TestCase
       RedmineUndevGit::Services::Gitlab.any_instance.stubs(:web_hook).returns(
           gitlab_payload('git@example.com/path_to/diaspora.git')
       )
-      RedmineUndevGit::Services::Gitlab.new(nil).all_urls
+      RedmineUndevGit::Services::Gitlab.new(nil).send :all_urls
     end
   end
 

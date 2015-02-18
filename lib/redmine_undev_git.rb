@@ -18,23 +18,26 @@ module RedmineUndevGit
   end
 end
 
+require 'lazy_helpers'
+
 require 'redmine_undev_git/patches/string_patch'
 require 'redmine_undev_git/patches/project_patch'
+require 'redmine_undev_git/patches/issue_patch'
 require 'redmine_undev_git/patches/changeset_patch'
+require 'redmine_undev_git/patches/time_entry_patch'
 
-require 'redmine_undev_git/helpers/undev_git_helper'
-
-require 'redmine_undev_git/patches/application_helper_patch'
-require 'redmine_undev_git/patches/repositories_helper_patch'
-require 'redmine_undev_git/patches/projects_helper_patch'
 require 'redmine_undev_git/patches/projects_controller_patch'
 require 'redmine_undev_git/patches/repository_patch'
+require 'redmine_undev_git/patches/issues_controller_patch'
+require 'redmine_undev_git/patches/application_controller_patch'
 
 require 'redmine_undev_git/hooks/view_hooks'
 
 require 'redmine_undev_git/services/migration'
 require 'redmine_undev_git/services/errors'
-require 'redmine_undev_git/services/ext_repo'
+require 'redmine_undev_git/services/git_adapter'
+require 'redmine_undev_git/services/remote_repo_service'
+require 'redmine_undev_git/services/remote_repo_fetch'
 require 'redmine_undev_git/services/gitlab'
 require 'redmine_undev_git/services/github'
 require 'redmine_undev_git/services/bitbucket'

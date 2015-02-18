@@ -5,7 +5,7 @@ class HookTest < ActiveSupport::TestCase
   def test_applied_for
     samples = [
         {
-            :hook => { :keywords => 'refs, fixes', :branches => '*' },
+            hook: { keywords: 'refs, fixes', branches: '*' },
             true => [
                 [%w{refs fixes}, %w{master}],
                 [%w{fixes refs closes}, %w{master}],
@@ -21,7 +21,7 @@ class HookTest < ActiveSupport::TestCase
             ]
         },
         {
-            :hook => { :keywords => 'refs', :branches => 'master' },
+            hook: { keywords: 'refs', branches: 'master' },
             true => [
                 [%w{refs}, %w{master}]
             ],
@@ -30,7 +30,7 @@ class HookTest < ActiveSupport::TestCase
             ]
         },
         {
-            :hook => { :keywords => 'refs', :branches => 'master, develop' },
+            hook: { keywords: 'refs', branches: 'master, develop' },
             true => [
                 [%w{refs}, %w{master}],
                 [%w{refs}, %w{master other}],
@@ -51,7 +51,7 @@ class HookTest < ActiveSupport::TestCase
       [true, false].each do |result|
         sample[result].each do |args|
           assert_equal result,
-                       hook.applied_for?(*args),
+                       hook.applicable_for?(*args),
                        "GlobalHook.new(#{sample[:hook]}).applied_for?(#{args[0]}, #{args[1]}) should return #{result}"
         end
       end

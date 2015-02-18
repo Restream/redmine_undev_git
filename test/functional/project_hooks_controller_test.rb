@@ -18,11 +18,11 @@ class ProjectHooksControllerTest < ActionController::TestCase
     Setting.enabled_scm << 'UndevGit'
 
     repo = create_test_repository(
-        :identifier => 'test',
-        :project => @project
+        identifier: 'test',
+        project: @project
     )
 
-    create_hooks!(:repository_id => repo.id)
+    create_hooks!(repository_id: repo.id)
 
     @repository_hook = ProjectHook.first
   end
@@ -33,19 +33,19 @@ class ProjectHooksControllerTest < ActionController::TestCase
 
   def test_permission
     @request.session[:user_id] = 4
-    get :new, :project_id => @project.id
+    get :new, project_id: @project.id
     assert_response 403
 
     Role.find(4).add_permission! :edit_hooks
 
-    get :new, :project_id => @project.id
+    get :new, project_id: @project.id
     assert_response :success
     assert_template 'new'
     assert_not_nil assigns(:hook)
   end
 
   def test_get_new
-    get :new, :project_id => @project.id
+    get :new, project_id: @project.id
     assert_response :success
     assert_template 'new'
     assert_not_nil assigns(:hook)
@@ -53,11 +53,11 @@ class ProjectHooksControllerTest < ActionController::TestCase
 
   def test_post_create
     assert_difference 'ProjectHook.count', 1 do
-      post :create, :project_id => @project.id,
-           :project_hook => {
-               :branches => 'Master',
-               :keywords => 'closes',
-               :done_ratio => '50'
+      post :create, project_id:  @project.id,
+           project_hook: {
+               branches:   'Master',
+               keywords:   'closes',
+               done_ratio: '50'
            }
     end
 
@@ -65,7 +65,7 @@ class ProjectHooksControllerTest < ActionController::TestCase
   end
 
   def test_get_edit
-    get :edit, :id => @repository_hook.id, :project_id => @project.id
+    get :edit, id: @repository_hook.id, project_id: @project.id
     assert_response :success
     assert_template 'edit'
     assert_not_nil assigns(:hook)
@@ -76,8 +76,8 @@ class ProjectHooksControllerTest < ActionController::TestCase
     assert_not_equal @repository_hook, 'staging'
 
     assert_no_difference 'ProjectHook.count' do
-      put :update, :id => @repository_hook.id, :project_id => @project.id,
-          :project_hook => { :branches => 'staging', :repository_id => nil }
+      put :update, id: @repository_hook.id, project_id: @project.id,
+          project_hook: { branches: 'staging', repository_id: nil }
     end
 
     @repository_hook.reload
@@ -89,7 +89,7 @@ class ProjectHooksControllerTest < ActionController::TestCase
 
   def test_post_destroy
     assert_difference 'ProjectHook.count', -1 do
-      post :destroy, :id => @repository_hook.id, :project_id => @project
+      post :destroy, id: @repository_hook.id, project_id: @project
     end
 
     assert_response :redirect

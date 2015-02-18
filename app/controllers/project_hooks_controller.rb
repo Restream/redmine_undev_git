@@ -23,7 +23,7 @@ class ProjectHooksController < ApplicationController
       flash[:notice] = l(:notice_successful_create)
       redirect_to_settings_in_projects
     else
-      render :action => 'new'
+      render action: 'new'
     end
   end
 
@@ -33,7 +33,7 @@ class ProjectHooksController < ApplicationController
       flash[:notice] = l(:notice_successful_update)
       redirect_to_settings_in_projects
     else
-      render :action => 'edit'
+      render action: 'edit'
     end
   end
 
@@ -52,6 +52,6 @@ class ProjectHooksController < ApplicationController
   private
 
   def redirect_to_settings_in_projects
-    redirect_to settings_project_path(@project, :tab => :hooks)
+    redirect_to settings_project_path(@project, tab: :hooks)
   end
 end

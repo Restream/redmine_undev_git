@@ -29,9 +29,9 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     User.current = nil
     @project    = Project.find(PRJ_ID)
     @repository = create_test_repository(
-        :project       => @project,
-        :url           => REPOSITORY_PATH,
-        :path_encoding => 'ISO-8859-1'
+        project: @project,
+        url: REPOSITORY_PATH,
+        path_encoding: 'ISO-8859-1'
     )
     assert @repository
     @char_1        = CHAR_1_HEX.dup
@@ -55,26 +55,26 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @request.session[:user_id] = 1
       @project.repository.update_attribute(:url, 'none')
       assert_difference 'Repository.count' do
-        post :create, :project_id => 'subproject1',
-             :repository_scm => 'UndevGit',
-             :repository => {
-                 :url => REPOSITORY_PATH,
-                 :is_default => '0',
-                 :identifier => 'test-create',
-                 :extra_report_last_commit => '1',
-                 :use_init_hooks => '1'
+        post :create, project_id: 'subproject1',
+             repository_scm: 'UndevGit',
+             repository: {
+                 url:                      REPOSITORY_PATH,
+                 is_default:               '0',
+                 identifier:               'test-create',
+                 extra_report_last_commit: '1',
+                 use_init_hooks:           '1'
              }
       end
       assert_response 302
-      repository = Repository.first(:order => 'id DESC')
+      repository = Repository.first(order: 'id DESC')
       assert_kind_of Repository::UndevGit, repository
       assert_equal REPOSITORY_PATH, repository.url
       assert repository.extra_report_last_commit
       assert repository.use_init_hooks?
 
-      put :update, :id => repository.id,
-          :repository => {
-              :extra_report_last_commit => '0'
+      put :update, id: repository.id,
+          repository: {
+              extra_report_last_commit: '0'
           }
       assert_response 302
       repo2 = Repository.find(repository.id)
@@ -84,7 +84,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     def test_get_new
       @request.session[:user_id] = 1
       @project.repository.destroy
-      get :new, :project_id => 'subproject1', :repository_scm => 'UndevGit'
+      get :new, project_id: 'subproject1', repository_scm: 'UndevGit'
       assert_response :success
       assert_template 'new'
       assert_kind_of Repository::UndevGit, assigns(:repository)
@@ -97,7 +97,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
 
-      get :show, :id => PRJ_ID
+      get :show, id: PRJ_ID
       assert_response :success
       assert_template 'show'
       assert_not_nil assigns(:entries)
@@ -120,7 +120,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      get :show, :id => PRJ_ID, :rev => 'test_branch'
+      get :show, id: PRJ_ID, rev: 'test_branch'
       assert_response :success
       assert_template 'show'
       assert_not_nil assigns(:entries)
@@ -142,7 +142,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
           "tag00.lightweight",
           "tag01.annotated",
       ].each do |t1|
-        get :show, :id => PRJ_ID, :rev => t1
+        get :show, id: PRJ_ID, rev: t1
         assert_response :success
         assert_template 'show'
         assert_not_nil assigns(:entries)
@@ -157,7 +157,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      get :show, :id => PRJ_ID, :path => repository_path_hash(['images'])[:param]
+      get :show, id: PRJ_ID, path: repository_path_hash(['images'])[:param]
       assert_response :success
       assert_template 'show'
       assert_not_nil assigns(:entries)
@@ -175,8 +175,8 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      get :show, :id => PRJ_ID, :path => repository_path_hash(['images'])[:param],
-          :rev => '7234cb2750b63f47bff735edc50a1c0a433c2518'
+      get :show, id: PRJ_ID, path: repository_path_hash(['images'])[:param],
+          rev: '7234cb2750b63f47bff735edc50a1c0a433c2518'
       assert_response :success
       assert_template 'show'
       assert_not_nil assigns(:entries)
@@ -186,23 +186,23 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_changes
-      get :changes, :id => PRJ_ID,
-          :path => repository_path_hash(['images', 'edit.png'])[:param]
+      get :changes, id: PRJ_ID,
+          path: repository_path_hash(['images', 'edit.png'])[:param]
       assert_response :success
       assert_template 'changes'
-      assert_tag :tag => 'h2', :content => 'edit.png'
+      assert_tag tag: 'h2', content: 'edit.png'
     end
 
     def test_entry_show
-      get :entry, :id => PRJ_ID,
-          :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
+      get :entry, id: PRJ_ID,
+          path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
       assert_response :success
       assert_template 'entry'
       # Line 19
-      assert_tag :tag => 'th',
-                 :content => '11',
-                 :attributes => { :class => 'line-num' },
-                 :sibling => { :tag => 'td', :content => /WITHOUT ANY WARRANTY/ }
+      assert_tag tag: 'th',
+                 content: '11',
+                 attributes: { class: 'line-num' },
+                 sibling: { tag: 'td', content: /WITHOUT ANY WARRANTY/ }
     end
 
     def test_entry_show_latin_1
@@ -213,35 +213,35 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       elsif JRUBY_SKIP
         puts JRUBY_SKIP_STR
       else
-        with_settings :repositories_encodings => 'UTF-8,ISO-8859-1' do
+        with_settings repositories_encodings: 'UTF-8,ISO-8859-1' do
           ['57ca437c', '57ca437c0acbbcb749821fdf3726a1367056d364'].each do |r1|
-            get :entry, :id => PRJ_ID,
-                :path => repository_path_hash(['latin-1-dir', "test-#{@char_1}.txt"])[:param],
-                :rev => r1
+            get :entry, id: PRJ_ID,
+                path: repository_path_hash(['latin-1-dir', "test-#{@char_1}.txt"])[:param],
+                rev: r1
             assert_response :success
             assert_template 'entry'
-            assert_tag :tag => 'th',
-                       :content => '1',
-                       :attributes => { :class => 'line-num' },
-                       :sibling => { :tag => 'td',
-                                     :content => /test-#{@char_1}.txt/ }
+            assert_tag tag: 'th',
+                       content: '1',
+                       attributes: { class: 'line-num' },
+                       sibling: { tag: 'td',
+                           content:       /test-#{@char_1}.txt/ }
           end
         end
       end
     end
 
     def test_entry_download
-      get :entry, :id => PRJ_ID,
-          :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
-          :format => 'raw'
+      get :entry, id: PRJ_ID,
+          path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
+          format: 'raw'
       assert_response :success
       # File content
       assert @response.body.include?('WITHOUT ANY WARRANTY')
     end
 
     def test_directory_entry
-      get :entry, :id => PRJ_ID,
-          :path => repository_path_hash(['sources'])[:param]
+      get :entry, id: PRJ_ID,
+          path: repository_path_hash(['sources'])[:param]
       assert_response :success
       assert_template 'show'
       assert_not_nil assigns(:entry)
@@ -258,18 +258,18 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       # Full diff of changeset 2f9c0091
       ['inline', 'sbs'].each do |dt|
         get :diff,
-            :id   => PRJ_ID,
-            :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
-            :type => dt
+            id: PRJ_ID,
+            rev: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
+            type: dt
         assert_response :success
         assert_template 'diff'
         # Line 22 removed
-        assert_tag :tag => 'th',
-                   :content => /22/,
-                   :sibling => { :tag => 'td',
-                                 :attributes => { :class => /diff_out/ },
-                                 :content => /def remove/ }
-        assert_tag :tag => 'h2', :content => /2f9c0091/
+        assert_tag tag: 'th',
+                   content: /22/,
+                   sibling: { tag: 'td',
+                       attributes:    { class: /diff_out/ },
+                       content:       /def remove/ }
+        assert_tag tag: 'h2', content: /2f9c0091/
       end
     end
 
@@ -278,23 +278,23 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      with_settings :diff_max_lines_displayed => 1000 do
+      with_settings diff_max_lines_displayed: 1000 do
         # Full diff of changeset 2f9c0091
         ['inline', 'sbs'].each do |dt|
           get :diff,
-              :id   => PRJ_ID,
-              :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
-              :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
-              :type => dt
+              id: PRJ_ID,
+              rev: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
+              path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
+              type: dt
           assert_response :success
           assert_template 'diff'
           # Line 22 removed
-          assert_tag :tag => 'th',
-                     :content => '22',
-                     :sibling => { :tag => 'td',
-                                   :attributes => { :class => /diff_out/ },
-                                   :content => /def remove/ }
-          assert_tag :tag => 'h2', :content => /2f9c0091/
+          assert_tag tag: 'th',
+                     content: '22',
+                     sibling: { tag: 'td',
+                         attributes:    { class: /diff_out/ },
+                         content:       /def remove/ }
+          assert_tag tag: 'h2', content: /2f9c0091/
         end
       end
     end
@@ -305,18 +305,18 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
 
-      with_settings :diff_max_lines_displayed => 5 do
+      with_settings diff_max_lines_displayed: 5 do
         # Truncated diff of changeset 2f9c0091
         with_cache do
-          with_settings :default_language => 'en' do
-            get :diff, :id   => PRJ_ID, :type => 'inline',
-                :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+          with_settings default_language: 'en' do
+            get :diff, id: PRJ_ID, type: 'inline',
+                rev: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
             assert_response :success
             assert @response.body.include?("... This diff was truncated")
           end
-          with_settings :default_language => 'fr' do
-            get :diff, :id   => PRJ_ID, :type => 'inline',
-                :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+          with_settings default_language: 'fr' do
+            get :diff, id: PRJ_ID, type: 'inline',
+                rev: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
             assert_response :success
             assert ! @response.body.include?("... This diff was truncated")
             assert @response.body.include?("... Ce diff")
@@ -332,26 +332,26 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       assert_equal NUM_REV, @repository.changesets.count
       ['inline', 'sbs'].each do |dt|
         get :diff,
-            :id     => PRJ_ID,
-            :rev    => '61b685fbe55ab05b5ac68402d5720c1a6ac973d1',
-            :rev_to => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
-            :type   => dt
+            id: PRJ_ID,
+            rev: '61b685fbe55ab05b5ac68402d5720c1a6ac973d1',
+            rev_to: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
+            type: dt
         assert_response :success
         assert_template 'diff'
         diff = assigns(:diff)
         assert_not_nil diff
-        assert_tag :tag => 'h2', :content => /2f9c0091c:61b685fbe/
-        assert_tag :tag => "form",
-                   :attributes => {
-                       :action => "/projects/subproject1/repository/revisions/" +
-                           "61b685fbe55ab05b5ac68402d5720c1a6ac973d1/diff"
+        assert_tag tag: 'h2', content: /2f9c0091c:61b685fbe/
+        assert_tag tag: "form",
+                   attributes: {
+                       action: "/projects/subproject1/repository/revisions/" +
+                                   "61b685fbe55ab05b5ac68402d5720c1a6ac973d1/diff"
                    }
-        assert_tag :tag => 'input',
-                   :attributes => {
-                       :id => "rev_to",
-                       :name => "rev_to",
-                       :type => "hidden",
-                       :value => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+        assert_tag tag: 'input',
+                   attributes: {
+                       id:    "rev_to",
+                       name:  "rev_to",
+                       type:  "hidden",
+                       value: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
                    }
       end
     end
@@ -359,35 +359,35 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     def test_diff_path_in_subrepo
       @project.repository.update_attribute(:url, 'none')
       repo = Repository::UndevGit.create(
-          :project       => @project,
-          :url           => REPOSITORY_PATH,
-          :identifier => 'test-diff-path',
-          :path_encoding => 'ISO-8859-1'
+          project: @project,
+          url: REPOSITORY_PATH,
+          identifier: 'test-diff-path',
+          path_encoding: 'ISO-8859-1'
       )
       assert repo
       refute repo.is_default
       assert_equal 'test-diff-path', repo.identifier
       get :diff,
-          :id     => PRJ_ID,
-          :repository_id => 'test-diff-path',
-          :rev    => '61b685fbe55ab05b',
-          :rev_to => '2f9c0091c754a91a',
-          :type   => 'inline'
+          id: PRJ_ID,
+          repository_id: 'test-diff-path',
+          rev: '61b685fbe55ab05b',
+          rev_to: '2f9c0091c754a91a',
+          type: 'inline'
       assert_response :success
       assert_template 'diff'
       diff = assigns(:diff)
       assert_not_nil diff
-      assert_tag :tag => "form",
-                 :attributes => {
-                     :action => "/projects/subproject1/repository/test-diff-path/" +
-                         "revisions/61b685fbe55ab05b/diff"
+      assert_tag tag: "form",
+                 attributes: {
+                     action: "/projects/subproject1/repository/test-diff-path/" +
+                                 "revisions/61b685fbe55ab05b/diff"
                  }
-      assert_tag :tag => 'input',
-                 :attributes => {
-                     :id => "rev_to",
-                     :name => "rev_to",
-                     :type => "hidden",
-                     :value => '2f9c0091c754a91a'
+      assert_tag tag: 'input',
+                 attributes: {
+                     id:    "rev_to",
+                     name:  "rev_to",
+                     type:  "hidden",
+                     value: '2f9c0091c754a91a'
                  }
     end
 
@@ -395,24 +395,24 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       if @ruby19_non_utf8_pass
         puts_ruby19_non_utf8_pass()
       else
-        with_settings :repositories_encodings => 'UTF-8,ISO-8859-1' do
+        with_settings repositories_encodings: 'UTF-8,ISO-8859-1' do
           ['57ca437c', '57ca437c0acbbcb749821fdf3726a1367056d364'].each do |r1|
             ['inline', 'sbs'].each do |dt|
-              get :diff, :id => PRJ_ID, :rev => r1, :type => dt
+              get :diff, id: PRJ_ID, rev: r1, type: dt
               assert_response :success
               assert_template 'diff'
-              assert_tag :tag => 'thead',
-                         :descendant => {
-                             :tag => 'th',
-                             :attributes => { :class => 'filename' } ,
-                             :content => /latin-1-dir\/test-#{@char_1}.txt/ ,
+              assert_tag tag: 'thead',
+                         descendant: {
+                             tag:        'th',
+                             attributes: { class: 'filename' },
+                             content:    /latin-1-dir\/test-#{@char_1}.txt/,
                          },
-                         :sibling => {
-                             :tag => 'tbody',
-                             :descendant => {
-                                 :tag => 'td',
-                                 :attributes => { :class => /diff_in/ },
-                                 :content => /test-#{@char_1}.txt/
+                         sibling: {
+                             tag:        'tbody',
+                             descendant: {
+                                 tag:        'td',
+                                 attributes: { class: /diff_in/ },
+                                 content:    /test-#{@char_1}.txt/
                              }
                          }
             end
@@ -422,13 +422,13 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_diff_should_show_filenames
-      get :diff, :id => PRJ_ID, :rev => 'deff712f05a90d96edbd70facc47d944be5897e3', :type => 'inline'
+      get :diff, id: PRJ_ID, rev: 'deff712f05a90d96edbd70facc47d944be5897e3', type: 'inline'
       assert_response :success
       assert_template 'diff'
       # modified file
-      assert_select 'th.filename', :text => /sources\/watchers_controller\.rb/
+      assert_select 'th.filename', text: /sources\/watchers_controller\.rb/
       # deleted file
-      assert_select 'th.filename', :text => /test\.txt/
+      assert_select 'th.filename', text: /test\.txt/
     end
 
     def test_save_diff_type
@@ -440,16 +440,16 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
 
       @request.session[:user_id] = 1 # admin
       get :diff,
-          :id   => PRJ_ID,
-          :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+          id: PRJ_ID,
+          rev: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
       assert_response :success
       assert_template 'diff'
       user.reload
       assert_equal "inline", user.pref[:diff_type]
       get :diff,
-          :id   => PRJ_ID,
-          :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
-          :type => 'sbs'
+          id: PRJ_ID,
+          rev: '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
+          type: 'sbs'
       assert_response :success
       assert_template 'diff'
       user.reload
@@ -457,17 +457,17 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_annotate
-      get :annotate, :id => PRJ_ID,
-          :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
+      get :annotate, id: PRJ_ID,
+          path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
       assert_response :success
       assert_template 'annotate'
 
       # Line 23, changeset 2f9c0091
       assert_select 'tr' do
-        assert_select 'th.line-num', :text => '23'
-        assert_select 'td.revision', :text => /2f9c0091/
-        assert_select 'td.author', :text => 'jsmith'
-        assert_select 'td', :text => /remove_watcher/
+        assert_select 'th.line-num', text: '23'
+        assert_select 'td.revision', text: /2f9c0091/
+        assert_select 'td.author', text: 'jsmith'
+        assert_select 'td', text: /remove_watcher/
       end
     end
 
@@ -476,33 +476,33 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      get :annotate, :id => PRJ_ID, :rev => 'deff7',
-          :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
+      get :annotate, id: PRJ_ID, rev: 'deff7',
+          path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
       assert_response :success
       assert_template 'annotate'
-      assert_tag :tag => 'h2', :content => /@ deff712f/
+      assert_tag tag: 'h2', content: /@ deff712f/
     end
 
     def test_annotate_binary_file
-      get :annotate, :id => PRJ_ID,
-          :path => repository_path_hash(['images', 'edit.png'])[:param]
+      get :annotate, id: PRJ_ID,
+          path: repository_path_hash(['images', 'edit.png'])[:param]
       assert_response 500
-      assert_tag :tag => 'p', :attributes => { :id => /errorExplanation/ },
-                 :content => /cannot be annotated/
+      assert_tag tag: 'p', attributes: { id: /errorExplanation/ },
+                 content: /cannot be annotated/
     end
 
     def test_annotate_error_when_too_big
-      with_settings :file_max_size_displayed => 1 do
-        get :annotate, :id => PRJ_ID,
-            :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
-            :rev => 'deff712f'
+      with_settings file_max_size_displayed: 1 do
+        get :annotate, id: PRJ_ID,
+            path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
+            rev: 'deff712f'
         assert_response 500
-        assert_tag :tag => 'p', :attributes => { :id => /errorExplanation/ },
-                   :content => /exceeds the maximum text file size/
+        assert_tag tag: 'p', attributes: { id: /errorExplanation/ },
+                   content: /exceeds the maximum text file size/
 
-        get :annotate, :id => PRJ_ID,
-            :path => repository_path_hash(['README'])[:param],
-            :rev => '7234cb2'
+        get :annotate, id: PRJ_ID,
+            path: repository_path_hash(['README'])[:param],
+            rev: '7234cb2'
         assert_response :success
         assert_template 'annotate'
       end
@@ -516,16 +516,16 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       elsif JRUBY_SKIP
         puts JRUBY_SKIP_STR
       else
-        with_settings :repositories_encodings => 'UTF-8,ISO-8859-1' do
+        with_settings repositories_encodings: 'UTF-8,ISO-8859-1' do
           ['57ca437c', '57ca437c0acbbcb749821fdf3726a1367056d364'].each do |r1|
-            get :annotate, :id => PRJ_ID,
-                :path => repository_path_hash(['latin-1-dir', "test-#{@char_1}.txt"])[:param],
-                :rev => r1
-            assert_tag :tag => 'th',
-                       :content => '1',
-                       :attributes => { :class => 'line-num' },
-                       :sibling => { :tag => 'td',
-                                     :content => /test-#{@char_1}.txt/ }
+            get :annotate, id: PRJ_ID,
+                path: repository_path_hash(['latin-1-dir', "test-#{@char_1}.txt"])[:param],
+                rev: r1
+            assert_tag tag: 'th',
+                       content: '1',
+                       attributes: { class: 'line-num' },
+                       sibling: { tag: 'td',
+                           content:       /test-#{@char_1}.txt/ }
           end
         end
       end
@@ -536,13 +536,13 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      get :revisions, :id => PRJ_ID
+      get :revisions, id: PRJ_ID
       assert_response :success
       assert_template 'revisions'
-      assert_tag :tag => 'form',
-                 :attributes => {
-                     :method => 'get',
-                     :action => '/projects/subproject1/repository/revision'
+      assert_tag tag: 'form',
+                 attributes: {
+                     method: 'get',
+                     action: '/projects/subproject1/repository/revision'
                  }
     end
 
@@ -552,7 +552,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
       ['61b685fbe55ab05b5ac68402d5720c1a6ac973d1', '61b685f'].each do |r|
-        get :revision, :id => PRJ_ID, :rev => r
+        get :revision, id: PRJ_ID, rev: r
         assert_response :success
         assert_template 'revision'
       end
@@ -564,9 +564,9 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
       ['', ' ', nil].each do |r|
-        get :revision, :id => PRJ_ID, :rev => r
+        get :revision, id: PRJ_ID, rev: r
         assert_response 404
-        assert_error_tag :content => /was not found/
+        assert_error_tag content: /was not found/
       end
     end
 
@@ -578,7 +578,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       assert_equal NUM_REV, @repository.changesets.count
 
       assert_difference 'Repository.count', -1 do
-        delete :destroy, :id => @repository.id
+        delete :destroy, id: @repository.id
       end
       assert_response 302
       @project.reload
@@ -589,15 +589,15 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @request.session[:user_id] = 1 # admin
       @project.repository.destroy
       @repository = Repository::UndevGit.create!(
-          :project       => @project,
-          :url           => REPOSITORY_PATH,
-          :path_encoding => 'ISO-8859-1'
+          project: @project,
+          url: REPOSITORY_PATH,
+          path_encoding: 'ISO-8859-1'
       )
       @repository.reload
       assert_equal 0, @repository.changesets.count
 
       assert_difference 'Repository.count', -1 do
-        delete :destroy, :id => @repository.id
+        delete :destroy, id: @repository.id
       end
       assert_response 302
       @project.reload
@@ -611,17 +611,17 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       branches = Array.new(max_branches) { |i| "fakebranch#{i}" }
       changeset.update_attribute :branches, branches
 
-      get :revision, :id => PRJ_ID, :rev => changeset.revision
+      get :revision, id: PRJ_ID, rev: changeset.revision
       assert_response :success
 
-      assert_select 'table.revision-info a', {:text => /fakebranch/} do |links|
+      assert_select 'table.revision-info a', { text: /fakebranch/ } do |links|
         assert_equal max_branches, links.length
       end
     end
 
     def test_new_form_contains_fetch_by_web_hook_checkbox
       @request.session[:user_id] = 1
-      get :new, :project_id => 'subproject1', :repository_scm => 'UndevGit'
+      get :new, project_id: 'subproject1', repository_scm: 'UndevGit'
       assert_response :success
       assert_select 'input#repository_fetch_by_web_hook'
     end
@@ -630,22 +630,22 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       @request.session[:user_id] = 1
       repo_url = 'https://github.com/Undev/redmine_undev_git.git'
       post :create,
-           :project_id => 'subproject1',
-           :repository_scm => 'UndevGit',
-           :repository => {
-               :url => repo_url,
-               :is_default => '0',
-               :identifier => 'test-create-wbh',
-               :fetch_by_web_hook => '1'
+           project_id: 'subproject1',
+           repository_scm: 'UndevGit',
+           repository: {
+               url:               repo_url,
+               is_default:        '0',
+               identifier:        'test-create-wbh',
+               fetch_by_web_hook: '1'
            }
       assert_response 302
       repository = Repository::UndevGit.find_by_url repo_url
       assert repository
       assert repository.fetch_by_web_hook?
 
-      put :update, :id => repository.id,
-          :repository => {
-              :fetch_by_web_hook => '0'
+      put :update, id: repository.id,
+          repository: {
+              fetch_by_web_hook: '0'
           }
       assert_response 302
       repository = Repository::UndevGit.find_by_url repo_url

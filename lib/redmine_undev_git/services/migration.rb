@@ -3,7 +3,7 @@ module RedmineUndevGit
 
     class Repo < Hashie::Dash
       property :id
-      property :project, :required => true
+      property :project, required: true
       property :url
       property :identifier
       property :is_default
@@ -25,9 +25,9 @@ module RedmineUndevGit
 
       def create_new_repo(new_url)
         Repo.new(
-            :project => find_project,
-            :url => new_url,
-            :identifier => find_identifier(new_url)
+            project: find_project,
+            url: new_url,
+            identifier: find_identifier(new_url)
         )
       end
 
@@ -99,11 +99,11 @@ module RedmineUndevGit
               m.new_repo.project.enable_module!('hooks')
 
               new_repo = Repository::UndevGit.new(
-                  :project => m.new_repo.project,
-                  :identifier => m.new_repo.identifier,
-                  :url => m.new_repo.url,
-                  :use_init_hooks => 0,
-                  :use_init_refs => 1
+                  project: m.new_repo.project,
+                  identifier: m.new_repo.identifier,
+                  url: m.new_repo.url,
+                  use_init_hooks: 0,
+                  use_init_refs: 1
               )
               new_repo.merge_extra_info(
                   'extra_report_last_commit' => old_repo.report_last_commit
@@ -131,11 +131,11 @@ module RedmineUndevGit
         new_urls = []
         Repository::Git.order(:id).all.map do |r|
           old_repo = Repo.new(
-              :id => r.id,
-              :project => r.project,
-              :url => r.url,
-              :identifier => r.identifier,
-              :is_default => r.is_default
+              id: r.id,
+              project: r.project,
+              url: r.url,
+              identifier: r.identifier,
+              is_default: r.is_default
           )
           new_url = url_mappings[old_repo.url]
 

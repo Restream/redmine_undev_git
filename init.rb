@@ -11,8 +11,8 @@ require 'redmine_undev_git'
 
 Redmine::Plugin.register :redmine_undev_git do
   name        'Redmine UndevGit plugin'
-  description 'Git repository with remote repositories and hooks support'
-  author      'Denis Diachkov, Vladimir Kiselev, Danil Tashkinov'
+  description 'This plugin adds a new Git repository type taht supports remote repositories and hooks'
+  author      'Undev'
   author_url  'https://github.com/Undev'
   version     '0.2.9'
   url         'https://github.com/Undev/redmine_undev_git'

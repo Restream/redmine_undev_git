@@ -1,34 +1,70 @@
-# RedmineUndevGit
+# Redmine UndevGit Plugin
 
 [![Build Status](https://travis-ci.org/Undev/redmine_undev_git.png)](https://travis-ci.org/Undev/redmine_undev_git)
 [![Code Climate](https://codeclimate.com/github/Undev/redmine_undev_git.png)](https://codeclimate.com/github/Undev/redmine_undev_git)
 
-## Description
-
 The UndevGit plugin adds the UndevGit repository type to Redmine.
+
 UndevGit has all standard functions of a Git repository, as well as other features:
-possibility to work with remote repositories;
-hooks for UndevGit repositories.
 
-When accessing a remote or local repository, UndevGit clones it 
-and then works with the created copy.
+* possibility to work with remote repositories
+* hooks for UndevGit repositories
 
-## Setup and configuration
+When accessing a remote or local repository, UndevGit clones it and then works with the created copy.
 
-### Setup
+## Compatibility
 
- 1. Copy the plugin directory into **plugins**
- 2. **bundle exec rake redmine:plugins:migrate**
- 3. **bundle install** in the Redmine root directory
- 4. Restart Redmine
+This plugin version is compatible only with Redmine 2.1.x and later.
+
+## Installation
+
+1. To install the plugin
+    * Download the .ZIP archives, extract files and copy the plugin directory into #{REDMINE_ROOT}/plugin.
+    
+    Or
+
+    * Change you current directory to your Redmine root directory:  
+
+            cd {REDMINE_ROOT}
+            
+      Copy the plugin from GitHub using the following command:
+      
+            git clone https://github.com/Undev/redmine_undev_git.git plugins/redmine_undev_git
+            
+2. Install the required gems using the command:  
+
+        bundle install  
+
+    * In case of bundle install errors, remove the Gemfile.lock file, update the local package index and install the required dependencies. Then execute the bundle install command again:  
+
+            rm Gemfile.lock
+            sudo apt-get update
+            sudo apt-get install -y libxml2-dev libxslt-dev libpq-dev
+            bundle install
+            
+3. This plugin requires a migration. Run the following command to upgrade your database (make a database backup before):  
+
+        bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+
+4. Restart Redmine.
+
+Now you should be able to see the plugin in **Administration > Plugins**.
+
+
+## Usage
 
 ### Configuration
 
-To enable UndevGit, go to the **Administration** menu > *Repositories* tab > *Enabled SCM* group.
+To enable the UndevGit repository type, go to **Administration > Settings **, switch to the **Repositories** tab and select the **UndevGit** check box in the **Enabled SCM** section.
+[pic]
 
-The plugin settings allow you to specify the maximum number of branches to be displayed on 
-the issue page in the *Associated revisions* section.
-An empty field or 0 means no restrictions.
+To configure the plugin settings, go to **Administration > Plugins** and click **Configure**.
+[pic]
+
+The plugin allows you to specify the maximum number of branches to be displayed on 
+the issue page in the **Associated revisions** section. An empty field or 0 means no restrictions.
+[pic]
+
 For details on hook configuration, see the corresponding section below.
 
 In the Redmine settings, you can specify the directory 
@@ -37,6 +73,13 @@ a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` fil
 By default, the `repos` directory in the Redmine root directory is used, so
 local repository copies are stored in `repos\[projectidentifier]\[repository_id]`.
 When you remove a repository, the corresponding directory is deleted.
+
+To add an UndevGit repository to a project, open the **Repositories** tab of the project settings and select the **UndevGit** value in the **SCM** drop-down list.
+[pic]
+
+You can delete a repository or change its settings by clicking the corresponding buttons on the **Repositories** tab.
+[pic]
+
 
 ## Hooks
 
@@ -59,7 +102,6 @@ Hooks are configured as follows. Global hooks are managed from the Redmine setti
 (*Global hooks* menu item, above *Plugins*).
 Project and repository hooks are available on the *Hooks* tab of the project settings menu.
 
-TODO: Configuring how repositories are read when accessed (why it should be disabled)
 
 ### Hook priorities
 
@@ -145,9 +187,18 @@ Create a database
 Launch tests for redmine_undev_plugin
     rake RAILS_ENV=test NAME=redmine_undev_git redmine:plugins:test
 
-## TODO:
+## License
 
-Rake tasks: moving Git repositories to UndevGit
-Additional fields in changesets
-Reading the sequence (in detail)
-Specifics of first access to huge repositories (configuring chunk_size)
+Copyright (c) 2015 Undev
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

@@ -12,12 +12,12 @@
     </p>
 
     <p>
-      <%= f.text_field :branches, :required => true %><br />
+      <%= f.text_field :branches, required: true %><br />
       <em><%= raw(l(:text_branches)) %></em>
     </p>
 
     <p>
-      <%= f.text_field :keywords, :required => true %><br />
+      <%= f.text_field :keywords, required: true %><br />
       <em><%= l(:text_comma_separated) %></em>
     </p>
   </fieldset>
@@ -40,13 +40,13 @@
                        hook.assignee_type
                    ),
                    {},
-                   :class => 'hook_assignee_type' %>
+                   class: 'hook_assignee_type' %>
     </p>
 
     <p><%= f.select :assigned_to_id,
                     principals_options_for_select(hook.assignable_users, hook.assigned_to),
                     {},
-                    :class => 'hook_assigned_to_id' %></p>
+                    class: 'hook_assigned_to_id' %></p>
 
     <% hook.custom_field_values.each do |value| %>
       <p><%= hook_custom_field_value_tag_with_label :project_hook, value %></p>
@@ -54,4 +54,4 @@
   </fieldset>
 </div>
 
-<%= javascript_include_tag 'assignee_type', :plugin => 'redmine_undev_git' %>
+<%= javascript_include_tag 'assignee_type', plugin: 'redmine_undev_git' %>

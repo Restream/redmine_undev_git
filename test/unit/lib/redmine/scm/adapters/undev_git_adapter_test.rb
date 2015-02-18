@@ -105,7 +105,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', revs1[ 0].identifier
       assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs1[-1].identifier
 
-      revs2 = @adapter.revisions('', nil, "master", {:reverse => true})
+      revs2 = @adapter.revisions('', nil, "master", { reverse: true })
       assert_equal 15, revs2.length
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', revs2[-1].identifier
       assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs2[ 0].identifier
@@ -113,7 +113,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_master_merged_rev
       revs1 = @adapter.revisions('', "713f4944648826f558cf548222f813dabe7cbb04",
-                                 "master", {:reverse => true})
+                                 "master", { reverse: true })
       assert_equal 8, revs1.length
       assert_equal 'fba357b886984ee71185ad2065e65fc0417d9b92', revs1[ 0].identifier
       assert_equal '7e61ac704deecde634b51e59daa8110435dcb3da', revs1[ 1].identifier
@@ -124,7 +124,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', revs1[-1].identifier
 
       revs2 = @adapter.revisions('', "fba357b886984ee71185ad2065e65fc0417d9b92",
-                                 "master", {:reverse => true})
+                                 "master", { reverse: true })
       assert_equal 7, revs2.length
       assert_equal '7e61ac704deecde634b51e59daa8110435dcb3da', revs2[ 0].identifier
       # 4a07fe31b is not a child of fba357b8869
@@ -140,7 +140,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
       assert_equal '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127', revs1[ 0].identifier
       assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs1[-1].identifier
 
-      revs2 = @adapter.revisions('', nil, "latin-1-path-encoding", {:reverse => true})
+      revs2 = @adapter.revisions('', nil, "latin-1-path-encoding", { reverse: true })
       assert_equal 8, revs2.length
       assert_equal '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127', revs2[-1].identifier
       assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs2[ 0].identifier
@@ -148,13 +148,13 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_branch_latin_1_path_encoding_with_rev
       revs1 = @adapter.revisions('', '7234cb2750b63f47bff735edc50a1c0a433c2518',
-                                 "latin-1-path-encoding", {:reverse => true})
+                                 "latin-1-path-encoding", { reverse: true })
       assert_equal 7, revs1.length
       assert_equal '899a15dba03a3b350b89c3f537e4bbe02a03cdc9', revs1[ 0].identifier
       assert_equal '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127', revs1[-1].identifier
 
       revs2 = @adapter.revisions('', '57ca437c0acbbcb749821fdf3726a1367056d364',
-                                 "latin-1-path-encoding",{:reverse => true})
+                                 "latin-1-path-encoding",{ reverse: true })
       assert_equal 3, revs2.length
       assert_equal '4fc55c43bf3d3dc2efb66145365ddc17639ce81e', revs2[ 0].identifier
       assert_equal '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127', revs2[-1].identifier
@@ -172,9 +172,9 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_includes_master_two_revs
       revs1 = @adapter.revisions('', nil, nil,
-                         {:reverse => true,
-                          :includes => ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
-                          :excludes => ['4f26664364207fa8b1af9f8722647ab2d4ac5d43']})
+                         { reverse:    true,
+                             includes: ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
+                             excludes: ['4f26664364207fa8b1af9f8722647ab2d4ac5d43'] })
       assert_equal 2, revs1.length
       assert_equal 'ed5bb786bbda2dee66a2d50faf51429dbc043a7b', revs1[ 0].identifier
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', revs1[-1].identifier
@@ -182,9 +182,9 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_includes_master_two_revs_from_origin
       revs1 = @adapter.revisions('', nil, nil,
-                         {:reverse => true,
-                          :includes => ['899a15dba03a3b350b89c3f537e4bbe02a03cdc9'],
-                          :excludes => []})
+                         { reverse:    true,
+                             includes: ['899a15dba03a3b350b89c3f537e4bbe02a03cdc9'],
+                             excludes: [] })
       assert_equal 2, revs1.length
       assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', revs1[ 0].identifier
       assert_equal '899a15dba03a3b350b89c3f537e4bbe02a03cdc9', revs1[ 1].identifier
@@ -192,9 +192,9 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_includes_merged_revs
       revs1 = @adapter.revisions('', nil, nil,
-                         {:reverse => true,
-                          :includes => ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
-                          :excludes => ['fba357b886984ee71185ad2065e65fc0417d9b92']})
+                         { reverse:    true,
+                             includes: ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
+                             excludes: ['fba357b886984ee71185ad2065e65fc0417d9b92'] })
       assert_equal 7, revs1.length
       assert_equal '7e61ac704deecde634b51e59daa8110435dcb3da', revs1[ 0].identifier
       assert_equal '4a07fe31bffcf2888791f3e6cbc9c4545cefe3e8', revs1[ 1].identifier
@@ -204,11 +204,11 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_includes_two_heads
       revs1 = @adapter.revisions('', nil, nil,
-                         {:reverse => true,
-                          :includes => ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c',
-                                        '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127'],
-                          :excludes => ['4f26664364207fa8b1af9f8722647ab2d4ac5d43',
-                                        '4fc55c43bf3d3dc2efb66145365ddc17639ce81e']})
+                         { reverse:    true,
+                             includes: ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c',
+                                 '1ca7f5ed374f3cb31a93ae5215c2e25cc6ec5127'],
+                             excludes: ['4f26664364207fa8b1af9f8722647ab2d4ac5d43',
+                                 '4fc55c43bf3d3dc2efb66145365ddc17639ce81e'] })
       assert_equal 4, revs1.length
       assert_equal 'ed5bb786bbda2dee66a2d50faf51429dbc043a7b', revs1[ 0].identifier
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', revs1[ 1].identifier
@@ -218,11 +218,11 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_disjointed_histories_revisions
       revs1 = @adapter.revisions('', nil, nil,
-                         {:reverse => true,
-                          :includes => ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c',
-                                        '92397af84d22f27389c822848ecd5b463c181583'],
-                          :excludes => ['95488a44bc25f7d1f97d775a31359539ff333a63',
-                                        '4f26664364207fa8b1af9f8722647ab2d4ac5d43'] })
+                         { reverse:    true,
+                             includes: ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c',
+                                 '92397af84d22f27389c822848ecd5b463c181583'],
+                             excludes: ['95488a44bc25f7d1f97d775a31359539ff333a63',
+                                 '4f26664364207fa8b1af9f8722647ab2d4ac5d43'] })
       assert_equal 4, revs1.length
       assert_equal 'ed5bb786bbda2dee66a2d50faf51429dbc043a7b', revs1[ 0].identifier
       assert_equal '83ca5fd546063a3c7dc2e568ba3355661a9e2b2c', revs1[ 1].identifier
@@ -232,14 +232,14 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_revisions_invalid_rev_excludes
       assert_equal [], @adapter.revisions('', nil, nil,
-                                          {:reverse => true,
-                                           :includes => ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
-                                           :excludes => ['0123abcd4567']})
+                                          { reverse:    true,
+                                              includes: ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
+                                              excludes: ['0123abcd4567'] })
       assert_raise Redmine::Scm::Adapters::CommandFailed do
         revs = []
         @adapter.revisions('', nil, nil,
-                           {:includes => ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
-                            :excludes => ['0123abcd4567']}) do |chunk|
+                           { includes:   ['83ca5fd546063a3c7dc2e568ba3355661a9e2b2c'],
+                               excludes: ['0123abcd4567'] }) do |chunk|
           revs += chunk
         end
       end
@@ -251,7 +251,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
     end
 
     def test_parents
-      revs1 = @adapter.revisions('', nil, "master", {:reverse => true})
+      revs1 = @adapter.revisions('', nil, "master", { reverse: true })
       assert_equal 15, revs1.length
       assert_equal "7234cb2750b63f47bff735edc50a1c0a433c2518",
                    revs1[0].identifier
@@ -343,7 +343,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_entries_tag
       entries1 = @adapter.entries(nil, 'tag01.annotated',
-                                  options = {:report_last_commit => true})
+                                  options = { report_last_commit: true })
       assert entries1
       assert_equal 3, entries1.size
       assert_equal 'sources', entries1[1].name
@@ -360,7 +360,7 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
 
     def test_entries_branch
       entries1 = @adapter.entries(nil, 'test_branch',
-                                  options = {:report_last_commit => true})
+                                  options = { report_last_commit: true })
       assert entries1
       assert_equal 4, entries1.size
       assert_equal 'sources', entries1[1].name
@@ -518,8 +518,8 @@ class UndevGitAdapterTest < ActiveSupport::TestCase
           nil,
           'UTF-8'
       )
-      #repo = create_test_repository(:url => R_BEFORE_REBASE_PATH,
-      #                              :path_encoding => 'UTF-8')
+      #repo = create_test_repository(url: R_BEFORE_REBASE_PATH,
+      #                              path_encoding: 'UTF-8')
       patch_ids = {
         '2b91d81c6448716a5fcfef1292c45d6d7cfea3d6' => 'c7170bbd4448cbf3b34b99abd37dec3e1de16b8a',
         'ad445deb690a213ec8625c22e5e2bd4911c3e035' => '064976b3ad63557b9ab0b209bbca27978f593ef4',

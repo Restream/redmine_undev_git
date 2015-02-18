@@ -20,7 +20,7 @@ class RedmineUndevGit::ChangesetTest < ActiveSupport::TestCase
     make_temp_dir
     Setting.enabled_scm << 'UndevGit'
     @project = Project.find(3)
-    @repository = create_test_repository(:project => @project)
+    @repository = create_test_repository(project: @project)
     @repository.fetch_changesets
   end
 
@@ -33,40 +33,40 @@ class RedmineUndevGit::ChangesetTest < ActiveSupport::TestCase
     # 5, 13, 14 - issues in repository project
     samples = [
         {
-            :comment => 'some text refs #10 and fixes #5,#13 and related to #14 @5h',
-            :ref_keywords => 'refs, to',
-            :fix_keywords => 'fixes',
-            :cross_project_ref => false,
-            :ref_issues => [5, 13, 14],
-            :fix_issues => { 5 => %w{fixes}, 13 => %w{fixes} },
-            :log_time => { 14 => %w{5h} }
+            comment:           'some text refs #10 and fixes #5,#13 and related to #14 @5h',
+            ref_keywords:      'refs, to',
+            fix_keywords:      'fixes',
+            cross_project_ref: false,
+            ref_issues:        [5, 13, 14],
+            fix_issues:        { 5 => %w{fixes}, 13 => %w{fixes} },
+            log_time:          { 14 => %w{5h} }
         },
         {
-            :comment => 'some text refs #10 and fixes #5,#13 and related to #14 @4h5m',
-            :ref_keywords => 'refs, to',
-            :fix_keywords => 'fixes',
-            :cross_project_ref => true,
-            :ref_issues => [5, 10, 13, 14],
-            :fix_issues => { 5 => %w{fixes}, 13 => %w{fixes} },
-            :log_time => { 14 => %w{4h5m} }
+            comment:           'some text refs #10 and fixes #5,#13 and related to #14 @4h5m',
+            ref_keywords:      'refs, to',
+            fix_keywords:      'fixes',
+            cross_project_ref: true,
+            ref_issues:        [5, 10, 13, 14],
+            fix_issues:        { 5 => %w{fixes}, 13 => %w{fixes} },
+            log_time:          { 14 => %w{4h5m} }
         },
         {
-            :comment => 'some text closes #10 and fixes #5,#13 and related to #14 @3m and later #14 @2h',
-            :ref_keywords => '*',
-            :fix_keywords => 'fixes, closes',
-            :cross_project_ref => true,
-            :ref_issues => [5, 10, 13, 14],
-            :fix_issues => { 5 => %w{fixes}, 10 => %w{closes} , 13 => %w{fixes} },
-            :log_time => { 14 => %w{3m 2h} }
+            comment:           'some text closes #10 and fixes #5,#13 and related to #14 @3m and later #14 @2h',
+            ref_keywords:      '*',
+            fix_keywords:      'fixes, closes',
+            cross_project_ref: true,
+            ref_issues:        [5, 10, 13, 14],
+            fix_issues:        { 5 => %w{fixes}, 10 => %w{closes}, 13 => %w{fixes} },
+            log_time:          { 14 => %w{3m 2h} }
         },
         {
-            :comment => 'some text closes #5 and fixes #5',
-            :ref_keywords => '*',
-            :fix_keywords => 'fixes, closes',
-            :cross_project_ref => true,
-            :ref_issues => [5],
-            :fix_issues => { 5 => %w{fixes closes} },
-            :log_time => { }
+            comment:           'some text closes #5 and fixes #5',
+            ref_keywords:      '*',
+            fix_keywords:      'fixes, closes',
+            cross_project_ref: true,
+            ref_issues:        [5],
+            fix_issues:        { 5 => %w{fixes closes} },
+            log_time:          {}
         }
     ]
     samples.each do |sample|

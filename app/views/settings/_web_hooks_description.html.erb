@@ -2,20 +2,20 @@
     To fetch repository by webhook you should enable webhook on the external service.<br/>
     Gitlab webhook url:
     <%= text_field_tag 'gitlab-web-hook',
-                       gitlab_hooks_url(:host => Setting.host_name, :protocol => Setting.protocol),
-                       :size => 60,
-                       :readonly => true,
-                       :class => 'web-hook-url' %><br/>
+                       gitlab_hooks_url(host: Setting.host_name, protocol: Setting.protocol),
+                       size: 60,
+                       readonly: true,
+                       class: 'web-hook-url' %><br/>
     Github webhook url:
     <%= text_field_tag 'github-web-hook',
-                       github_hooks_url(:host => Setting.host_name, :protocol => Setting.protocol),
-                       :size => 60,
-                       :readonly => true,
-                       :class => 'web-hook-url' %><br/>
+                       github_hooks_url(host: Setting.host_name, protocol: Setting.protocol),
+                       size: 60,
+                       readonly: true,
+                       class: 'web-hook-url' %><br/>
     Bitbucket webhook url:
     <%= text_field_tag 'bitbucket-web-hook',
-                       bitbucket_hooks_url(:host => Setting.host_name, :protocol => Setting.protocol),
-                       :size => 60,
-                       :readonly => true,
-                       :class => 'web-hook-url' %>
+                       bitbucket_hooks_url(host: Setting.host_name, protocol: Setting.protocol),
+                       size: 60,
+                       readonly: true,
+                       class: 'web-hook-url' %>
 </em>

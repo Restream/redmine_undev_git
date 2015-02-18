@@ -63,7 +63,7 @@ module Redmine::Scm::Adapters
     end
 
     def info
-      Info.new(:root_url => root_url, :lastrev => lastrev('', nil))
+      Info.new(root_url: root_url, lastrev: lastrev('', nil))
     rescue
       nil
     end
@@ -111,11 +111,11 @@ module Redmine::Scm::Adapters
       search_name = parts[-1]
       if search_path.blank? && search_name.blank?
         # Root entry
-        Entry.new(:path => '', :kind => 'dir')
+        Entry.new(path: '', kind: 'dir')
       else
         # Search for the entry in the parent directory
         es = entries(search_path, identifier,
-                     options = {:report_last_commit => false})
+                     options = { report_last_commit: false })
         es ? es.detect {|e| e.name == search_name} : nil
       end
     end
@@ -141,12 +141,12 @@ module Redmine::Scm::Adapters
             full_path = p.empty? ? name : "#{p}/#{name}"
             n      = scm_iconv('UTF-8', path_encoding, name)
             full_p = scm_iconv('UTF-8', path_encoding, full_path)
-            entries << Entry.new({:name => n,
-                                  :path => full_p,
-                                  :kind => (type == 'tree') ? 'dir' : 'file',
-                                  :size => (type == 'tree') ? nil : size,
-                                  :lastrev => options[:report_last_commit] ?
-                                      lastrev(full_path, identifier) : Revision.new
+            entries << Entry.new({ name: n,
+                    path:                full_p,
+                    kind:                (type == 'tree') ? 'dir' : 'file',
+                    size:                (type == 'tree') ? nil : size,
+                    lastrev:             options[:report_last_commit] ?
+                                             lastrev(full_path, identifier) : Revision.new
                                  }) unless entries.detect{|entry| entry.name == name}
           end
         end
@@ -169,12 +169,12 @@ module Redmine::Scm::Adapters
         time = Time.parse(lines[4].match('CommitDate:\s+(.*)$')[1])
 
         Revision.new({
-                         :identifier => id,
-                         :scmid      => id,
-                         :author     => author,
-                         :time       => time,
-                         :message    => nil,
-                         :paths      => nil
+                identifier: id,
+                scmid:      id,
+                author:     author,
+                time:       time,
+                message:    nil,
+                paths:      nil
                      })
       rescue NoMethodError => e
         logger.error("The revision '#{path}' has a wrong format")
@@ -223,10 +223,10 @@ module Redmine::Scm::Adapters
           authors_by_commit[identifier] = $1.strip
         elsif line =~ /^\t(.*)/
           blame.add_line($1, Revision.new(
-              :identifier => identifier,
-              :revision   => identifier,
-              :scmid      => identifier,
-              :author     => authors_by_commit[identifier]
+              identifier: identifier,
+              revision: identifier,
+              scmid: identifier,
+              author: authors_by_commit[identifier]
           ))
           identifier = ''
           author = ''
@@ -297,9 +297,9 @@ module Redmine::Scm::Adapters
       boundary_drags = nil
 
       options.merge!(
-          :format => '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%s%n%b%n%h',
-          :identifier_from => identifier_from,
-          :identifier_to => identifier_to)
+          format: '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%s%n%b%n%h',
+          identifier_from: identifier_from,
+          identifier_to: identifier_to)
 
       if self.class.client_version_eq_or_higher?('1.7.2')
         options[:format] = '%H; %ai; %d; %P; %cn; %ce; %ci; %ai%n%B%h'
@@ -324,17 +324,17 @@ module Redmine::Scm::Adapters
             parents = md[:p].blank? ? [] : md[:p].split(' ')
 
             revision = UndevGitRevision.new({
-                :identifier  => md[:h],
-                :scmid       => md[:h],
-                :author      => "#{md[:cn]} <#{md[:ce]}>",
-                :time        => ctime,
-                :authored_on => atime,
-                :message     => '',
-                :paths       => [],
-                :patch_id    => patch_ids_map[md[:h]],
-                :parents     => parents,
-                :branches    => branches,
-                :branch      => branches.first})
+                    identifier:  md[:h],
+                    scmid:       md[:h],
+                    author:      "#{md[:cn]} <#{md[:ce]}>",
+                    time:        ctime,
+                    authored_on: atime,
+                    message:     '',
+                    paths:       [],
+                    patch_id:    patch_ids_map[md[:h]],
+                    parents:     parents,
+                    branches:    branches,
+                    branch:      branches.first })
 
             chunk[revision.identifier] = revision
 
@@ -359,7 +359,7 @@ module Redmine::Scm::Adapters
                 revision.message << line.chomp
               when :path
                 if line.present? && line =~ /\A(\w+)\s(.+)$/
-                  revision.paths << { :action => $1, :path => $2 }
+                  revision.paths << { action: $1, path: $2 }
                 end
             end
           end
@@ -443,7 +443,7 @@ module Redmine::Scm::Adapters
         end
 
         git_log = nil
-        git_cmd(cmd_args, {:write_stdin => true}) do |io|
+        git_cmd(cmd_args, { write_stdin: true }) do |io|
           io.binmode
           io.puts(revisions.join("\n"))
           io.close_write
@@ -474,7 +474,7 @@ module Redmine::Scm::Adapters
     # get patch_ids for commits
     def patch_ids(path, revisions, limit, skip)
       git_patch_ids = ''
-      git_cmd(%w{patch-id}, {:write_stdin => true}) do |io_patch_id|
+      git_cmd(%w{patch-id}, { write_stdin: true }) do |io_patch_id|
         io_patch_id.binmode
 
         cmd_args = %w{log -p --no-color --date-order --format=%H}
@@ -487,7 +487,7 @@ module Redmine::Scm::Adapters
           cmd_args << '--' << scm_iconv(path_encoding, 'UTF-8', path)
         end
 
-        git_cmd(cmd_args, {:write_stdin => true}) do |io_log|
+        git_cmd(cmd_args, { write_stdin: true }) do |io_log|
           io_log.binmode
           io_log.puts(revisions.join("\n"))
           io_log.close_write

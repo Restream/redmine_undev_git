@@ -1,0 +1,28 @@
+<%= render 'projects/settings/repositories' %>
+
+<% if @project.remote_repositories.any? %>
+  <h3>remote_repositories</h3>
+  <table class="list">
+    <thead>
+    <tr>
+      <th><%= l(:label_associated_remote_site) %></th>
+      <th><%= l(:label_associated_remote_repository) %></th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @project.remote_repositories.each do |remote_repo| %>
+      <tr class="<%= cycle 'odd', 'even' %>">
+        <td>
+          <%= link_to remote_repo.site.server_name, remote_repo.site.uri, target: '_blank' %>
+        </td>
+        <td>
+          <%= link_to remote_repo.path_to_repo, remote_repo.uri, target: '_blank' %>
+        </td>
+        <td class="buttons">
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>

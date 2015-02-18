@@ -16,7 +16,7 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
   end
 
   def test_fetch_after_gitlab_push_hook
-    repository = create_test_repository(:project => @project, :url => 'https://example.com/diaspora.git')
+    repository = create_test_repository(project: @project, url: 'https://example.com/diaspora.git')
     assert repository
     Workers::RepositoryFetcher.expects(:defer).with(repository.id).at_least_once
     post '/gitlab_hooks', gitlab_payload.to_json, gitlab_headers
@@ -24,7 +24,7 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
   end
 
   def test_fetch_after_github_push_hook
-    repository = create_test_repository(:project => @project, :url => 'https://github.com/octokitty/testing.git')
+    repository = create_test_repository(project: @project, url: 'https://github.com/octokitty/testing.git')
     assert repository
     Workers::RepositoryFetcher.expects(:defer).with(repository.id).at_least_once
     post '/github_hooks', github_push_payload.to_json, github_push_headers
@@ -43,12 +43,26 @@ class ReceiveExternalHooksTest < ActionDispatch::IntegrationTest
   end
 
   def test_fetch_after_bitbucket_push_hook
-    repository = create_test_repository(:project => @project, :url => 'https://bitbucket.org/test/dt_fetch.git')
+    repository = create_test_repository(project: @project, url: 'https://bitbucket.org/test/dt_fetch.git')
     assert repository
     Workers::RepositoryFetcher.expects(:defer).with(repository.id).at_least_once
-    post '/bitbucket_hooks', :payload => bitbucket_payload.to_json
+    post '/bitbucket_hooks', payload: bitbucket_payload.to_json
     assert_response :success
   end
+
+  # working with remote repositories
+
+  def test_create_remote_repo_after_gitlab_push_hook
+    RemoteRepo.any_instance.stubs(:fetch).returns(nil)
+    post '/gitlab_hooks', gitlab_payload.to_json, gitlab_headers
+    assert_response :success
+    repository = RemoteRepo.find_by_url(gitlab_payload[:repository][:url])
+    assert repository
+    assert repository.site
+    assert repository.site.is_a?(RemoteRepoSite::Gitlab)
+  end
+
+  # hooks payloads
 
   def gitlab_payload
     {

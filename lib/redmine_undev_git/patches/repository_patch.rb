@@ -6,7 +6,7 @@ module RedmineUndevGit::Patches
       KEEP_FETCH_EVENTS = 100
       RED_STATUS_THRESHOLD = 3
 
-      has_many :fetch_events, :dependent => :delete_all
+      has_many :fetch_events, dependent: :delete_all
 
       class << self
         alias_method_chain :fetch_changesets, :web_hooks

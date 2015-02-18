@@ -4,14 +4,8 @@ module RedmineUndevGit::Patches::ProjectsControllerPatch
   extend ActiveSupport::Concern
 
   included do
-    before_filter :check_hooks_helper_included
-  end
-
-  # A way to make plugin helpers available
-  def check_hooks_helper_included
-    self.class.helper(:hooks) unless _helpers.included_modules.include?(HooksHelper)
-    self.class.helper(:custom_fields) unless _helpers.included_modules.include?(CustomFieldsHelper)
-    true
+    lazy_helper :hooks
+    lazy_helper :custom_fields
   end
 
 end

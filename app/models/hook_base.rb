@@ -14,12 +14,12 @@ class HookBase < ActiveRecord::Base
 
   safe_attributes %w{branches keywords status_id done_ratio assigned_to_id custom_field_values}
 
-  belongs_to :status, :class_name => 'IssueStatus'
-  belongs_to :assigned_to, :class_name => 'Principal'
+  belongs_to :status, class_name: 'IssueStatus'
+  belongs_to :assigned_to, class_name: 'Principal'
 
-  validates :branches, :presence => true
-  validates :keywords, :presence => true
-  validates :assignee_type, :presence => true, :inclusion => { :in => ASSIGNEE_TYPES }
+  validates :branches, presence: true
+  validates :keywords, presence: true
+  validates :assignee_type, presence: true, inclusion: { in: ASSIGNEE_TYPES }
 
   scope :by_position, order("#{table_name}.position")
 
@@ -40,36 +40,39 @@ class HookBase < ActiveRecord::Base
     @keywords ||= read_attribute(:keywords).to_s.split_by_comma
   end
 
-  def applied_for?(o_keywords, o_branches)
-    found_keywords = (keywords & o_keywords).any?
-    found_branches = any_branch? || (branches & o_branches).any?
-    found_keywords && found_branches
+  def applicable_for?(o_keywords, o_branches)
+    applicable_for_branch?(o_branches) && applicable_for_keyword?(o_keywords)
+  end
+
+  def applicable_for_branch?(o_branches)
+    o_branches = Array(o_branches)
+    any_branch? || (branches & o_branches).any?
+  end
+
+  def applicable_for_keyword?(o_keywords)
+    o_keywords = Array(o_keywords)
+    (keywords & o_keywords).any?
   end
 
   def any_branch?
     branches == %w{*}
   end
 
-  def apply_for_issue_by_changeset(issue, changeset)
-
-    # the issue may have been updated
-    issue.reload
-
+  def apply_for_issue(issue, options = {}, &block)
     return unless has_changes_for_issue?(issue)
 
-    issue.init_journal(
-        changeset.user || User.anonymous,
-        ll(Setting.default_language, :text_changed_by_changeset_hook, changeset.full_text_tag(issue.project))
-    )
+    updater = options[:user] || User.anonymous
+    notes = options[:notes] || "Changed by hook #{id}"
 
+    issue.reload
+    issue.init_journal(updater, notes)
     change_issue(issue)
 
-    Redmine::Hook.call_hook(:model_changeset_scan_commit_for_issue_ids_pre_issue_update,
-                            { :changeset => changeset, :issue => issue, :hook => self })
+    yield if block_given?
+
     unless issue.save
-      logger.warn("Issue ##{issue.id} could not be saved by changeset #{changeset.id}: #{issue.errors.full_messages}") if logger
+      logger.warn("Issue ##{issue.id} could not be updated by hook #{id}: #{issue.errors.full_messages}") if logger
     end
-    issue
   end
 
   def assignee(issue = nil)
@@ -81,6 +84,10 @@ class HookBase < ActiveRecord::Base
       else
         nil
     end
+  end
+
+  def to_s
+    "keywords: #{keywords.join(',')}; branches: #{branches.join(',')}"
   end
 
   private

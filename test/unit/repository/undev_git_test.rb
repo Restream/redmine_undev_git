@@ -37,9 +37,9 @@ class UndevGitTest < ActiveSupport::TestCase
     Setting.enabled_scm << 'UndevGit'
     @project = Project.find(3)
     @repository = Repository::UndevGit.create(
-        :project       => @project,
-        :url           => REPOSITORY_PATH,
-        :path_encoding => 'ISO-8859-1'
+        project: @project,
+        url: REPOSITORY_PATH,
+        path_encoding: 'ISO-8859-1'
     )
     assert @repository
     @char_1        = CHAR_1_HEX.dup
@@ -55,8 +55,8 @@ class UndevGitTest < ActiveSupport::TestCase
   def test_blank_path_to_repository_error_message
     set_language_if_valid 'en'
     repo = Repository::UndevGit.new(
-        :project      => @project,
-        :identifier   => 'test'
+        project: @project,
+        identifier: 'test'
     )
     assert !repo.save
     assert_include "Path to repository can't be blank",
@@ -68,10 +68,10 @@ class UndevGitTest < ActiveSupport::TestCase
     str = "Chemin du d\xc3\xa9p\xc3\xb4t doit \xc3\xaatre renseign\xc3\xa9(e)"
     str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
     repo = Repository::UndevGit.new(
-        :project      => @project,
-        :url          => "",
-        :identifier   => 'test',
-        :path_encoding => ''
+        project: @project,
+        url: "",
+        identifier: 'test',
+        path_encoding: ''
     )
     assert !repo.save
     assert_include str, repo.errors.full_messages
@@ -444,11 +444,11 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_activities
-      c = Changeset.new(:repository => @repository,
-                        :committed_on => Time.now,
-                        :revision => 'abc7234cb2750b63f47bff735edc50a1c0a433c2',
-                        :scmid    => 'abc7234cb2750b63f47bff735edc50a1c0a433c2',
-                        :comments => 'test')
+      c = Changeset.new(repository: @repository,
+                        committed_on: Time.now,
+                        revision: 'abc7234cb2750b63f47bff735edc50a1c0a433c2',
+                        scmid: 'abc7234cb2750b63f47bff735edc50a1c0a433c2',
+                        comments: 'test')
       assert c.event_title.include?('abc7234cb:')
       assert_equal 'abc7234cb2750b63f47bff735edc50a1c0a433c2', c.event_url[:rev]
     end
@@ -456,9 +456,9 @@ class UndevGitTest < ActiveSupport::TestCase
     def test_log_utf8
       @repository.destroy
       @repository = Repository::UndevGit.create(
-          :project       => @project,
-          :url           => REPOSITORY_PATH,
-          :path_encoding => 'UTF-8'
+          project: @project,
+          url: REPOSITORY_PATH,
+          path_encoding: 'UTF-8'
       )
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets
@@ -565,20 +565,20 @@ class UndevGitTest < ActiveSupport::TestCase
 
       good_urls.each do |good_url|
         repo = Repository::UndevGit.new(
-            :project => @project,
-            :identifier => 'test_url',
-            :is_default => false,
-            :url => good_url
+            project:    @project,
+            identifier: 'test_url',
+            is_default: false,
+            url:        good_url
         )
         assert repo.valid?, "#{good_url} should be valid"
       end
 
       bad_urls.each do |bad_url|
         repo = Repository::UndevGit.new(
-            :project => @project,
-            :identifier => 'test_url',
-            :is_default => false,
-            :url => bad_url
+            project:    @project,
+            identifier: 'test_url',
+            is_default: false,
+            url:        bad_url
         )
         refute repo.valid?, "#{bad_url} should not be valid"
       end
@@ -609,9 +609,9 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_change_issue_by_project_hook
-      repository = create_test_repository(:use_init_hooks => '1', :identifier => 'x')
+      repository = create_test_repository(use_init_hooks: '1', identifier: 'x')
       repository.fetch_changesets
-      create_hooks!(:repository_id => repository.id)
+      create_hooks!(repository_id: repository.id)
       changeset = repository.changesets.last
       changeset.comments = 'fix #5'
       issue = Issue.find(5)
@@ -623,9 +623,9 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_change_issue_by_global_hook
-      repository = create_test_repository(:use_init_hooks => '1', :identifier => 'x')
+      repository = create_test_repository(use_init_hooks: '1', identifier: 'x')
       repository.fetch_changesets
-      create_hooks!(:repository_id => repository.id)
+      create_hooks!(repository_id: repository.id)
       changeset = repository.changesets.last
       changeset.comments = 'closes #5'
       changeset.branches << 'production'
@@ -638,7 +638,7 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_remove_repository_folder
-      repository = create_test_repository(:identifier => 'x')
+      repository = create_test_repository(identifier: 'x')
       repository.fetch_changesets
       root_url = repository.root_url
       assert Dir.exists?(root_url)
@@ -647,7 +647,7 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_previous_branches
-      repository = create_test_repository(:identifier => 'x')
+      repository = create_test_repository(identifier: 'x')
       repository.fetch_changesets
       exp_branches = {}
       repository.branches.each do |branch|
@@ -662,14 +662,14 @@ class UndevGitTest < ActiveSupport::TestCase
     end
 
     def test_last_event_successful_true
-      @repository.fetch_events.create(:successful => false, :duration => 0)
-      @repository.fetch_events.create(:successful => true, :duration => 0)
+      @repository.fetch_events.create(successful: false, duration: 0)
+      @repository.fetch_events.create(successful: true, duration: 0)
       assert @repository.fetch_successful?
     end
 
     def test_last_event_successful_false
-      @repository.fetch_events.create(:successful => true, :duration => 0)
-      @repository.fetch_events.create(:successful => false, :duration => 0)
+      @repository.fetch_events.create(successful: true, duration: 0)
+      @repository.fetch_events.create(successful: false, duration: 0)
       refute @repository.fetch_successful?
     end
 
@@ -679,31 +679,31 @@ class UndevGitTest < ActiveSupport::TestCase
 
     def test_fetch_status_green_if_all_successful
       Repository::RED_STATUS_THRESHOLD.times do
-        @repository.fetch_events.create(:successful => true, :duration => 0)
+        @repository.fetch_events.create(successful: true, duration: 0)
         assert_equal :green, @repository.fetch_status
       end
     end
 
     def test_fetch_status_red_if_all_errors
       Repository::RED_STATUS_THRESHOLD.times do
-        @repository.fetch_events.create(:successful => false, :duration => 0)
+        @repository.fetch_events.create(successful: false, duration: 0)
         assert_equal :red, @repository.fetch_status
       end
     end
 
     def test_fetch_status_yellow_if_some_errors
-      @repository.fetch_events.create(:successful => true, :duration => 0)
+      @repository.fetch_events.create(successful: true, duration: 0)
       (Repository::RED_STATUS_THRESHOLD - 1).times do
-        @repository.fetch_events.create(:successful => false, :duration => 0)
+        @repository.fetch_events.create(successful: false, duration: 0)
         assert_equal :yellow, @repository.fetch_status
       end
     end
 
     def test_fetch_status_green_if_some_errors_but_last_successful
       (Repository::RED_STATUS_THRESHOLD - 1).times do
-        @repository.fetch_events.create(:successful => false, :duration => 0)
+        @repository.fetch_events.create(successful: false, duration: 0)
       end
-      @repository.fetch_events.create(:successful => true, :duration => 0)
+      @repository.fetch_events.create(successful: true, duration: 0)
       assert_equal :green, @repository.fetch_status
     end
 

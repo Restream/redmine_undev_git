@@ -3,7 +3,7 @@ en:
   field_keywords: "Keywords"
   field_repository: "Repository"
   field_use_init_hooks: "Enable hooks for repository initialization"
-  field_use_init_refs: "Enable references to issues for repository initialization"
+  field_use_init_refs: "Enable referencing issues for repository initialization"
   field_fetch_by_web_hook: "Fetch a repository by an external web hook"
 
   label_branches: "Branches"
@@ -30,7 +30,7 @@ en:
   setting_undev_git_max_branches_in_assoc: "Maximum number of branches in associated revisions"
   setting_undev_git_fetch_by_web_hook: "Fetch all UndevGit repositories by an external web hook"
 
-  text_branches: "* = any branch<br />Multiple values allowed (comma-separated)."
+  text_branches: "* = any branch<br />Multiple values allowed (comma separated)."
   text_changed_by_changeset_hook: "Applied in changeset %{value}."
   text_hook_cannot_be_empty: "Define new status or new % done"
   text_hook_repository_note: "* = any UndevGit repository"

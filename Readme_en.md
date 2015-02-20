@@ -52,7 +52,7 @@ Now you should be able to see the plugin in **Administration > Plugins**.
 
 ## Usage
 
-### Plugin configuration
+### Configuring the plugin
 
 To configure the plugin settings, go to **Administration > Plugins** and click **Configure**.  
 ![configure plugin](undev_git_2.PNG)  
@@ -61,17 +61,17 @@ the issue page in the **Associated revisions** section. An empty field or 0 mean
 
 For details on hook configuration, see the corresponding section below.
 
-### Repository configuration
+### Configuring the UndevGit repository
 
 To enable the UndevGit repository type, go to **Administration > Settings**, switch to the **Repositories** tab, select the **UndevGit** check box in the **Enabled SCM** section and click **Save**.  
 ![enable UndevGit](undev_git_1.PNG)
 
 You can specify the directory for storing local repository copies by setting a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` file. By default, the `repos` directory in the Redmine root directory is used, so local repository copies are stored in `repos\[projectidentifier]\[repository_id]`. When you remove a repository, the corresponding directory is deleted.
 
-To add an UndevGit repository to a project, open the **Repositories** tab of the project **Settings**, click **New repository** and select the **UndevGit** value in the **SCM** drop-down list.
+To add an UndevGit repository to a project, open the **Repositories** tab of the project **Settings**, click **New repository** and select the **UndevGit** value in the **SCM** drop-down list.  
 ![add repository](undev_git_3.PNG)
 
-You can delete a repository or change its settings by clicking the corresponding buttons on the **Repositories** tab.
+You can delete a repository or change its settings by clicking the corresponding buttons on the **Repositories** tab.  
 ![edit repository](undev_git_4.PNG)
 
 ### Working with remote repositories
@@ -84,27 +84,28 @@ To use this feature, you should configure a webhook for push events in your remo
 A push that triggers the webhook will create a link to this repository in Redmine. To view the list of remote repositories, go to **Administration > Remote repository servers**.  
 ![remote repository](undev_git_10.PNG)
 
-The hook can be run only by Redmine users with the corresponding permissions. The plugin determines the user's permissions based on mappings of the committers' emails with the Redmine users' emails. To view the mappings, click the **Users** link.
+The hook can be run only by Redmine users with the corresponding permissions. The plugin determines the user's permissions based on mappings of the committers' emails with the Redmine users' emails. To view the mappings, click the **Users** link.  
 ![users](undev_git_13.PNG)
 
-If you want to fetch a remote repository again, click the **Refetch repository** button. In this case, the hooks that have been already executed will not be run again. If there is a new hook applicable to a previous commit (e.g., a hook has a new keyword or another branch name), this hook will be run.
+If you want to fetch a remote repository again, click **Refetch repository**. In this case, the hooks that have been already executed will not be run again. If there is a new hook applicable to a previous commit (e.g., a hook has a new keyword or another branch name), this hook will be run.  
+![refetch repository](undev_git_10_1.PNG)
 
 ### Linking commits to issues
 
-To link a commit to an issue, specify a keyword and the issue number starting with #, for example, `refs #124`. Keywords are set using the **Referencing keywords** field of the Redmine settings (**Administration > Settings > Repositories**).
+To link a commit to an issue, specify a keyword and the issue number starting with #, for example, `refs #123`. Keywords are set using the **Referencing keywords** field of the Redmine settings (**Administration > Settings > Repositories**).
 
-If you set '*' as a keyword, specifying only the issue number with '#' will be enough to link a commit to the issue.
+If you set '*' as a keyword, specifying only the issue number with '#' will be enough to link a commit.
 
 A commit linked to an issue is displayed in the **Associated revisions** section of the issue page.  
 ![linked commit](undev_git_14.PNG)
 
 To unlink a commit from an issue, you should click the revision link and then click the **Delete relation** icon (available only for users with the appropriate permissions).
-![unlink commit](undev_git_15.PNG)
+![unlink commit](undev_git_15_1.PNG)
 
 When working with a remote repository, you can use referencing keywords to link commits to issues in the same way as for repositories you have added manually. In this case, a commit linked to an issue will be displayed in the **Associated remote revisions** section of the issue page. To link a commit to an issue, a committer must have the appropriate permissions. To unlink a commit from an issue, you can click the **Delete relation** icon (available only for users with the appropriate permissions)  
 ![linked commit](undev_git_11.PNG)
 
-Clicking the repository, branch or commit link takes you to an external server, while the link with the user name leads to the page of the corresponding Redmine user.
+Here the repository, branch or commit link takes you to an external server, while the link with the user name leads to the page of the corresponding Redmine user.
 
 ### Time logging
 
@@ -117,7 +118,7 @@ UndevGit enables you to determine which commits have be moved by using `git reba
 Old references to commits are not removed from the changeset list; instead, they are marked with a special icon linking to a new commit reference. Similarly, new commits are marked with icons linking to old commit references. 
 
 The icon is available when viewing the list of commits or a specific commit.  
-![rebase](undev_git_16.PNG)
+![rebase](undev_git_15.PNG)
 
 Using `rebase` does not cause any issue changes; however, the links in the **Associated revisions** section are updated. Using `rebase` does not affect time logs.
 
@@ -170,13 +171,16 @@ If there are several hooks applicable to a commit, only the hook with the highes
 
 ## Testing
 
-Unpack the test repositories
+Unpack the test repositories:  
+
     rake test:scm:setup:undev_git
 
-Create a database
+Create a database:  
+
     rake RAILS_ENV=test db:drop db:create db:migrate redmine:plugins:migrate
 
-Launch tests for redmine_undev_plugin
+Launch tests for redmine_undev_plugin:  
+
     rake RAILS_ENV=test NAME=redmine_undev_git redmine:plugins:test
 
 ## License

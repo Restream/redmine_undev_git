@@ -5,7 +5,7 @@
 
 The UndevGit plugin adds the UndevGit repository type to Redmine.
 
-UndevGit has all standard functions of a Git repository, as well as other features:
+The UndevGit repository has all standard functions of a Git repository, as well as other features:
 
 * possibility to work with remote repositories
 * hooks for UndevGit repositories
@@ -50,131 +50,123 @@ This plugin version is compatible only with Redmine 2.1.x and later.
 
 Now you should be able to see the plugin in **Administration > Plugins**.
 
-
 ## Usage
 
-### Configuration
+### Plugin configuration
 
-To enable the UndevGit repository type, go to **Administration > Settings **, switch to the **Repositories** tab and select the **UndevGit** check box in the **Enabled SCM** section.
-[pic]
-
-To configure the plugin settings, go to **Administration > Plugins** and click **Configure**.
-[pic]
-
+To configure the plugin settings, go to **Administration > Plugins** and click **Configure**.  
+![configure plugin](undev_git_2.PNG)  
 The plugin allows you to specify the maximum number of branches to be displayed on 
 the issue page in the **Associated revisions** section. An empty field or 0 means no restrictions.
-[pic]
 
 For details on hook configuration, see the corresponding section below.
 
-In the Redmine settings, you can specify the directory 
-for storing local repository copies by setting
-a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` file.
-By default, the `repos` directory in the Redmine root directory is used, so
-local repository copies are stored in `repos\[projectidentifier]\[repository_id]`.
-When you remove a repository, the corresponding directory is deleted.
+### Repository configuration
 
-To add an UndevGit repository to a project, open the **Repositories** tab of the project settings and select the **UndevGit** value in the **SCM** drop-down list.
-[pic]
+To enable the UndevGit repository type, go to **Administration > Settings**, switch to the **Repositories** tab, select the **UndevGit** check box in the **Enabled SCM** section and click **Save**.  
+![enable UndevGit](undev_git_1.PNG)
+
+You can specify the directory for storing local repository copies by setting a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` file. By default, the `repos` directory in the Redmine root directory is used, so local repository copies are stored in `repos\[projectidentifier]\[repository_id]`. When you remove a repository, the corresponding directory is deleted.
+
+To add an UndevGit repository to a project, open the **Repositories** tab of the project **Settings**, click **New repository** and select the **UndevGit** value in the **SCM** drop-down list.
+![add repository](undev_git_3.PNG)
 
 You can delete a repository or change its settings by clicking the corresponding buttons on the **Repositories** tab.
-[pic]
+![edit repository](undev_git_4.PNG)
 
+### Working with remote repositories
 
-## Hooks
+The plugin enables you to work with remote repositories without the need to add them to Redmine manually. 
 
-Hooks are used to flexibly configure how and when an issue status can be changed.
-You can configure hooks to be executed for certain branches, a project or even a specific repository.
-Thus, there are global hooks that are run for all repositories, 
-project hooks that are run for all project repositories, and repository hooks.
+To use this feature, you should configure a webhook for push events in your remote repository, for example, at [https://gitlab.com](https://gitlab.com]):  
+![web hooks](undev_git_12.PNG)
 
-If '*' is specified as a branch for the hook, it means that this hook is applied only once when a commit is added to the repository;
-if branch names are specified, the hook is applied each time a commit is added to a branch (once per branch).
+A push that triggers the webhook will create a link to this repository in Redmine. To view the list of remote repositories, go to **Administration > Remote repository servers**.  
+![remote repository](undev_git_10.PNG)
 
-### Configuration
+The hook can be run only by Redmine users with the corresponding permissions. The plugin determines the user's permissions based on mappings of the committers' emails with the Redmine users' emails. To view the mappings, click the **Users** link.
+![users](undev_git_13.PNG)
 
-Hooks implement the Redmine feature of changing the issue status
-using keywords. Therefore, the keywords specified
-on the *Repository* tab of the Redmine settings (*Fixing keywords* attribute)
-are not used. You should define a set of keywords for each hook.
+If you want to fetch a remote repository again, click the **Refetch repository** button. In this case, the hooks that have been already executed will not be run again. If there is a new hook applicable to a previous commit (e.g., a hook has a new keyword or another branch name), this hook will be run.
 
-Hooks are configured as follows. Global hooks are managed from the Redmine settings window
-(*Global hooks* menu item, above *Plugins*).
-Project and repository hooks are available on the *Hooks* tab of the project settings menu.
+### Linking commits to issues
 
+To link a commit to an issue, specify a keyword and the issue number starting with #, for example, `refs #124`. Keywords are set using the **Referencing keywords** field of the Redmine settings (**Administration > Settings > Repositories**).
+
+If you set '*' as a keyword, specifying only the issue number with '#' will be enough to link a commit to the issue.
+
+A commit linked to an issue is displayed in the **Associated revisions** section of the issue page.  
+![linked commit](undev_git_14.PNG)
+
+To unlink a commit from an issue, you should click the revision link and then click the **Delete relation** icon (available only for users with the appropriate permissions).
+![unlink commit](undev_git_15.PNG)
+
+When working with a remote repository, you can use referencing keywords to link commits to issues in the same way as for repositories you have added manually. In this case, a commit linked to an issue will be displayed in the **Associated remote revisions** section of the issue page. To link a commit to an issue, a committer must have the appropriate permissions. To unlink a commit from an issue, you can click the **Delete relation** icon (available only for users with the appropriate permissions)  
+![linked commit](undev_git_11.PNG)
+
+Clicking the repository, branch or commit link takes you to an external server, while the link with the user name leads to the page of the corresponding Redmine user.
+
+### Time logging
+
+If a commit specifies the time spent by the user (for example, refs #10 @5h), this value will be added to the **Spent time** field of the issue description.
+
+### Moving commits (rebase)
+
+UndevGit enables you to determine which commits have be moved by using `git rebase`.
+
+Old references to commits are not removed from the changeset list; instead, they are marked with a special icon linking to a new commit reference. Similarly, new commits are marked with icons linking to old commit references. 
+
+The icon is available when viewing the list of commits or a specific commit.  
+![rebase](undev_git_16.PNG)
+
+Using `rebase` does not cause any issue changes; however, the links in the **Associated revisions** section are updated. Using `rebase` does not affect time logs.
+
+### Hooks configuration
+
+Hooks are used to flexibly configure how and when an issue status should be changed.
+
+You can configure global hooks that will be executed for all repositories, and project hooks that can be run for all project repositories, certain branches or a specific repository.
+
+To add a global hook, go to **Administration > Global hooks** and click **New hook**.
+Configure the hook as needed.  
+![global hook](undev_git_5.PNG)
+
+To enable project hooks for all projects at once, go to **Administration > Settings**, switch to the **Projects** tab, select the **Hooks** check box and click **Save**.  
+![enable project hooks](undev_git_9.PNG)
+
+To enable project hooks for a specific project only, go to the project **Settings**, switch to the **Modules** tab, select the **Hooks** check box and click **Save**.  
+![enable project hooks](undev_git_6.PNG)
+
+To create a project hook, switch to the **Hooks** tab of the project settings. This tab also displays the global hooks you have already configured. To add a project hook, click **New hook**.  
+![add project hook](undev_git_7.PNG)
+
+You can select a repository or a branch to apply the hook and configure other settings as needed.  
+![project hook](undev_git_8.PNG)
+
+If '*' is specified as a branch name (meaning any branch), the hook will be applied only once when a commit is added to the repository. If a branch name is explicitly stated, the hook will be applied only once when a commit is added to this branch.
+
+Hooks change the issue statuses based on keywords; therefore, the keywords specified in the **Fixing keywords** field of the Redmine settings (**Administration > Settings > Repositories**) are not used. You should define a separate set of keywords for each hook.
 
 ### Hook priorities
 
-Hook priorities are determined as follows: the repository hooks have the highest priority,
-then go the project hooks, while global hooks have the lowest priority.
-There are also different priorities within each hook type, which can be changed if needed.
-If there are several hooks applicable to a commit,
-only the hook with the highest priority will be run.
+Hook priorities are as follows:
 
-Hooks that are applied to all branches have a lower priority
-than hooks with branch names specified explicitly.
+* repository hooks (highest priority)
+* project hooks
+* global hooks (lowest priority)
 
-### Logging
+If there are several hooks applicable to a commit, only the hook with the highest priority will be run. Hooks that are applied to all branches ('*') have a lower priority than hooks with branch names specified explicitly.
 
-All changes of an issue are recorded in its history log. If no changes have been made,
-the log will have no entries.
+#### Examples
 
-### Examples
+1. A commit is pushed to 2 branches (feature, develop) of one repository. There are 2 configured hooks: hook1 for branch '*', and hook2 for branch 'feature'. In this case, only hook2 will be run.
 
-#### Example 1
-
-A commit is pushed to 2 branches (feature, develop) of a repository.
-There are 2 configured hooks:
-Hook1 for branch '*'
-Hook2 for branch 'feature'
-In this case, only Hook2 will be run.
-
-#### Example 2
-
-There are several hooks:
-Hook1, global, branch '*'
-Hook2, global, branch 'master'
-Hook3, for a project, branch 'develop,staging'
-Hook4, for a repository, branch 'staging'
-Hook5, for a repository, branch 'feature'
-
-First push: add commit A to branch 'feature' — Hook5 is run.
-Second push: merge 'feature' to 'staging' — Hook4 is run.
-Third push: merge 'feature' to 'develop' — Hook3 is run.
-Fourth push: merge 'feature' to 'master' — Hook2 is run.
-
-Hook1 is used only if commit B is pushed to branch 'featureX'.
-
-## Linking commits to issues
-
-To link a commit to an issue, specify the keyword and the issue number starting with #,
-for example: `refs #124`.
-Keywords are set on the *Repository* tab of the Redmine settings
-(*Referencing keywords* attribute).
-If you set '*' as a keyword, specifying only the issue number with #
-will be enough to link a commit to the issue.
-
-## Moving of commits (rebase)
-
-UndevGit enables you to determine which commits have be moved by using `git rebase`.
-Old references to commits are not removed from the changeset list; instead, they are marked with a special icon
-linking to a new commit reference. Similarly, new commits are marked with icons
-linking to old commit references.
-This icon is available when viewing the list of commits or a specific commit.
-Using rebase does not cause new changes of issues; however, the links in the *Associated revisions* section are changed.
-Using rebase also does not affect timelogs.
-
-## Repository updates by a webhook
-
-TODO
-
-### Global settings
-
-### Settings of a specific repository
-
-### Updating from Cron
-
-Repository.fetch_changeset skips the repositories that are updated by the webhook.
+2. There are several hooks: global hook1 for branch '*'; global hook2 for branch 'master'; project hook3 for branches 'develop,staging'; repository hook4 for branch 'staging'; and repository hook5 for branch 'feature'.   
+  When a user adds commit A to branch 'feature', hook5 is run.  
+  When a user merges branch 'feature' to branch 'staging', hook4 is run.  
+  When merging branch 'feature' to 'develop', hook3 is run.  
+  When merging branch 'feature' to 'master', hook2 is run.  
+  Hook1 is used only if commit B is pushed to branch 'featureX'.
 
 ## Testing
 

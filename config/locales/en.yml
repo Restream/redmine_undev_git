@@ -45,7 +45,7 @@ en:
   text_undev_git_repository_note: "Remote URL or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
   text_commit_was_rebased_from: "This revision was rebased from %{rebased_from}"
   text_commit_was_rebased_to: "This revision was rebased to %{rebased_to}"
-  text_remote_user_mappings: "Select or update the Redmine user mapped to each email found in the remote repository when changed issue or linked to.\nUsers with the same Redmine and repository email are automatically mapped."
+  text_remote_user_mappings: "Select or update the Redmine users mapped to each email found in the remote repository when issues are changed or linked to.\nUsers with the same Redmine and repository email are automatically mapped."
 
   notice_refetch_started: Repository will be refetched soon
 

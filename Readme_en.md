@@ -179,7 +179,7 @@ Create a database:
 
     rake RAILS_ENV=test db:drop db:create db:migrate redmine:plugins:migrate
 
-Launch tests for redmine_undev_plugin:  
+Launch tests for the redmine_undev_git plugin:  
 
     rake RAILS_ENV=test NAME=redmine_undev_git redmine:plugins:test
 

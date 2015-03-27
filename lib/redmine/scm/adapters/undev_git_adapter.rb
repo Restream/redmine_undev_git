@@ -153,7 +153,7 @@ module Redmine::Scm::Adapters
       end
       entries.sort_by_name
     rescue ScmCommandAborted
-      nil
+      Redmine::Scm::Adapters::Entries.new
     end
 
     def lastrev(path, rev)

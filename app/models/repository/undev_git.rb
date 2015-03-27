@@ -67,17 +67,20 @@ class Repository::UndevGit < Repository
   def scm
     initialize_root_url
     super
+    @scm
+  end
 
-    unless @scm.cloned?
+  def init_scm
+    @scm = nil
+    unless scm.cloned?
 
       #try to clone twice
       begin
-        @scm.clone_repository
+        scm.clone_repository
       rescue Redmine::Scm::Adapters::CommandFailed
-        @scm.clone_repository
+        scm.clone_repository
       end
     end
-    @scm
   end
 
   def report_last_commit
@@ -133,7 +136,7 @@ class Repository::UndevGit < Repository
 
   def fetch_changesets
     fetch_start = Time.now
-    @scm = nil
+    init_scm
     scm.fetch!
 
     repo_branches = branches

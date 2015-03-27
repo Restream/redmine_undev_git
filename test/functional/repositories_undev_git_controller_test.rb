@@ -186,6 +186,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_changes
+      @repository.fetch_changesets
       get :changes, id: PRJ_ID,
           path: repository_path_hash(['images', 'edit.png'])[:param]
       assert_response :success
@@ -194,6 +195,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_entry_show
+      @repository.fetch_changesets
       get :entry, id: PRJ_ID,
           path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
       assert_response :success
@@ -206,6 +208,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_entry_show_latin_1
+      @repository.fetch_changesets
       if @ruby19_non_utf8_pass
         puts_ruby19_non_utf8_pass()
       elsif WINDOWS_PASS
@@ -231,6 +234,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_entry_download
+      @repository.fetch_changesets
       get :entry, id: PRJ_ID,
           path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
           format: 'raw'
@@ -240,6 +244,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_directory_entry
+      @repository.fetch_changesets
       get :entry, id: PRJ_ID,
           path: repository_path_hash(['sources'])[:param]
       assert_response :success
@@ -357,6 +362,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_diff_path_in_subrepo
+      @repository.fetch_changesets
       @project.repository.update_attribute(:url, 'none')
       repo = Repository::UndevGit.create(
           project: @project,
@@ -364,6 +370,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
           identifier: 'test-diff-path',
           path_encoding: 'ISO-8859-1'
       )
+      repo.fetch_changesets
       assert repo
       refute repo.is_default
       assert_equal 'test-diff-path', repo.identifier
@@ -392,6 +399,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_diff_latin_1
+      @repository.fetch_changesets
       if @ruby19_non_utf8_pass
         puts_ruby19_non_utf8_pass()
       else
@@ -422,6 +430,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_diff_should_show_filenames
+      @repository.fetch_changesets
       get :diff, id: PRJ_ID, rev: 'deff712f05a90d96edbd70facc47d944be5897e3', type: 'inline'
       assert_response :success
       assert_template 'diff'
@@ -432,6 +441,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_save_diff_type
+      @repository.fetch_changesets
       user1 = User.find(1)
       user1.pref[:diff_type] = nil
       user1.preference.save
@@ -457,6 +467,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_annotate
+      @repository.fetch_changesets
       get :annotate, id: PRJ_ID,
           path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param]
       assert_response :success
@@ -484,6 +495,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_annotate_binary_file
+      @repository.fetch_changesets
       get :annotate, id: PRJ_ID,
           path: repository_path_hash(['images', 'edit.png'])[:param]
       assert_response 500
@@ -492,6 +504,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_annotate_error_when_too_big
+      @repository.fetch_changesets
       with_settings file_max_size_displayed: 1 do
         get :annotate, id: PRJ_ID,
             path: repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
@@ -509,6 +522,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_annotate_latin_1
+      @repository.fetch_changesets
       if @ruby19_non_utf8_pass
         puts_ruby19_non_utf8_pass()
       elsif WINDOWS_PASS

@@ -1,154 +1,200 @@
-# RedmineUndevGit
+# Redmine UndevGit Plugin
 
 [![Build Status](https://travis-ci.org/Undev/redmine_undev_git.png)](https://travis-ci.org/Undev/redmine_undev_git)
 [![Code Climate](https://codeclimate.com/github/Undev/redmine_undev_git.png)](https://codeclimate.com/github/Undev/redmine_undev_git)
 
-## Описание
+The UndevGit plugin adds the UndevGit repository type to Redmine.
 
-Плагин UndevGit добавляет в redmine новый тип репозитория UndevGit.
-UndevGit умеет делать все то, что делает Git репозиторий, но вдобавок он
-добавляет возможность работы с удаленными репозиториями и добавляет
-хуки для репозиториев UndevGit.
+The UndevGit repository has all standard functions of a Git repository, as well as other features:
 
-В процессе чтения репозитория UndevGit клонирует удаленный или локальный
-репозиторий и в дальнейшем работает с созданной копией.
+* possibility to work with remote repositories
+* hooks for UndevGit repositories
 
-## Установка и настройка
+When accessing a remote or local repository, UndevGit clones it and then works with the created copy.
 
-### Установка
+## Compatibility
 
- 1. Скопировать каталог с плагином в plugins
- 2. bundle exec rake redmine:plugins:migrate
- 3. bundle install в корне редмайна
- 4. Перезапустить redmine
+This plugin version is compatible only with Redmine 2.1.x and later.
 
-### Настройка
+## Installation
 
-В административном меню на вкладке *Repositories* в группе *Enabled SCM*
-необходимо включить UndevGit.
+1. To install the plugin
+    * Download the .ZIP archives, extract files and copy the plugin directory into #{REDMINE_ROOT}/plugin.
+    
+    Or
 
-В настройках плагина можно указать максимальное количество веток отображаемых
-на странице тикета в разделе связанных ревизий (*Associated Revisions*).
-Пустое значение или 0 означает отуствие ограничений.
-Настройка хуков описывается ниже.
+    * Change you current directory to your Redmine root directory:  
 
-В настройках инсталяции редмайна, в файле `config/configuration.yml` можно указать
-папку для хранения локальных копий репозиториев,
-указав значение для ключа `scm_repo_storage_dir` . По умолчанию это папка `repos`
-в корне редмайна.
-Локальные копии репозиториев складываются в папку `repos\[projectidentifier]\[repository_id]`
-После удаления репозитория папки удаляются.
+            cd {REDMINE_ROOT}
+            
+      Copy the plugin from GitHub using the following command:
+      
+            git clone https://github.com/Undev/redmine_undev_git.git plugins/redmine_undev_git
+            
+2. Install the required gems using the command:  
 
-## Хуки
+        bundle install  
 
-Назначение хуков - гибко настраивать как и в каких случаях изменять тикет.
-Можно настроить выполнение хуков для определенных веток, проекта и даже отдельного репозитория.
-Таким образом появляются глобальные хуки которые срабатывают для всех репозиториев,
-хуки проекта - которые срабатывают для всех репозиториев проекта и хуки репозитория.
+    * In case of bundle install errors, remove the Gemfile.lock file, update the local package index and install the required dependencies. Then execute the `bundle install` command again:  
 
-Если в хуке стоит ветка "*" - то хук применяется один раз при попадании коммита в репозиторий,
-а если указаны ветки, то при каждом попадании коммита в ветку (один раз для одной ветки).
+            rm Gemfile.lock
+            sudo apt-get update
+            sudo apt-get install -y libxml2-dev libxslt-dev libpq-dev
+            bundle install
+            
+3. This plugin requires a migration. Run the following command to upgrade your database (make a database backup before):  
 
-### Настройка
+        bundle exec rake redmine:plugins:migrate RAILS_ENV=production
 
-Хуки заменяют функционал редмайна, который позволяет закрывать тикеты
-используя специальные ключевые слова. Соответственно ключевые слова указанные
-в настройках редмайна на вкладке на вкладке *Repository*, (атрибут *Fixing keywords*)
-не используются. Для каждого хука нужно определять собственный набор ключевых слов.
+4. Restart Redmine.
 
-Хуки настраиваются в двух местах. Глобальные хуки управляются в настройках редмайна
-(пункт меню *Global hooks* над *Plugins*).
-Хуки проекта и хуки репозитория доступны в меню настроек проекта на вкладке *Hooks*.
+Now you should be able to see the plugin in **Administration > Plugins**.
 
-TODO: Настройка чтения реп при обращении (почему лучше ее отключать)
+## Usage
 
-### Приоритеты хуков
+### Configuring the plugin
 
-Приоритеты хуков определяются так: наивысший приоритет имеют хуки репозитория,
-затем хуки проекта и наменьший приоритет у глобальных хуков.
-Внутри типов хуки также имееют приоритет, который можно при необходимости изменить.
-В случае если для коммита найдено несколько хуков,
-выполнен будет только один - с наивысшим приоритетом.
+To configure the plugin settings, go to **Administration > Plugins** and click **Configure**.  
+![configure plugin](undev_git_2.PNG)  
+The plugin allows you to specify the maximum number of branches to be displayed on 
+the issue page in the **Associated revisions** section. An empty field or 0 means no restrictions.
 
-Отдельно стоит отметить что хуки применяемые для всех веток имееют более низкий
-приоритет, чем хуки в которых явно перечислены ветки.
+For details on hook configuration, see the corresponding section below.
 
-### Изменения в журнале
+### Configuring the UndevGit repository
 
-Изменения тикета отражаются в журнале тикета. В случае отсутствия фактических
-изменений запись в журнале тикета не появляется.
+To enable the UndevGit repository type, go to **Administration > Settings**, switch to the **Repositories** tab, select the **UndevGit** check box in the **Enabled SCM** section and click **Save**.  
+![enable UndevGit](undev_git_1.PNG)
 
-### Примеры
+You can specify the directory for storing local repository copies by setting a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` file. By default, the `repos` directory in the Redmine root directory is used, so local repository copies are stored in `repos\[projectidentifier]\[repository_id]`. When you remove a repository, the corresponding directory is deleted.
 
-#### Пример 1
+To add an UndevGit repository to a project, open the **Repositories** tab of the project **Settings**, click **New repository** and select the **UndevGit** value in the **SCM** drop-down list.  
+![add repository](undev_git_3.PNG)
 
-Например: в репозиторий пушится коммит который виден из двух веток (feature, develop)
-Есть настроенные хуки:
-Хук1 ветки: '*'
-Хук2 ветки: 'feature'
-В этом случае выполнится только хук2.
+You can delete a repository or change its settings by clicking the corresponding buttons on the **Repositories** tab.  
+![edit repository](undev_git_4.PNG)
 
-#### Пример 2
+### Working with remote repositories
 
-Допустим есть коммит A с текстом 'fix #1' и есть хуки:
-Хук1 глобальный, ветки: '*'
-Хук2 глобальный, ветки: 'master'
-Хук3 проектный, ветки: 'develop,staging'
-Хук4 для репы, ветки: 'staging'
-Хук5 для репы, ветки: 'feature'
+The plugin enables you to work with remote repositories without the need to add them to Redmine manually. 
 
-1-ый пуш: коммит A в ветке feature: выполняется Хук5
-2-ой пуш: мержим ветку feature в staging: выполняется Хук4
-3-ий пуш: мержим feature в develop: выполняется Хук3
-3-ий пуш: мержим feature в master: выполняется Хук2
+To use this feature, you should configure a webhook for push events in your remote repository, for example, at [https://gitlab.com](https://gitlab.com]):  
+![web hooks](undev_git_12.PNG)
 
-Хук1 сработает если например запушим коммит B в ветке featureX
+A push that triggers the webhook will create a link to this repository in Redmine. To view the list of remote repositories, go to **Administration > Remote repository servers**.  
+![remote repository](undev_git_10.PNG)
 
-## Прикрепление коммитов к тикету
+The hook can be run only by Redmine users with the corresponding permissions. The plugin determines the user's permissions based on mappings of the committers' emails with the Redmine users' emails. To view the mappings, click the **Users** link.  
+![users](undev_git_13.PNG)
 
-Для того чтобы привязать коммит к тикету, достаточно указать ключевое слово и
-номер тикета с решеткой, например так: `refs #124`.
-Ключевые слова задаются в настройках редмайна на вкладке *Repository*,
-(атрибут *Referencing keywords*).
-Если указать '*' в качестве ключевого слова, то достаточно просто указать номер
-тикета с решеткой чтобы привязать коммит к тикету.
+If you want to fetch a remote repository again, click **Refetch repository**. In this case, the hooks that have been already executed will not be run again. If there is a new hook applicable to a previous commit (e.g., a hook has a new keyword or another branch name), this hook will be run.  
+![refetch repository](undev_git_10_1.PNG)
 
-## Перемещение коммитов (rebase)
+### Linking commits to issues
 
-UndevGit позволяет определить коммиты которые были перемещены с помощью `git rebase`.
-"Старые" коммиты не удаляются из списка чейнджсетов, но помечаются специальной
-иконкой со ссылкой на "новый" коммит. Аналогично и "новые" коммиты помечаются иконкой
-со ссылкой на "старый" коммит.
-Метка видна при просмотре списка коммитов и при просмотре отдельного коммита.
-Изменения тикетов повторно не выполняются, но ссылки в Associated Revisions меняются.
-Также не учитываются повторно и таймлоги.
+To link a commit to an issue, specify a keyword and the issue number starting with #, for example, `refs #123`. Keywords are set using the **Referencing keywords** field of the Redmine settings (**Administration > Settings > Repositories**).
 
-## Обновление репозитория по веб хуку
+If you set '*' as a keyword, specifying only the issue number with '#' will be enough to link a commit.
 
-TODO
+A commit linked to an issue is displayed in the **Associated revisions** section of the issue page.  
+![linked commit](undev_git_14.PNG)
 
-### Глобальная настройка
+To unlink a commit from an issue, you should click the revision link and then click the **Delete relation** icon (available only for users with the appropriate permissions).
+![unlink commit](undev_git_15_1.PNG)
 
-### Настройка отдельной репы
+When working with a remote repository, you can use referencing keywords to link commits to issues in the same way as for repositories you have added manually. In this case, a commit linked to an issue will be displayed in the **Associated remote revisions** section of the issue page. To link a commit to an issue, a committer must have the appropriate permissions. To unlink a commit from an issue, you can click the **Delete relation** icon (available only for users with the appropriate permissions)  
+![linked commit](undev_git_11.PNG)
 
-### Запуск обновления из крона
+Here the repository, branch or commit link takes you to an external server, while the link with the user name leads to the page of the corresponding Redmine user.
 
-Repository.fetch_changeset пропускает репы обновляемые по веб-хуку
+### Time logging
 
-## Тестирование
+If a commit specifies the time spent by the user (for example, refs #10 @5h), this value will be added to the **Spent time** field of the issue description.
 
-Распаковать тестовые репозитории
+### Moving commits (rebase)
+
+UndevGit enables you to determine which commits have be moved by using `git rebase`.
+
+Old references to commits are not removed from the changeset list; instead, they are marked with a special icon linking to a new commit reference. Similarly, new commits are marked with icons linking to old commit references. 
+
+The icon is available when viewing the list of commits or a specific commit.  
+![rebase](undev_git_15.PNG)
+
+Using `rebase` does not cause any issue changes; however, the links in the **Associated revisions** section are updated. Using `rebase` does not affect time logs.
+
+### Hooks configuration
+
+Hooks are used to flexibly configure how and when an issue status should be changed.
+
+You can configure global hooks that will be executed for all repositories, and project hooks that can be run for all project repositories, certain branches or a specific repository.
+
+To add a global hook, go to **Administration > Global hooks** and click **New hook**.
+Configure the hook as needed.  
+![global hook](undev_git_5.PNG)
+
+To enable project hooks for all projects at once, go to **Administration > Settings**, switch to the **Projects** tab, select the **Hooks** check box and click **Save**.  
+![enable project hooks](undev_git_9.PNG)
+
+To enable project hooks for a specific project only, go to the project **Settings**, switch to the **Modules** tab, select the **Hooks** check box and click **Save**.  
+![enable project hooks](undev_git_6.PNG)
+
+To create a project hook, switch to the **Hooks** tab of the project settings. This tab also displays the global hooks you have already configured. To add a project hook, click **New hook**.  
+![add project hook](undev_git_7.PNG)
+
+You can select a repository or a branch to apply the hook and configure other settings as needed.  
+![project hook](undev_git_8.PNG)
+
+If '*' is specified as a branch name (meaning any branch), the hook will be applied only once when a commit is added to the repository. If a branch name is explicitly stated, the hook will be applied only once when a commit is added to this branch.
+
+Hooks change the issue statuses based on keywords; therefore, the keywords specified in the **Fixing keywords** field of the Redmine settings (**Administration > Settings > Repositories**) are not used. You should define a separate set of keywords for each hook.
+
+### Hook priorities
+
+Hook priorities are as follows:
+
+* repository hooks (highest priority)
+* project hooks
+* global hooks (lowest priority)
+
+If there are several hooks applicable to a commit, only the hook with the highest priority will be run. Hooks that are applied to all branches ('*') have a lower priority than hooks with branch names specified explicitly.
+
+#### Examples
+
+1. A commit is pushed to 2 branches (feature, develop) of one repository. There are 2 configured hooks: hook1 for branch '*', and hook2 for branch 'feature'. In this case, only hook2 will be run.
+
+2. There are several hooks: global hook1 for branch '*'; global hook2 for branch 'master'; project hook3 for branches 'develop,staging'; repository hook4 for branch 'staging'; and repository hook5 for branch 'feature'.   
+  When a user adds commit A to branch 'feature', hook5 is run.  
+  When a user merges branch 'feature' to branch 'staging', hook4 is run.  
+  When merging branch 'feature' to 'develop', hook3 is run.  
+  When merging branch 'feature' to 'master', hook2 is run.  
+  Hook1 is used only if commit B is pushed to branch 'featureX'.
+
+## Testing
+
+Unpack the test repositories:  
+
     rake test:scm:setup:undev_git
 
-Подготовить БД
+Create a database:  
+
     rake RAILS_ENV=test db:drop db:create db:migrate redmine:plugins:migrate
 
-Запустить тесты плагина redmine_undev_plugin
+Launch tests for the redmine_undev_git plugin:  
+
     rake RAILS_ENV=test NAME=redmine_undev_git redmine:plugins:test
 
-## TODO:
+## License
 
-Рейк таски: перенос репозиториев Git в UndevGit
-Дополнительные поля в чейнджсет
-Последовательность чтения (подбробно)
-Особенности первого чтения больших реп (настройка chunk_size)
+Copyright (c) 2015 Undev
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

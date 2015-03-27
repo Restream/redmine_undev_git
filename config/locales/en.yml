@@ -2,20 +2,20 @@ en:
   field_branches: "Branches"
   field_keywords: "Keywords"
   field_repository: "Repository"
-  field_use_init_hooks: "Enable usage of hooks for the repository initialization"
-  field_use_init_refs: "Enable referencing to issues for the repository initialization"
-  field_fetch_by_web_hook: "Fetch repository by external web hook"
+  field_use_init_hooks: "Enable hooks for repository initialization"
+  field_use_init_refs: "Enable referencing issues for repository initialization"
+  field_fetch_by_web_hook: "Fetch a repository by an external webhook"
 
   label_branches: "Branches"
   label_global_hooks: "Global hooks"
   label_hook_edit: "Edit hook"
   label_hook_new: "New hook"
-  label_hooks_for_undev_git: "Those hooks are for UndevGit repositories only"
+  label_hooks_for_undev_git: "These hooks are for UndevGit repositories only"
   label_hooks_plural: "Hooks"
-  label_not_for_undev_git: "Those settings aren't supported by the UndevGit repository"
+  label_not_for_undev_git: "These settings are not supported by the UndevGit repository"
   label_project_hooks_plural: "Hooks"
   label_hook_filter: "Find commits by"
-  label_hook_new_values: "New values that will be applied by hook"
+  label_hook_new_values: "New values that will be applied by the hook"
   label_fetch_status: "Status"
   label_associated_remote_revisions: Associated remote revisions
   label_associated_remote_repository: Associated remote repository
@@ -34,18 +34,18 @@ en:
   repository_taken_without_id: "has already been taken in %{project}"
   repository_url_malformed: "malformed, use git://, http(s):// or local path"
 
-  setting_undev_git_max_branches_in_assoc: "Maximum branches in associated revisions"
-  setting_undev_git_fetch_by_web_hook: "Fetch all UndevGit repositories by external web hook"
+  setting_undev_git_max_branches_in_assoc: "Maximum number of branches in associated revisions"
+  setting_undev_git_fetch_by_web_hook: "Fetch all UndevGit repositories by an external webhook"
 
   text_branches: "* = any branch<br />Multiple values allowed (comma separated)."
   text_changed_by_changeset_hook: "Applied in changeset %{value}."
   text_changed_by_remote_revision_hook: "Changed by remote repo commit %{value}."
   text_hook_cannot_be_empty: "Define new status or new % done"
   text_hook_repository_note: "* = any UndevGit repository"
-  text_undev_git_repository_note: "Remote url or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
+  text_undev_git_repository_note: "Remote URL or local repository path<br />(e.g. git://example.com/repo.git, https://example.com/repo.git or /repos/gitrepo)"
   text_commit_was_rebased_from: "This revision was rebased from %{rebased_from}"
   text_commit_was_rebased_to: "This revision was rebased to %{rebased_to}"
-  text_remote_user_mappings: "Select or update the Redmine user mapped to each email found in the remote repository when changed issue or linked to.\nUsers with the same Redmine and repository email are automatically mapped."
+  text_remote_user_mappings: "Select or update the Redmine users mapped to each email found in the remote repository when issues are changed or linked to.\nUsers with the same Redmine and repository email are automatically mapped."
 
   notice_refetch_started: Repository will be refetched soon
 
@@ -54,12 +54,12 @@ en:
 
   assignee_type:
     nobody: Assignee will not change
-    user: Change assignee to particular user
-    author: Change assignee to author of the issue
+    user: Change assignee to a particular user
+    author: Change assignee to the author of the issue
 
   label_fetch_statuses:
     unknown: Unknown
-    green: Ok
+    green: OK
     yellow: Warning
     red: Error
 

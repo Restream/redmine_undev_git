@@ -183,6 +183,10 @@ Launch tests for the redmine_undev_git plugin:
 
     rake RAILS_ENV=test NAME=redmine_undev_git redmine:plugins:test
 
+## Maintainers
+
+Danil Tashkinov, [github.com/nodecarter](https://github.com/nodecarter)
+    
 ## License
 
 Copyright (c) 2015 Undev

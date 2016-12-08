@@ -3,19 +3,20 @@ require File.expand_path('../../test_helper', __FILE__)
 class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
 
   fixtures :projects,
-           :users,
-           :roles,
-           :members,
-           :member_roles,
-           :trackers,
-           :projects_trackers,
-           :enabled_modules,
-           :issue_statuses,
-           :issues,
-           :enumerations,
-           :custom_fields,
-           :custom_values,
-           :custom_fields_trackers
+    :users,
+    :email_addresses,
+    :roles,
+    :members,
+    :member_roles,
+    :trackers,
+    :projects_trackers,
+    :enabled_modules,
+    :issue_statuses,
+    :issues,
+    :enumerations,
+    :custom_fields,
+    :custom_values,
+    :custom_fields_trackers
 
   class HookListener < Redmine::Hook::Listener
 
@@ -61,7 +62,7 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     hook2_1 = GlobalHook.create!(keywords: 'hook2', branches: 'develop', done_ratio: '21%')
     hook2_2 = GlobalHook.create!(keywords: 'hook2', branches: 'staging', done_ratio: '22%')
     hook2_3 = GlobalHook.create!(keywords: 'hook2', branches: 'feature', done_ratio: '23%')
-    hook2_4 = GlobalHook.create!(keywords: 'hook2', branches: 'master',  done_ratio: '24%')
+    hook2_4 = GlobalHook.create!(keywords: 'hook2', branches: 'master', done_ratio: '24%')
     fetch_changesets_by_step
     assert_equal [hook2_1.id, hook2_3.id, hook2_2.id], @hook_ids1
     assert_equal [], @hook_ids2
@@ -71,7 +72,7 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
 
   def test_hook3
     hook3_1 = GlobalHook.create!(keywords: 'hook3', branches: 'develop', done_ratio: '31%')
-    hook3_2 = GlobalHook.create!(keywords: 'hook3', branches: 'master',  done_ratio: '32%')
+    hook3_2 = GlobalHook.create!(keywords: 'hook3', branches: 'master', done_ratio: '32%')
     fetch_changesets_by_step
     assert_equal [], @hook_ids1
     assert_equal [], @hook_ids2
@@ -90,9 +91,9 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     fetch_changesets_by_step
 
     assert_equal [hook_feature, hook_staging], @hook_ids1
-    assert_equal [],                           @hook_ids2
-    assert_equal [hook_develop],               @hook_ids3
-    assert_equal [],                           @hook_ids4
+    assert_equal [], @hook_ids2
+    assert_equal [hook_develop], @hook_ids3
+    assert_equal [], @hook_ids4
   end
 
   def test_hooks_priority_2
@@ -107,9 +108,9 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     fetch_changesets_by_step
 
     assert_equal [hook_feature, hook_staging], @hook_ids1
-    assert_equal [],                           @hook_ids2
-    assert_equal [hook_develop],               @hook_ids3
-    assert_equal [],                           @hook_ids4
+    assert_equal [], @hook_ids2
+    assert_equal [hook_develop], @hook_ids3
+    assert_equal [], @hook_ids4
   end
 
   def test_hooks_priority_3
@@ -126,26 +127,26 @@ class FireHooksOnEveryBranchTest < ActionDispatch::IntegrationTest
     fetch_changesets_by_step
 
     assert_equal [hook_feature, hook_staging], @hook_ids1
-    assert_equal [],                           @hook_ids2
-    assert_equal [hook_develop],               @hook_ids3
-    assert_equal [],                           @hook_ids4
+    assert_equal [], @hook_ids2
+    assert_equal [hook_develop], @hook_ids3
+    assert_equal [], @hook_ids4
   end
 
   def test_hooks_for_merged_commits
     hook_feature = GlobalHook.create!(
-        keywords: 'hook6, hook7', branches: 'feature', done_ratio: '11%')
+      keywords: 'hook6, hook7', branches: 'feature', done_ratio: '11%')
     hook_staging = GlobalHook.create!(
-        keywords: 'hook6, hook7', branches: 'staging', done_ratio: '12%')
+      keywords: 'hook6, hook7', branches: 'staging', done_ratio: '12%')
 
     @repo.reload
 
     fetch_changesets_by_step
 
-    assert_equal [],                                 @hook_ids1
+    assert_equal [], @hook_ids1
     assert_equal [hook_feature.id, hook_staging.id], @hook_ids2
-    assert_equal [],                                 @hook_ids3
-    assert_equal [],                                 @hook_ids4
- end
+    assert_equal [], @hook_ids3
+    assert_equal [], @hook_ids4
+  end
 
   def create_global_hooks
     [

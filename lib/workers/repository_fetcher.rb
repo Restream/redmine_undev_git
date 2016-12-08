@@ -16,7 +16,7 @@ module Workers
       end
 
       def perform(options)
-        id = options['id']
+        id         = options['id']
         repository = Repository::UndevGit.find(id)
         repository.fetch_changesets
       end

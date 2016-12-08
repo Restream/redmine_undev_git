@@ -1,6 +1,6 @@
 <% remote_revisions.each do |revision| %>
   <div class="changeset <%= cycle('odd', 'even') %> remote-revision">
-    <p><%= link_to_remote_revision(revision) %><br />
+    <p><%= link_to_remote_revision(revision) %><br/>
       <span class="author">
         <%= authoring(revision.committer_date, revision.committer || revision.committer_string) %>
       </span>
@@ -9,14 +9,14 @@
       <%= textilizable(revision, :message) %>
     </div>
     <% if User.current.allowed_to?(:manage_related_issues, @project) %>
-    <div class="right-bottom-buttons">
-      <%= link_to(image_tag('link_break.png'),
-          remove_remote_revision_issue_path(@issue, remote_repo_id: revision.repo.id, sha: revision.sha),
-          # remote: true,
-          method: :put,
-          data:   { confirm: l(:text_are_you_sure) },
-          title:  l(:label_relation_delete)) %>
-    </div>
+      <div class="right-bottom-buttons">
+        <%= link_to(image_tag('link_break.png'),
+            remove_remote_revision_issue_path(@issue, remote_repo_id: revision.repo.id, sha: revision.sha),
+            # remote: true,
+            method: :put,
+            data:   { confirm: l(:text_are_you_sure) },
+            title:  l(:label_relation_delete)) %>
+      </div>
     <% end %>
   </div>
 <% end %>

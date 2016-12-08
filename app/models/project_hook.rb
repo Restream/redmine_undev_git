@@ -4,13 +4,13 @@ class ProjectHook < HookBase
 
   safe_attributes %w{project_id repository_id}
 
-  validate :project, presence: true
+  validates :project, presence: true
 
   belongs_to :project
   belongs_to :repository
 
   # project hooks for all repos
-  scope :global, where(repository_id: nil)
+  scope :global, -> { where(repository_id: nil) }
 
   # Users/groups issues can be assigned to
   def assignable_users

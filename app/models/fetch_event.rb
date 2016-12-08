@@ -3,7 +3,7 @@ class FetchEvent < ActiveRecord::Base
 
   after_commit :cleanup_fetch_events, on: :create
 
-  scope :sorted, order('id desc')
+  scope :sorted, -> { order('id desc') }
 
   def cleanup_fetch_events
     repository.cleanup_fetch_events

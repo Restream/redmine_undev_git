@@ -18,16 +18,16 @@ module RedmineUndevGit
 
       def initialize(old_repo, new_url, warnings)
         @old_repo, @warnings = old_repo, warnings
-        @new_repo = create_new_repo(new_url)
+        @new_repo            = create_new_repo(new_url)
       end
 
       private
 
       def create_new_repo(new_url)
         Repo.new(
-            project: find_project,
-            url: new_url,
-            identifier: find_identifier(new_url)
+          project:    find_project,
+          url:        new_url,
+          identifier: find_identifier(new_url)
         )
       end
 
@@ -46,7 +46,7 @@ module RedmineUndevGit
 
       def <=>(b)
         [new_repo.project.identifier, new_repo.identifier].join <=>
-            [b.new_repo.project.identifier, b.new_repo.identifier].join
+          [b.new_repo.project.identifier, b.new_repo.identifier].join
       end
     end
 
@@ -99,14 +99,14 @@ module RedmineUndevGit
               m.new_repo.project.enable_module!('hooks')
 
               new_repo = Repository::UndevGit.new(
-                  project: m.new_repo.project,
-                  identifier: m.new_repo.identifier,
-                  url: m.new_repo.url,
-                  use_init_hooks: 0,
-                  use_init_refs: 1
+                project:        m.new_repo.project,
+                identifier:     m.new_repo.identifier,
+                url:            m.new_repo.url,
+                use_init_hooks: 0,
+                use_init_refs:  1
               )
               new_repo.merge_extra_info(
-                  'extra_report_last_commit' => old_repo.report_last_commit
+                'extra_report_last_commit' => old_repo.report_last_commit
               )
               old_repo.destroy
               new_repo.save!
@@ -129,15 +129,15 @@ module RedmineUndevGit
 
       def create_mappings
         new_urls = []
-        Repository::Git.order(:id).all.map do |r|
+        Repository::Git.order(:id).map do |r|
           old_repo = Repo.new(
-              id: r.id,
-              project: r.project,
-              url: r.url,
-              identifier: r.identifier,
-              is_default: r.is_default
+            id:         r.id,
+            project:    r.project,
+            url:        r.url,
+            identifier: r.identifier,
+            is_default: r.is_default
           )
-          new_url = url_mappings[old_repo.url]
+          new_url  = url_mappings[old_repo.url]
 
           warnings = []
           warnings << 'new_url duplicated' if new_urls.include?(new_url)
@@ -155,7 +155,7 @@ module RedmineUndevGit
         File.open(@url_mapping_file, 'r') do |mapfile|
           mapfile.each do |line|
             old_url, new_url = *(line.split(';').map(&:strip))
-            maps[old_url] = new_url if old_url.present? && new_url.present?
+            maps[old_url]    = new_url if old_url.present? && new_url.present?
           end
         end
         maps

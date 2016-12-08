@@ -1,7 +1,7 @@
 # Redmine UndevGit Plugin
 
-[![Build Status](https://travis-ci.org/Undev/redmine_undev_git.png)](https://travis-ci.org/Undev/redmine_undev_git)
-[![Code Climate](https://codeclimate.com/github/Undev/redmine_undev_git.png)](https://codeclimate.com/github/Undev/redmine_undev_git)
+[![Build Status](https://travis-ci.org/Restream/redmine_undev_git.svg?branch=master)](https://travis-ci.org/Restream/redmine_undev_git)
+[![Code Climate](https://codeclimate.com/github/Restream/redmine_undev_git/badges/gpa.svg)](https://codeclimate.com/github/Restream/redmine_undev_git)
 
 The UndevGit plugin adds the UndevGit repository type to Redmine.
 
@@ -14,7 +14,7 @@ When accessing a remote or local repository, UndevGit clones it and then works w
 
 ## Compatibility
 
-This plugin version is compatible only with Redmine 2.1.x and later.
+This plugin version is compatible only with Redmine 3.x and later.
 
 ## Installation
 
@@ -29,18 +29,11 @@ This plugin version is compatible only with Redmine 2.1.x and later.
             
       Copy the plugin from GitHub using the following command:
       
-            git clone https://github.com/Undev/redmine_undev_git.git plugins/redmine_undev_git
+            git clone https://github.com/Restream/redmine_undev_git.git plugins/redmine_undev_git
             
 2. Install the required gems using the command:  
 
         bundle install  
-
-    * In case of bundle install errors, remove the Gemfile.lock file, update the local package index and install the required dependencies. Then execute the `bundle install` command again:  
-
-            rm Gemfile.lock
-            sudo apt-get update
-            sudo apt-get install -y libxml2-dev libxslt-dev libpq-dev
-            bundle install
             
 3. This plugin requires a migration. Run the following command to upgrade your database (make a database backup before):  
 
@@ -55,7 +48,7 @@ Now you should be able to see the plugin in **Administration > Plugins**.
 ### Configuring the plugin
 
 To configure the plugin settings, go to **Administration > Plugins** and click **Configure**.  
-![configure plugin](undev_git_2.PNG)  
+![configure plugin](doc/undev_git_2.png)  
 The plugin allows you to specify the maximum number of branches to be displayed on 
 the issue page in the **Associated revisions** section. An empty field or 0 means no restrictions.
 
@@ -64,31 +57,31 @@ For details on hook configuration, see the corresponding section below.
 ### Configuring the UndevGit repository
 
 To enable the UndevGit repository type, go to **Administration > Settings**, switch to the **Repositories** tab, select the **UndevGit** check box in the **Enabled SCM** section and click **Save**.  
-![enable UndevGit](undev_git_1.PNG)
+![enable UndevGit](doc/undev_git_1.png)
 
 You can specify the directory for storing local repository copies by setting a value for the `scm_repo_storage_dir` key in the `config/configuration.yml` file. By default, the `repos` directory in the Redmine root directory is used, so local repository copies are stored in `repos\[projectidentifier]\[repository_id]`. When you remove a repository, the corresponding directory is deleted.
 
 To add an UndevGit repository to a project, open the **Repositories** tab of the project **Settings**, click **New repository** and select the **UndevGit** value in the **SCM** drop-down list.  
-![add repository](undev_git_3.PNG)
+![add repository](doc/undev_git_3.png)
 
 You can delete a repository or change its settings by clicking the corresponding buttons on the **Repositories** tab.  
-![edit repository](undev_git_4.PNG)
+![edit repository](doc/undev_git_4.png)
 
 ### Working with remote repositories
 
 The plugin enables you to work with remote repositories without the need to add them to Redmine manually. 
 
 To use this feature, you should configure a webhook for push events in your remote repository, for example, at [https://gitlab.com](https://gitlab.com]):  
-![web hooks](undev_git_12.PNG)
+![web hooks](doc/undev_git_12.png)
 
 A push that triggers the webhook will create a link to this repository in Redmine. To view the list of remote repositories, go to **Administration > Remote repository servers**.  
-![remote repository](undev_git_10.PNG)
+![remote repository](doc/undev_git_10.png)
 
 The hook can be run only by Redmine users with the corresponding permissions. The plugin determines the user's permissions based on mappings of the committers' emails with the Redmine users' emails. To view the mappings, click the **Users** link.  
-![users](undev_git_13.PNG)
+![users](doc/undev_git_13.png)
 
 If you want to fetch a remote repository again, click **Refetch repository**. In this case, the hooks that have been already executed will not be run again. If there is a new hook applicable to a previous commit (e.g., a hook has a new keyword or another branch name), this hook will be run.  
-![refetch repository](undev_git_10_1.PNG)
+![refetch repository](doc/undev_git_10_1.png)
 
 ### Linking commits to issues
 
@@ -97,13 +90,13 @@ To link a commit to an issue, specify a keyword and the issue number starting wi
 If you set '*' as a keyword, specifying only the issue number with '#' will be enough to link a commit.
 
 A commit linked to an issue is displayed in the **Associated revisions** section of the issue page.  
-![linked commit](undev_git_14.PNG)
+![linked commit](doc/undev_git_14.png)
 
 To unlink a commit from an issue, you should click the revision link and then click the **Delete relation** icon (available only for users with the appropriate permissions).
-![unlink commit](undev_git_15_1.PNG)
+![unlink commit](doc/undev_git_15_1.png)
 
 When working with a remote repository, you can use referencing keywords to link commits to issues in the same way as for repositories you have added manually. In this case, a commit linked to an issue will be displayed in the **Associated remote revisions** section of the issue page. To link a commit to an issue, a committer must have the appropriate permissions. To unlink a commit from an issue, you can click the **Delete relation** icon (available only for users with the appropriate permissions)  
-![linked commit](undev_git_11.PNG)
+![linked commit](doc/undev_git_11.png)
 
 Here the repository, branch or commit link takes you to an external server, while the link with the user name leads to the page of the corresponding Redmine user.
 
@@ -118,7 +111,7 @@ UndevGit enables you to determine which commits have be moved by using `git reba
 Old references to commits are not removed from the changeset list; instead, they are marked with a special icon linking to a new commit reference. Similarly, new commits are marked with icons linking to old commit references. 
 
 The icon is available when viewing the list of commits or a specific commit.  
-![rebase](undev_git_15.PNG)
+![rebase](doc/undev_git_15.png)
 
 Using `rebase` does not cause any issue changes; however, the links in the **Associated revisions** section are updated. Using `rebase` does not affect time logs.
 
@@ -130,19 +123,19 @@ You can configure global hooks that will be executed for all repositories, and p
 
 To add a global hook, go to **Administration > Global hooks** and click **New hook**.
 Configure the hook as needed.  
-![global hook](undev_git_5.PNG)
+![global hook](doc/undev_git_5.png)
 
 To enable project hooks for all projects at once, go to **Administration > Settings**, switch to the **Projects** tab, select the **Hooks** check box and click **Save**.  
-![enable project hooks](undev_git_9.PNG)
+![enable project hooks](doc/undev_git_9.png)
 
 To enable project hooks for a specific project only, go to the project **Settings**, switch to the **Modules** tab, select the **Hooks** check box and click **Save**.  
-![enable project hooks](undev_git_6.PNG)
+![enable project hooks](doc/undev_git_6.png)
 
 To create a project hook, switch to the **Hooks** tab of the project settings. This tab also displays the global hooks you have already configured. To add a project hook, click **New hook**.  
-![add project hook](undev_git_7.PNG)
+![add project hook](doc/undev_git_7.png)
 
 You can select a repository or a branch to apply the hook and configure other settings as needed.  
-![project hook](undev_git_8.PNG)
+![project hook](doc/undev_git_8.png)
 
 If '*' is specified as a branch name (meaning any branch), the hook will be applied only once when a commit is added to the repository. If a branch name is explicitly stated, the hook will be applied only once when a commit is added to this branch.
 
@@ -189,7 +182,7 @@ Danil Tashkinov, [github.com/nodecarter](https://github.com/nodecarter)
     
 ## License
 
-Copyright (c) 2015 Undev
+Copyright (c) 2016 Restream
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

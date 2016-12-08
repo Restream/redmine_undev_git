@@ -14,7 +14,7 @@ module RedmineUndevGit::Patches::IssuesControllerPatch
 
   def remove_remote_revision
     remote_repo = RemoteRepo.find(params[:remote_repo_id])
-    rev = remote_repo.find_revision(params[:sha]) || raise(ActiveRecord::RecordNotFound)
+    rev         = remote_repo.find_revision(params[:sha]) || raise(ActiveRecord::RecordNotFound)
     if rev.related_issues.include?(@issue)
       rev.related_issues.delete(@issue)
       flash[:notice] = l(:notice_successful_update)
@@ -28,7 +28,7 @@ module RedmineUndevGit::Patches::IssuesControllerPatch
 
   def remote_revisions
     @remote_revisions ||=
-        User.current.allowed_to?(:view_changesets, @issue.project) ? @issue.remote_revisions.all : nil
+      User.current.allowed_to?(:view_changesets, @issue.project) ? @issue.remote_revisions.all : nil
   end
 
 end

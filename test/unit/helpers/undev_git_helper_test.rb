@@ -1,25 +1,25 @@
-require File.expand_path( '../../../test_helper', __FILE__ )
+require File.expand_path('../../../test_helper', __FILE__)
 
 class UndevGitHelperTest < ActionView::TestCase
   include ERB::Util
   include UndevGitHelper
 
-  fixtures :projects, :issues, :users
+  fixtures :projects, :issues, :users, :email_addresses
 
   def setup
     super
     make_temp_dir
-    @project = Project.find(3)
-    @repository = create_test_repository(project: @project)
+    @project          = Project.find(3)
+    @repository       = create_test_repository(project: @project)
     @named_repository = create_test_repository(project: @project,
-                                               identifier: 'named')
-    fake_rev = '1234567890123456789012345678901234567890'
-    branches = Array.new(15) { |i| "branch#{i}" }
-    @changeset = Changeset.new(
-        repository: @repository,
-        revision: fake_rev,
-        scmid: fake_rev,
-        branches: branches
+      identifier:                                       'named')
+    fake_rev          = '1234567890123456789012345678901234567890'
+    branches          = Array.new(15) { |i| "branch#{i}" }
+    @changeset        = Changeset.new(
+      repository: @repository,
+      revision:   fake_rev,
+      scmid:      fake_rev,
+      branches:   branches
     )
   end
 
@@ -28,33 +28,33 @@ class UndevGitHelperTest < ActionView::TestCase
   end
 
   def test_link_to_repository
-    @project = Project.find(2)
-    exp_link = "/projects/#{@repository.project.identifier}/repository"
+    @project    = Project.find(2)
+    exp_link    = "/projects/#{@repository.project.identifier}/repository"
     result_link = link_to_repository(@repository)
     assert_match exp_link, result_link
     assert_match @repository.name, result_link
   end
 
   def test_link_to_named_repository
-    @project = Project.find(2)
-    exp_link_named = "/projects/#{@named_repository.project.identifier}/repository/#{@named_repository.identifier}"
+    @project          = Project.find(2)
+    exp_link_named    = "/projects/#{@named_repository.project.identifier}/repository/#{@named_repository.identifier}"
     result_named_link = link_to_repository(@named_repository)
     assert_match exp_link_named, result_named_link
     assert_match @named_repository.name, result_named_link
   end
 
   def test_link_to_branch
-    branch = 'test_branch'
-    link = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}\">#{branch}</a>"
+    branch     = 'test_branch'
+    link       = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}\">#{branch}</a>"
     link_named = "<a href=\"/projects/#{@project.identifier}/repository/#{@named_repository.identifier}?branch=#{branch}\">#{branch}</a>"
     assert_equal link, link_to_branch(branch, @repository)
     assert_equal link_named, link_to_branch(branch, @named_repository)
   end
 
   def test_link_to_branch_with_rev
-    branch = 'test_branch'
-    rev = 'fba357b886984ee71185ad2065e65fc0417d9b92'
-    link = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}&amp;rev=#{rev}\">#{branch}</a>"
+    branch     = 'test_branch'
+    rev        = 'fba357b886984ee71185ad2065e65fc0417d9b92'
+    link       = "<a href=\"/projects/#{@project.identifier}/repository?branch=#{branch}&amp;rev=#{rev}\">#{branch}</a>"
     link_named = "<a href=\"/projects/#{@project.identifier}/repository/#{@named_repository.identifier}?branch=#{branch}&amp;rev=#{rev}\">#{branch}</a>"
     assert_equal link, link_to_branch(branch, @repository, rev)
     assert_equal link_named, link_to_branch(branch, @named_repository, rev)
@@ -86,30 +86,30 @@ class UndevGitHelperTest < ActionView::TestCase
 
   def test_link_to_remote_revision
     branches = %w{master develop staging}
-    repo = create_remote_repo
+    repo     = create_remote_repo
     revision = repo.revisions.create!(
-        sha: '83ca5fd',
-        committer: User.find(1),
-        message: 'reference #1'
+      sha:       '83ca5fd',
+      committer: User.find(1),
+      message:   'reference #1'
     )
     branches.each do |branch|
       ref = repo.refs.create!(name: branch)
       revision.refs << ref
     end
-    link = link_to_remote_revision(revision)
+    link     = link_to_remote_revision(revision)
     branches = links_to_remote_branches(revision)
-    assert_match "<a href=\"https://gitlab.com/commit/83ca5fd\" target=\"_blank\">83ca5fd</a>", link
+    assert_match "href=\"https://gitlab.com/commit/83ca5fd\"", link
     assert_match branches, link
-    assert_match "<a href=\"https://gitlab.com/\" target=\"_blank\"></a>", link
+    assert_match "href=\"https://gitlab.com/\"", link
   end
 
   def test_links_to_remote_branches
     branches = %w{master develop staging}
-    repo = create_remote_repo
+    repo     = create_remote_repo
     revision = repo.revisions.create!(
-        sha: '83ca5fd',
-        committer: User.find(1),
-        message: 'reference #1'
+      sha:       '83ca5fd',
+      committer: User.find(1),
+      message:   'reference #1'
     )
     branches.each do |branch|
       ref = repo.refs.create!(name: branch)
@@ -117,7 +117,7 @@ class UndevGitHelperTest < ActionView::TestCase
     end
     links = links_to_remote_branches(revision)
     branches.each do |branch|
-      exp_link = "<a href=\"https://gitlab.com/commits/#{branch}\" target=\"_blank\">#{branch}</a>"
+      exp_link = "href=\"https://gitlab.com/commits/#{branch}\""
       assert_match exp_link, links
     end
   end

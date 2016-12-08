@@ -17,32 +17,32 @@
     </td>
     <td align="center">
       <%= reorder_links('project_hook', {
-              controller: 'project_hooks',
-              action:     'update',
-              project_id: project.id,
-              id:         hook.id
+          controller: 'project_hooks',
+          action:     'update',
+          project_id: project.id,
+          id:         hook.id
       }, :put) %>
     </td>
     <td class="buttons">
       <%= link_to_if_authorized(l(:button_edit),
-                                {
-                                    controller: 'project_hooks',
-                                    action:     'edit',
-                                    project_id: project.id,
-                                    id:         hook.id
-                                },
-                                class: 'icon icon-edit') %>
+          {
+              controller: 'project_hooks',
+              action:     'edit',
+              project_id: project.id,
+              id:         hook.id
+          },
+          class: 'icon icon-edit') %>
 
       <%= link_to_if_authorized(l(:button_delete),
-                                {
-                                    controller: 'project_hooks',
-                                    action:     'destroy',
-                                    project_id: project.id,
-                                    id:         hook.id
-                                },
-                                method: :delete,
-                                confirm: l(:text_are_you_sure),
-                                class: 'icon icon-del') %>
+          {
+              controller: 'project_hooks',
+              action:     'destroy',
+              project_id: project.id,
+              id:         hook.id
+          },
+          method:  :delete,
+          confirm: l(:text_are_you_sure),
+          class:   'icon icon-del') %>
     </td>
   </tr>
 <% end %>

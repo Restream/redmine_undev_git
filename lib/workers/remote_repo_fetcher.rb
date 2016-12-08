@@ -16,8 +16,8 @@ module Workers
       end
 
       def perform(options)
-        id = options['id']
-        operation = options['operation'].to_sym
+        id         = options['id']
+        operation  = options['operation'].to_sym
         repository = RemoteRepo.find(id)
         case operation
           when :fetch

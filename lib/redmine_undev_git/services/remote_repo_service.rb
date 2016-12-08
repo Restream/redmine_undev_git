@@ -45,9 +45,9 @@ module RedmineUndevGit::Services
       return nil unless Policies::CreateRemoteRepo.allowed?(repository_url)
       remote_repo_site = find_or_create_remote_repo_site
       remote_repo_site.repos.create!(
-          url: repository_url,
-          path_to_repo: url_parts[:path_to_repo],
-          web_hook: web_hook
+        url:          repository_url,
+        path_to_repo: url_parts[:path_to_repo],
+        web_hook:     web_hook
       )
     end
 
@@ -90,20 +90,20 @@ module RedmineUndevGit::Services
     def url_parts
       @url_parts ||= \
         if m = /\A(?<user>.+?)@(?<host>.+?):(?<path_to_repo>.+?)\.git\z/.match(repository_url)
-                               {
-                                   user:         m[:user],
-                                   host:         m[:host],
-                                   path_to_repo: m[:path_to_repo]
-                               }
-        elsif m = /\Ahttps:\/\/(?<host>.+?)\/(?<path_to_repo>.+?)(\.git)?\z/.match(repository_url)
-          {
-              user:         'git',
-              host:         m[:host],
-              path_to_repo: m[:path_to_repo]
-          }
-        else
-          raise RedmineUndevGit::Services::WrongRepoUrl
-        end
+        {
+          user:         m[:user],
+          host:         m[:host],
+          path_to_repo: m[:path_to_repo]
+        }
+      elsif m = /\Ahttps:\/\/(?<host>.+?)\/(?<path_to_repo>.+?)(\.git)?\z/.match(repository_url)
+        {
+          user:         'git',
+          host:         m[:host],
+          path_to_repo: m[:path_to_repo]
+        }
+      else
+        raise RedmineUndevGit::Services::WrongRepoUrl
+      end
     end
   end
 end

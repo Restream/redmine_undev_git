@@ -3,9 +3,9 @@
 class RemoteRepoSite < ActiveRecord::Base
 
   has_many :repos,
-           class_name: 'RemoteRepo',
-           foreign_key: 'remote_repo_site_id',
-           inverse_of: :site
+    class_name:  'RemoteRepo',
+    foreign_key: 'remote_repo_site_id',
+    inverse_of:  :site
 
   has_many :revisions, through: :repos
 
@@ -24,7 +24,7 @@ class RemoteRepoSite < ActiveRecord::Base
   end
 
   def update_user_mapping(email, user_id)
-    mapping = user_mappings.where(email: email).first_or_create
+    mapping         = user_mappings.where(email: email).first_or_create
     mapping.user_id = user_id
     mapping.save
   end
@@ -35,7 +35,7 @@ class RemoteRepoSite < ActiveRecord::Base
 
   def all_committers_with_mappings
     unmapped = revisions.where(committer_id: nil).uniq.pluck(:committer_email)
-    mapped = user_mappings.all
+    mapped   = user_mappings.to_a
     unmapped = unmapped - mapped.map(&:email)
     unmapped.map! { |e| [e, nil] }
     mapped.map! { |m| [m.email, m.user_id] }

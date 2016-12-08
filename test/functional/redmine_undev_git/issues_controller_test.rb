@@ -3,29 +3,30 @@ require 'issues_controller'
 
 class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   fixtures :projects,
-           :users,
-           :roles,
-           :members,
-           :member_roles,
-           :issues,
-           :issue_statuses,
-           :versions,
-           :trackers,
-           :projects_trackers,
-           :issue_categories,
-           :enabled_modules,
-           :enumerations
+    :users,
+    :email_addresses,
+    :roles,
+    :members,
+    :member_roles,
+    :issues,
+    :issue_statuses,
+    :versions,
+    :trackers,
+    :projects_trackers,
+    :issue_categories,
+    :enabled_modules,
+    :enumerations
 
   include Redmine::I18n
 
   def setup
-    @controller = IssuesController.new
-    @request    = ActionController::TestRequest.new
-    @response   = ActionController::TestResponse.new
-    @user = User.find(2)
-    @issue = Issue.find(1)
-    @project = @issue.project
-    User.current = @user
+    @controller                = IssuesController.new
+    @request                   = ActionController::TestRequest.new
+    @response                  = ActionController::TestResponse.new
+    @user                      = User.find(2)
+    @issue                     = Issue.find(1)
+    @project                   = @issue.project
+    User.current               = @user
     @request.session[:user_id] = 2
     make_temp_dir
   end
@@ -38,7 +39,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     @repository = create_test_repository(project: @project)
     @repository.fetch_changesets
     changeset = @repository.changesets.last
-    branches = Array.new(15) { |i| "fakebranch#{i}" }
+    branches  = Array.new(15) { |i| "fakebranch#{i}" }
     changeset.update_attribute :branches, branches
     @issue.changesets << changeset
     max_branches = RedmineUndevGit.max_branches_in_assoc
@@ -55,7 +56,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     @repository = create_test_repository(project: @project)
     @repository.fetch_changesets
     changeset = @repository.changesets.last
-    branches = %w[fakebranch]
+    branches  = %w[fakebranch]
     changeset.update_attribute :branches, branches
     @issue.changesets << changeset
 
@@ -65,15 +66,15 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     assert_select 'div#issue-changesets a', { text: /#{@repository.name}/ } do |links|
       assert_equal 1, links.length
       assert_match "/projects/ecookbook/repository/#{@repository.identifier_param}",
-                   links[0].attributes['href']
+        links[0].attributes['href']
     end
   end
 
   def test_show_remote_revisions_block
-    user = User.find(3)
+    user                       = User.find(3)
     @request.session[:user_id] = user.id
 
-    issue = Issue.find(1)
+    issue    = Issue.find(1)
     revision = create(:remote_repo_revision_full)
     revision.related_issues << issue
 
@@ -84,25 +85,25 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   end
 
   def test_user_without_permission_cant_see_revisions
-    user = User.find(3)
+    user                       = User.find(3)
     @request.session[:user_id] = user.id
     Role.find(2).remove_permission!(:view_changesets)
 
-    issue = Issue.find(1)
+    issue    = Issue.find(1)
     revision = create(:remote_repo_revision_full)
     revision.related_issues << issue
 
     get :show, id: issue.id
     assert_response :success
 
-    assert_select 'div#issue-changesets a', { :count => 0, text: /#{revision.short_sha}/ }
+    assert_select 'div#issue-changesets a', { count: 0, text: /#{revision.short_sha}/ }
   end
 
   def test_user_with_permission_can_unlink_revision
     user = User.find(3)
     Role.find(2).add_permission!(:manage_related_issues)
     request.session[:user_id] = user.id
-    issue = Issue.find(1)
+    issue                     = Issue.find(1)
     assert user.allowed_to?(:manage_related_issues, issue.project)
 
     rev = create(:remote_repo_revision_full)
@@ -115,9 +116,9 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   end
 
   def test_user_without_permission_cant_unlink_revision
-    user = User.find(9)
+    user                      = User.find(9)
     request.session[:user_id] = user.id
-    issue = Issue.find(1)
+    issue                     = Issue.find(1)
     refute user.allowed_to?(:manage_related_issues, issue.project)
 
     rev = create(:remote_repo_revision_full)

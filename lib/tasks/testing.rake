@@ -15,10 +15,10 @@ namespace :test do
       private
 
       def extract_repo(repo_name)
-        source_tar = File.expand_path(
-            File.join('..', '..', '..', 'test', 'fixtures', "#{repo_name}.tar.gz"), __FILE__)
-        dest_dir = File.expand_path(
-            File.join('..', '..', '..', '..', '..', 'tmp', 'test'), __FILE__)
+        source_tar    = File.expand_path(
+          File.join('..', '..', '..', 'test', 'fixtures', "#{repo_name}.tar.gz"), __FILE__)
+        dest_dir      = File.expand_path(
+          File.join('..', '..', '..', '..', '..', 'tmp', 'test'), __FILE__)
         dest_repo_dir = File.join(dest_dir, repo_name)
         unless Dir.exists?(dest_repo_dir)
           system "tar -xvz -C #{dest_dir} -f #{source_tar}"

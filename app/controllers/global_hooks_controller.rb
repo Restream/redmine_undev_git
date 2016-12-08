@@ -18,7 +18,7 @@ class GlobalHooksController < ApplicationController
   end
 
   def create
-    @hook = GlobalHook.new(params[:global_hook])
+    @hook = GlobalHook.new(global_hook_params)
 
     if @hook.save
       flash[:notice] = l(:notice_successful_create)
@@ -34,7 +34,7 @@ class GlobalHooksController < ApplicationController
 
   def update
     @hook = GlobalHook.find(params[:id])
-    if @hook.update_attributes(params[:global_hook])
+    if @hook.update_attributes(global_hook_params)
       flash[:notice] = l(:notice_successful_update)
       redirect_to action: 'index'
     else
@@ -48,5 +48,12 @@ class GlobalHooksController < ApplicationController
 
     flash[:notice] = l(:notice_successful_delete)
     redirect_to action: 'index'
+  end
+
+  private
+
+  def global_hook_params
+    params.required(:global_hook).
+      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type, :assigned_to_id)
   end
 end

@@ -62,27 +62,27 @@ module RedmineUndevGit::Includes::RepoFetch
 
   def find_changeset_by_name(name)
     if name.present?
-      changesets.where(:revision => name.to_s).first ||
-          changesets.where('scmid LIKE ?', "#{name}%").first
+      changesets.where(revision: name.to_s).first ||
+        changesets.where('scmid LIKE ?', "#{name}%").first
     end
   end
 
   def entries(path=nil, identifier=nil)
-    entries = scm.entries(path, identifier, :report_last_commit => extra_report_last_commit)
+    entries = scm.entries(path, identifier, report_last_commit: extra_report_last_commit)
     load_entries_changesets(entries)
     entries
   end
 
   def fetch_changesets
     fetch_start = Time.now
-    @scm = nil
+    init_scm
     scm.fetch!
 
     repo_branches = branches
     return if repo_branches.nil? || repo_branches.empty?
     prev_branches = previous_branches
 
-    repo_heads = repo_branches.map{ |br| br.scmid }
+    repo_heads = repo_branches.map { |br| br.scmid }
     prev_heads = previous_heads
     return if prev_heads.sort == repo_heads.sort
 
@@ -91,34 +91,27 @@ module RedmineUndevGit::Includes::RepoFetch
     # don't apply hooks for already prepared changesets in first fetch
     apply_hooks_for_merged_commits(prev_branches, repo_branches) unless prev_branches.empty?
 
-    h1 = extra_info || {}
-    h  = h1.dup
-    h['heads'] = repo_heads.dup
+    h1            = extra_info || {}
+    h             = h1.dup
+    h['heads']    = repo_heads.dup
     h['branches'] ||= {}
     repo_branches.each { |b| h['branches'][b.to_s] = b.scmid }
     merge_extra_info(h)
     self.save
-    fetch_events.create(:successful => true,
-                        :duration => Time.now - fetch_start)
+    fetch_events.create(successful: true,
+      duration:                     Time.now - fetch_start)
   rescue Exception => e
-    fetch_events.create(:successful => false,
-                        :duration => Time.now - fetch_start,
-                        :error_message => e.message)
+    fetch_events.create(successful: false,
+      duration:                     Time.now - fetch_start,
+      error_message:                e.message)
     raise
   end
 
-  def latest_changesets(path,rev,limit=10)
-    revisions = scm.revisions(path, nil, rev, :limit => limit, :all => false)
+  def latest_changesets(path, rev, limit=10)
+    revisions = scm.revisions(path, nil, rev, limit: limit, all: false)
     return [] if revisions.nil? || revisions.empty?
 
-    changesets.find(
-        :all,
-        :conditions => [
-            'scmid IN (?)',
-            revisions.map! { |c| c.scmid }
-        ],
-        :order => 'committed_on DESC'
-    )
+    changesets.where('scmid IN (?)', revisions.map! { |c| c.scmid }).order(committed_on: :desc)
   end
 
   def initialization_done?
@@ -137,20 +130,20 @@ module RedmineUndevGit::Includes::RepoFetch
   private
 
   def previous_branches
-    h1 = extra_info || {}
-    h  = h1.dup
+    h1            = extra_info || {}
+    h             = h1.dup
     h['branches'] ||= {}
   end
 
   def previous_heads
-    h1 = extra_info || {}
-    h  = h1.dup
+    h1         = extra_info || {}
+    h          = h1.dup
     h['heads'] ||= []
   end
 
   def save_revisions(prev_db_heads, repo_heads)
-    h = {}
-    opts = {}
+    h               = {}
+    opts            = {}
     opts[:reverse]  = true
     opts[:excludes] = prev_db_heads
     opts[:includes] = repo_heads
@@ -158,20 +151,17 @@ module RedmineUndevGit::Includes::RepoFetch
     revisions = scm.revisions('', nil, nil, opts)
     return if revisions.blank?
 
-    limit = 100
-    offset = 0
+    limit          = 100
+    offset         = 0
     revisions_copy = revisions.clone # revisions will change
     while offset < revisions_copy.size
-      recent_changesets_slice = changesets.find(
-          :all,
-          :conditions => [
-              'scmid IN (?)',
-              revisions_copy.slice(offset, limit).map{|x| x.scmid}
-          ]
+      recent_changesets_slice = changesets.where(
+        'scmid IN (?)',
+        revisions_copy.slice(offset, limit).map { |x| x.scmid }
       )
       # Subtract revisions that redmine already knows about
-      recent_revisions = recent_changesets_slice.map{|c| c.scmid}
-      revisions.reject!{|r| recent_revisions.include?(r.scmid)}
+      recent_revisions        = recent_changesets_slice.map { |c| c.scmid }
+      revisions.reject! { |r| recent_revisions.include?(r.scmid) }
       offset += limit
     end
 
@@ -185,26 +175,26 @@ module RedmineUndevGit::Includes::RepoFetch
   end
 
   def save_revision(rev)
-    parents = (rev.parents || []).collect{|rp| find_changeset_by_name(rp)}.compact
+    parents      = (rev.parents || []).collect { |rp| find_changeset_by_name(rp) }.compact
 
     rebased_from = find_original_changeset(rev) if rev.looks_like_rebased?
 
     changeset = Changeset.create(
-        :repository   => self,
-        :revision     => rev.identifier,
-        :scmid        => rev.scmid,
-        :committer    => rev.author,
-        :committed_on => rev.time,
-        :comments     => rev.message,
-        :parents      => parents,
-        :branches     => rev.branches,
-        :patch_id     => rev.patch_id,
-        :authored_on  => rev.authored_on,
-        :rebased_from => rebased_from
+      repository:   self,
+      revision:     rev.identifier,
+      scmid:        rev.scmid,
+      committer:    rev.author,
+      committed_on: rev.time,
+      comments:     rev.message,
+      parents:      parents,
+      branches:     rev.branches,
+      patch_id:     rev.patch_id,
+      authored_on:  rev.authored_on,
+      rebased_from: rebased_from
     )
 
     unless changeset.new_record?
-      rev.paths.each { |change| changeset.create_change(change) }
+      rev.paths.each { |change| create_change(changeset, change) }
 
       initial_parse_comments(changeset)
     end
@@ -212,20 +202,27 @@ module RedmineUndevGit::Includes::RepoFetch
     changeset
   end
 
+  def create_change(changeset, change)
+    changeset.create_change(
+      # Get only first symbol regardless database restriction
+      change.merge(action: change[:action][0])
+    )
+  end
+
   # find original changeset for revision that looks like rebased
   def find_original_changeset(rev)
     changesets.where(
-        'patch_id = ? and committer = ? and authored_on = ? and revision <> ?',
-        rev.patch_id,
-        rev.author,
-        rev.authored_on,
-        rev.identifier
+      'patch_id = ? and committer = ? and authored_on = ? and revision <> ?',
+      rev.patch_id,
+      rev.author,
+      rev.authored_on,
+      rev.identifier
     ).first
   end
 
   def initial_parse_comments(changeset)
     ref_keywords = Setting.commit_ref_keywords
-    all_hooks = all_applicable_hooks
+    all_hooks    = all_applicable_hooks
     fix_keywords = all_hooks.map(&:keywords).join(',')
 
     parsed = changeset.parse_comment_for_issues(ref_keywords, fix_keywords)
@@ -260,9 +257,9 @@ module RedmineUndevGit::Includes::RepoFetch
     return if extra_info.nil?
     v = extra_info['extra_report_last_commit']
     write_attribute(:extra_info, nil)
-    h = {}
+    h                             = {}
     h['extra_report_last_commit'] = v
     merge_extra_info(h)
-    self.save(:validate => false)
+    self.save(validate: false)
   end
 end

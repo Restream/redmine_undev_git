@@ -13,8 +13,8 @@ class ProjectHooksController < ApplicationController
   end
 
   def create
-    @hook = @project.hooks.build(params[:project_hook])
-    cfv = params[:project_hook][:custom_field_values]
+    @hook = @project.hooks.build(project_hook_params)
+    cfv   = params[:project_hook][:custom_field_values]
     if cfv
       @hook.reset_custom_values!
       @hook.custom_field_values = cfv
@@ -29,7 +29,7 @@ class ProjectHooksController < ApplicationController
 
   def update
     @hook = @project.hooks.find(params[:id])
-    if @hook.update_attributes(params[:project_hook])
+    if @hook.update_attributes(project_hook_params_with_cfv)
       flash[:notice] = l(:notice_successful_update)
       redirect_to_settings_in_projects
     else
@@ -53,5 +53,15 @@ class ProjectHooksController < ApplicationController
 
   def redirect_to_settings_in_projects
     redirect_to settings_project_path(@project, tab: :hooks)
+  end
+
+  def project_hook_params
+    params.required(:project_hook).
+      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type, :assigned_to_id)
+  end
+
+  def project_hook_params_with_cfv
+    params.required(:project_hook).
+      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type, :assigned_to_id, :custom_field_values)
   end
 end

@@ -1,25 +1,25 @@
 require File.expand_path('../../test_helper', __FILE__)
 
 class ProjectHooksControllerTest < ActionController::TestCase
-  fixtures :projects, :repositories, :users,
+  fixtures :projects, :repositories, :users, :email_addresses,
     :roles, :members, :member_roles
 
   def setup
     make_temp_dir
-    @controller = ProjectHooksController.new
-    @request    = ActionController::TestRequest.new
-    @response   = ActionController::TestResponse.new
+    @controller                = ProjectHooksController.new
+    @request                   = ActionController::TestRequest.new
+    @response                  = ActionController::TestResponse.new
     @request.session[:user_id] = 1 # admin
 
-    @project = Project.find(3)
+    @project                      = Project.find(3)
     @project.enabled_module_names = [:repository, :hooks]
     @project.save!
 
     Setting.enabled_scm << 'UndevGit'
 
     repo = create_test_repository(
-        identifier: 'test',
-        project: @project
+      identifier: 'test',
+      project:    @project
     )
 
     create_hooks!(repository_id: repo.id)
@@ -53,12 +53,12 @@ class ProjectHooksControllerTest < ActionController::TestCase
 
   def test_post_create
     assert_difference 'ProjectHook.count', 1 do
-      post :create, project_id:  @project.id,
-           project_hook: {
-               branches:   'Master',
-               keywords:   'closes',
-               done_ratio: '50'
-           }
+      post :create, project_id: @project.id,
+        project_hook:           {
+          branches:   'Master',
+          keywords:   'closes',
+          done_ratio: '50'
+        }
     end
 
     assert_response :redirect
@@ -77,7 +77,7 @@ class ProjectHooksControllerTest < ActionController::TestCase
 
     assert_no_difference 'ProjectHook.count' do
       put :update, id: @repository_hook.id, project_id: @project.id,
-          project_hook: { branches: 'staging', repository_id: nil }
+        project_hook:  { branches: 'staging', repository_id: nil }
     end
 
     @repository_hook.reload

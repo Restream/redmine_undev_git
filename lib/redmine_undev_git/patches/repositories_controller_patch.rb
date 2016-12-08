@@ -9,15 +9,15 @@ class RepositoriesController
     rescue
     end
 
-    @entries = @repository.entries(@path, @rev)
+    @entries   = @repository.entries(@path, @rev)
     @changeset = @repository.find_changeset_by_name(@rev)
     if request.xhr?
-      @entries ? render(:partial => 'dir_list_content') : render(:nothing => true)
+      @entries ? render(partial: 'dir_list_content') : render(nothing: true)
     else
-      @changesets = @repository.latest_changesets(@path, @rev)
-      @properties = @repository.properties(@path, @rev)
+      @changesets   = @repository.latest_changesets(@path, @rev)
+      @properties   = @repository.properties(@path, @rev)
       @repositories = @project.repositories
-      render :action => 'show'
+      render action: 'show'
     end
   end
 

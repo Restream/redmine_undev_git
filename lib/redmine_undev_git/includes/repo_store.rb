@@ -15,6 +15,10 @@ module RedmineUndevGit::Includes::RepoStore
     after_destroy :remove_repository_folder
   end
 
+  def init_scm
+    @scm = nil
+  end
+
   def scm
     initialize_root_url
     super

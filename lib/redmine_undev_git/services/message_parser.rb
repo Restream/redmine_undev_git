@@ -34,7 +34,7 @@ module RedmineUndevGit::Services
 
     def regexp_pattern_for_references
       @regexp_pattern_for_references ||=
-          ref_keywords.blank? ? regexp_pattern_without_keywords : regexp_pattern_with_keywords(ref_keywords)
+        ref_keywords.blank? ? regexp_pattern_without_keywords : regexp_pattern_with_keywords(ref_keywords)
     end
 
     def regexp_pattern_for_hooks
@@ -46,7 +46,7 @@ module RedmineUndevGit::Services
     end
 
     def regexp_pattern_with_keywords(keywords)
-      kw_regexp = keywords.collect{ |kw| Regexp.escape(kw) }.join('|')
+      kw_regexp = keywords.collect { |kw| Regexp.escape(kw) }.join('|')
       /([\s\(\[,-]|^)((?<action>#{kw_regexp})[\s:]+)(?<refs>#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i
     end
 

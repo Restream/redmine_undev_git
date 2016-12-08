@@ -4,5 +4,4 @@ class RemoteRepoSite::Gitlab < RemoteRepoSite
     "#{repo_url}/commits/"
   end
 
-
 end

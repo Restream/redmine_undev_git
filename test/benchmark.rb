@@ -1,8 +1,8 @@
 # encoding: utf-8
 puts '>> Loading environment...'
 
-ENV[ 'RAILS_ENV' ] = 'test'
-require File.expand_path( File.dirname( __FILE__ ) + '/../../../config/environment')
+ENV['RAILS_ENV'] = 'test'
+require File.expand_path(File.dirname(__FILE__) + '/../../../config/environment')
 
 require 'tmpdir'
 require 'fileutils'
@@ -15,7 +15,7 @@ TEST_REPO = '/Users/danil/code/temp/redmine.git'
 
 puts '>> Preparing...'
 
-tmpdir = Dir.mktmpdir
+tmpdir       = Dir.mktmpdir
 tmpdir_undev = Dir.mktmpdir
 
 at_exit do
@@ -32,22 +32,22 @@ system "git clone --bare #{TEST_REPO} #{tmpdir}"
 system "git clone --bare #{TEST_REPO} #{tmpdir_undev}"
 
 project = Project.create! \
-  name: 'Benchmark',
+  name:       'Benchmark',
   identifier: "benchmark-#{Time.now.to_i}"
 
 Setting.enabled_scm = ['Git', 'UndevGit']
 
-vanilla_repo = Repository::Git.new
-vanilla_repo.project = project
+vanilla_repo            = Repository::Git.new
+vanilla_repo.project    = project
 vanilla_repo.identifier = 'vanilla_repo'
-vanilla_repo.url = tmpdir
+vanilla_repo.url        = tmpdir
 vanilla_repo.save!
 
-undev_repo = Repository::UndevGit.new
-undev_repo.project = project
+undev_repo            = Repository::UndevGit.new
+undev_repo.project    = project
 undev_repo.identifier = 'undev_repo'
-undev_repo.url = TEST_REPO 
-undev_repo.root_url = tmpdir_undev
+undev_repo.url        = TEST_REPO
+undev_repo.root_url   = tmpdir_undev
 undev_repo.save!
 
 STDERR.reopen('/dev/null', 'w')

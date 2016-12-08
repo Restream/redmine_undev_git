@@ -1,56 +1,56 @@
 <div class="contextual">
-<%= link_to l( :new_hook ), new_global_hook_path, class: 'icon icon-add' %>
+  <%= link_to l(:new_hook), new_global_hook_path, class: 'icon icon-add' %>
 </div>
 
-<h2><%=l( :label_hooks_plural )%></h2>
+<h2><%= l(:label_hooks_plural) %></h2>
 
 <% if @hooks.any? %>
   <table class="list">
     <thead>
-      <tr>
-        <th><%= l( :field_branches ) %></th>
-        <th><%= l( :field_keywords ) %></th>
-        <th><%= l( :field_status ) %></th>
-        <th><%= l( :field_done_ratio ) %></th>
-        <th><%= l( :field_assigned_to ) %></th>
-        <th><%= l( :label_custom_field_plural ) %></th>
-        <th><%= l( :button_sort ) %></th>
-        <th width="10%"></th>
-      </tr>
+    <tr>
+      <th><%= l(:field_branches) %></th>
+      <th><%= l(:field_keywords) %></th>
+      <th><%= l(:field_status) %></th>
+      <th><%= l(:field_done_ratio) %></th>
+      <th><%= l(:field_assigned_to) %></th>
+      <th><%= l(:label_custom_field_plural) %></th>
+      <th><%= l(:button_sort) %></th>
+      <th width="10%"></th>
+    </tr>
     </thead>
     <tbody>
-      <% @hooks.each do |hook| %>
-        <tr class="<%= cycle('odd', 'even') %>">
-          <td align="center"><%= hook_column_content(:branches, hook) %></td>
-          <td align="center"><%= hook_column_content(:keywords, hook) %></td>
-          <td align="center"><%= hook_column_content(:status, hook) %></td>
-          <td align="center"><%= hook_column_content(:done_ratio, hook) %></td>
-          <td align="center"><%= hook_column_content(:assignee, hook) %></td>
-          <td align="left">
-            <% hook.custom_field_values.each do |value| %>
-              <% next if value.value_blank? %>
-              <p><%= h(value.custom_field.name) %>:
-                <span class="hook-field-value"><%= show_value(value) %></span>
-              </p>
-            <% end -%>
-          </td>
-          <td align="center">
-            <%= reorder_links('global_hook', {
-                    controller: 'global_hooks',
-                    action:     'update',
-                    id:         hook
-            }, :put) %>
-          </td>
-          <td class="buttons">
-            <%= link_to(l(:button_edit), edit_global_hook_path(hook), class: 'icon icon-edit') %>
+    <% @hooks.each do |hook| %>
+      <tr class="<%= cycle('odd', 'even') %>">
+        <td align="center"><%= hook_column_content(:branches, hook) %></td>
+        <td align="center"><%= hook_column_content(:keywords, hook) %></td>
+        <td align="center"><%= hook_column_content(:status, hook) %></td>
+        <td align="center"><%= hook_column_content(:done_ratio, hook) %></td>
+        <td align="center"><%= hook_column_content(:assignee, hook) %></td>
+        <td align="left">
+          <% hook.custom_field_values.each do |value| %>
+            <% next if value.value_blank? %>
+            <p><%= h(value.custom_field.name) %>:
+              <span class="hook-field-value"><%= show_value(value) %></span>
+            </p>
+          <% end -%>
+        </td>
+        <td align="center">
+          <%= reorder_links('global_hook', {
+              controller: 'global_hooks',
+              action:     'update',
+              id:         hook
+          }, :put) %>
+        </td>
+        <td class="buttons">
+          <%= link_to(l(:button_edit), edit_global_hook_path(hook), class: 'icon icon-edit') %>
 
-            <%= link_to(l(:button_delete), global_hook_path(hook),
-                        method: :delete,
-                        confirm: l( :text_are_you_sure ),
-                        class: 'icon icon-del' ) %>
-          </td>
-        </tr>
-      <% end %>
+          <%= link_to(l(:button_delete), global_hook_path(hook),
+              method:  :delete,
+              confirm: l(:text_are_you_sure),
+              class:   'icon icon-del') %>
+        </td>
+      </tr>
+    <% end %>
     </tbody>
   </table>
 <% else %>

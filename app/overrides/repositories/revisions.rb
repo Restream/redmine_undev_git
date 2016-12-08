@@ -1,14 +1,14 @@
 Deface::Override.new(
-    virtual_path: 'repositories/_revisions',
-    name: 'rebase_info_th',
-    insert_before: 'table.list.changesets th:contains(\'l(:label_date)\')',
-    text: '<th></th>')
+  virtual_path:  'repositories/_revisions',
+  name:          'rebase_info_th',
+  insert_before: 'table.list.changesets th:contains(\'l(:label_date)\')',
+  text:          '<th></th>')
 
 Deface::Override.new(
-    virtual_path: 'repositories/_revisions',
-    name: 'rebase_info_td',
-    insert_before: 'table.list.changesets td.committed_on',
-    text: <<-REBASE_INFO_TD
+  virtual_path:  'repositories/_revisions',
+  name:          'rebase_info_td',
+  insert_before: 'table.list.changesets td.committed_on',
+  text:          <<-REBASE_INFO_TD
 
 <% if changeset.rebased_to %>
 

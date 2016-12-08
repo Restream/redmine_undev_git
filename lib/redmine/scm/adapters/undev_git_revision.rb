@@ -6,9 +6,9 @@ module Redmine::Scm::Adapters
 
     def initialize(attributes)
       super
-      self.patch_id = attributes[:patch_id]
+      self.patch_id    = attributes[:patch_id]
       self.authored_on = attributes[:authored_on]
-      self.branches = attributes[:branches]
+      self.branches    = attributes[:branches]
     end
 
     # return false if no branches was added otherwise return branches
@@ -19,7 +19,7 @@ module Redmine::Scm::Adapters
     end
 
     def format_identifier
-      identifier[0,8]
+      identifier[0, 8]
     end
 
     def looks_like_rebased?

@@ -1,7 +1,7 @@
 # RedmineUndevGit
 
-[![Build Status](https://travis-ci.org/Undev/redmine_undev_git.png)](https://travis-ci.org/Undev/redmine_undev_git)
-[![Code Climate](https://codeclimate.com/github/Undev/redmine_undev_git.png)](https://codeclimate.com/github/Undev/redmine_undev_git)
+[![Build Status](https://travis-ci.org/Restream/redmine_undev_git.png)](https://travis-ci.org/Restream/redmine_undev_git)
+[![Code Climate](https://codeclimate.com/github/Restream/redmine_undev_git.png)](https://codeclimate.com/github/Restream/redmine_undev_git)
 
 ## Описание
 

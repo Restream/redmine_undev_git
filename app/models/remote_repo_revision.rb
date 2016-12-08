@@ -28,7 +28,7 @@ class RemoteRepoRevision < ActiveRecord::Base
   end
 
   def ensure_issue_is_related(issue)
-    related_issues << issue unless related_issues.exists?(issue)
+    related_issues << issue unless related_issues.exists?(issue.id)
   end
 
   def author_string

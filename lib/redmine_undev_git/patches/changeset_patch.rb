@@ -8,14 +8,14 @@ module RedmineUndevGit::Patches
       serialize :branches, Array
 
       belongs_to :rebased_from,
-                 class_name: 'Changeset'
+        class_name: 'Changeset'
 
       has_one :rebased_to,
-              class_name: 'Changeset',
-              foreign_key: 'rebased_from_id'
+        class_name:  'Changeset',
+        foreign_key: 'rebased_from_id'
 
       skip_callback :create, :after, :scan_for_issues,
-                    if: lambda { self.repository.is_a? Repository::UndevGit }
+        if: lambda { self.repository.is_a? Repository::UndevGit }
     end
 
     # parse commit message for ref and fix keywords with issue_ids
@@ -25,12 +25,12 @@ module RedmineUndevGit::Patches
       return ret if comments.blank?
 
       # keywords used to reference issues
-      ref_keywords = ref_keywords.downcase.split(',').collect(&:strip)
+      ref_keywords     = ref_keywords.downcase.split(',').collect(&:strip)
       ref_keywords_any = ref_keywords.delete('*')
       # keywords used to fix issues
-      fix_keywords = fix_keywords.downcase.split(',').collect(&:strip)
+      fix_keywords     = fix_keywords.downcase.split(',').collect(&:strip)
 
-      kw_regexp = (ref_keywords + fix_keywords).uniq.collect{ |kw| Regexp.escape(kw) }.join('|')
+      kw_regexp = (ref_keywords + fix_keywords).uniq.collect { |kw| Regexp.escape(kw) }.join('|')
 
       comments.scan(/([\s\(\[,-]|^)((#{kw_regexp})[\s:]+)?(#\d+(\s+@#{Changeset::TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{Changeset::TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i) do |match|
         action, refs = match[2].to_s.downcase, match[3]

@@ -1,4 +1,4 @@
-<h2><%= l( :label_hook_new ) %></h2>
+<h2><%= l(:label_hook_new) %></h2>
 <%= labelled_form_for(@hook, url: global_hooks_path) do |f| %>
   <%= render partial: 'form', locals: { f: f, hook: @hook } %>
   <%= submit_tag l(:button_save) %>

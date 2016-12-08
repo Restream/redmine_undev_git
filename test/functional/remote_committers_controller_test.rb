@@ -4,13 +4,13 @@ class RemoteCommittersControllerTest < ActionController::TestCase
   tests RemoteCommittersController
 
   def setup
-    @user = create(:admin_user)
+    @user                     = create(:admin_user)
     request.session[:user_id] = @user.id
   end
 
   def test_committers_show_mapping_committers
-    repo = create(:remote_repo)
-    rev = create(:remote_repo_revision_full, repo: repo)
+    repo    = create(:remote_repo)
+    rev     = create(:remote_repo_revision_full, repo: repo)
     mapping = create(:remote_repo_site_user, site: repo.site, email: rev.committer_email)
     get :index, remote_repo_site_id: repo.site.id
     assert_response :success

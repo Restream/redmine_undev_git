@@ -3,19 +3,20 @@ require File.expand_path('../../test_helper', __FILE__)
 class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
 
   fixtures :projects,
-           :users,
-           :roles,
-           :members,
-           :member_roles,
-           :trackers,
-           :projects_trackers,
-           :enabled_modules,
-           :issue_statuses,
-           :issues,
-           :enumerations,
-           :custom_fields,
-           :custom_values,
-           :custom_fields_trackers
+    :users,
+    :email_addresses,
+    :roles,
+    :members,
+    :member_roles,
+    :trackers,
+    :projects_trackers,
+    :enabled_modules,
+    :issue_statuses,
+    :issues,
+    :enumerations,
+    :custom_fields,
+    :custom_values,
+    :custom_fields_trackers
 
   def setup
     make_temp_dir
@@ -45,7 +46,7 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     hook2_1 = GlobalHook.create!(keywords: 'hook2', branches: 'develop', done_ratio: '21%')
     hook2_2 = GlobalHook.create!(keywords: 'hook2', branches: 'develop', done_ratio: '22%')
     hook2_3 = GlobalHook.create!(keywords: 'hook2', branches: 'develop', done_ratio: '23%')
-    hook2_4 = GlobalHook.create!(keywords: 'hook2', branches: 'develop',  done_ratio: '24%')
+    hook2_4 = GlobalHook.create!(keywords: 'hook2', branches: 'develop', done_ratio: '24%')
     fetch_step_by_step
 
     issue = Issue.find(5)
@@ -61,7 +62,7 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     hook2_1 = GlobalHook.create!(keywords: 'hook3', branches: 'feature,develop,staging,master', done_ratio: '21%')
     hook2_2 = GlobalHook.create!(keywords: 'hook3', branches: 'staging', done_ratio: '22%')
     hook2_3 = GlobalHook.create!(keywords: 'hook3', branches: 'feature', done_ratio: '23%')
-    hook2_4 = GlobalHook.create!(keywords: 'hook3', branches: 'master',  done_ratio: '24%')
+    hook2_4 = GlobalHook.create!(keywords: 'hook3', branches: 'master', done_ratio: '24%')
     fetch_step_by_step
 
     issue = Issue.find(5)
@@ -75,7 +76,7 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
 
   def test_hook_applied_for_branch_by_two_hooks
     hook3_1 = GlobalHook.create!(keywords: 'hook3', branches: 'develop', done_ratio: '31%')
-    hook3_2 = GlobalHook.create!(keywords: 'hook4', branches: 'master',  done_ratio: '32%')
+    hook3_2 = GlobalHook.create!(keywords: 'hook4', branches: 'master', done_ratio: '32%')
     fetch_step_by_step
 
     issue = Issue.find(5)
@@ -119,18 +120,18 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     repo = site.repos.create!(url: RD4)
     repo.fetch
 
-    applied_keywords = RemoteRepoHook.order(:id).all.map { |ah| ah.hook.keywords.join }
+    applied_keywords = RemoteRepoHook.order(:id).map { |ah| ah.hook.keywords.join }
 
     assert_equal %w{hook1 hook2 hook3 hook4 hook6}, applied_keywords
   end
 
   def test_works_with_many_hooks
     gh1 = GlobalHook.create!(keywords: 'hook3', branches: 'feature', done_ratio: '11%')
-    gh2 = GlobalHook.create!(keywords: 'hook3', branches: '*',       done_ratio: '12%')
+    gh2 = GlobalHook.create!(keywords: 'hook3', branches: '*', done_ratio: '12%')
     ph1 = @project.hooks.create(keywords: 'hook3', branches: 'feature', done_ratio: '22%')
-    ph2 = @project.hooks.create(keywords: 'hook3', branches: 'master',  done_ratio: '23%')
+    ph2 = @project.hooks.create(keywords: 'hook3', branches: 'master', done_ratio: '23%')
     ph3 = @project.hooks.create(keywords: 'hook3', branches: 'develop', done_ratio: '24%')
-    ph4 = @project.hooks.create(keywords: 'hook3', branches: '*',       done_ratio: '25%')
+    ph4 = @project.hooks.create(keywords: 'hook3', branches: '*', done_ratio: '25%')
 
     fetch_step_by_step
 
@@ -140,9 +141,9 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     applied_hooks = ->(applied) { applied.map { |ah| ah.hook }.sort_by(&:id) }
 
     assert_equal [ph1, ph4], applied_hooks.call(@applied1)
-    assert_equal [],         applied_hooks.call(@applied2)
-    assert_equal [ph3],      applied_hooks.call(@applied3)
-    assert_equal [ph2],      applied_hooks.call(@applied4)
+    assert_equal [], applied_hooks.call(@applied2)
+    assert_equal [ph3], applied_hooks.call(@applied3)
+    assert_equal [ph2], applied_hooks.call(@applied4)
   end
 
   def create_global_hooks
@@ -186,22 +187,22 @@ class FireHooksOnEveryBranchByRemoteRepoTest < ActionDispatch::IntegrationTest
     last_id = get_last_id_of_applied_hooks
 
     @repo.fetch
-    @applied1 = RemoteRepoHook.where('id > ?', last_id).all
+    @applied1 = RemoteRepoHook.where('id > ?', last_id).to_a
     last_id   = get_last_id_of_applied_hooks
 
     @repo.url = RD2
     @repo.fetch
-    @applied2 = RemoteRepoHook.where('id > ?', last_id).all
+    @applied2 = RemoteRepoHook.where('id > ?', last_id).to_a
     last_id   = get_last_id_of_applied_hooks
 
     @repo.url = RD3
     @repo.fetch
-    @applied3 = RemoteRepoHook.where('id > ?', last_id).all
+    @applied3 = RemoteRepoHook.where('id > ?', last_id).to_a
     last_id   = get_last_id_of_applied_hooks
 
     @repo.url = RD4
     @repo.fetch
-    @applied4 = RemoteRepoHook.where('id > ?', last_id).all
+    @applied4 = RemoteRepoHook.where('id > ?', last_id).to_a
   end
 
   def branches(applied_hooks)

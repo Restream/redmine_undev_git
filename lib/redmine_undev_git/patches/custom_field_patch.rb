@@ -10,9 +10,9 @@ module RedmineUndevGit::Patches
       if obj.is_a?(GlobalHook) && %w(user version).include?(field_format)
         case field_format
           when 'user'
-            User.active.sort.collect {|u| [u.to_s, u.id.to_s]}
+            User.active.sort.collect { |u| [u.to_s, u.id.to_s] }
           when 'version'
-            Version.visible.sort.collect {|u| [u.to_s, u.id.to_s]}
+            Version.visible.sort.collect { |u| [u.to_s, u.id.to_s] }
         end
       else
         possible_values_options_without_global(obj)

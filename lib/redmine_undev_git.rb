@@ -12,8 +12,8 @@ module RedmineUndevGit
   end
 
   def self.fetch_by_web_hook=(value)
-    settings = Setting.plugin_redmine_undev_git
-    settings[:fetch_by_web_hook] = value
+    settings                         = Setting.plugin_redmine_undev_git
+    settings[:fetch_by_web_hook]     = value
     Setting.plugin_redmine_undev_git = settings
   end
 end

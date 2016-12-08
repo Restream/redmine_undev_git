@@ -66,7 +66,7 @@ module RedmineUndevGit::Services
 
     def update_repo_refs
       stored_refs = repo.refs.pluck(:name)
-      new_refs = head_branches - stored_refs
+      new_refs    = head_branches - stored_refs
       new_refs.each { |new_ref| repo.refs.create!(name: new_ref) }
     end
 
@@ -100,7 +100,7 @@ module RedmineUndevGit::Services
       revisions.each do |revision|
         parser.parse_message_for_logtime(revision.message).each do |issue_id, hours|
           committer = user_by_email(revision.cemail)
-          issue = Issue.find_by_id(issue_id)
+          issue     = Issue.find_by_id(issue_id)
           if Policies::LogtimeByCommit.allowed?(committer, issue)
             log_time(issue: issue, user: committer, hours: hours, revision: revision)
           else
@@ -112,17 +112,17 @@ module RedmineUndevGit::Services
     end
 
     def log_time(options)
-      revision = options[:revision]
-      repo_revision = repo_revision_by_git_revision(revision)
-      time_entry = TimeEntry.new(
-          user: options[:user],
-          hours: options[:hours],
-          issue: options[:issue],
-          spent_on: revision.cdate,
-          comments: notes_for_issue_timelog(repo_revision)
+      revision                        = options[:revision]
+      repo_revision                   = repo_revision_by_git_revision(revision)
+      time_entry                      = TimeEntry.new(
+        user:     options[:user],
+        hours:    options[:hours],
+        issue:    options[:issue],
+        spent_on: revision.cdate,
+        comments: notes_for_issue_timelog(repo_revision)
       )
       time_entry.remote_repo_revision = repo_revision
-      time_entry.activity = log_time_activity unless log_time_activity.nil?
+      time_entry.activity             = log_time_activity unless log_time_activity.nil?
 
       if time_entry.save
         repo_revision.ensure_issue_is_related(options[:issue])
@@ -191,7 +191,7 @@ module RedmineUndevGit::Services
     end
 
     def repo_ref_by_name(branch)
-      @refs_cache ||= {}
+      @refs_cache         ||= {}
       @refs_cache[branch] ||= repo.refs.where(name: branch).first_or_create
     end
 
@@ -200,24 +200,24 @@ module RedmineUndevGit::Services
     end
 
     def repo_revision_by_git_revision(revision)
-      @revisions_cache ||= {}
+      @revisions_cache               ||= {}
       @revisions_cache[revision.sha] ||=
-          repo.revisions.find_by_sha(revision.sha) ||
-              create_remote_repo_revision(revision)
+        repo.revisions.find_by_sha(revision.sha) ||
+          create_remote_repo_revision(revision)
     end
 
     def create_remote_repo_revision(revision)
       repo_revision = repo.revisions.create!(
-          author:          user_by_email(revision.aemail),
-          committer:       user_by_email(revision.cemail),
-          sha:             revision.sha,
-          author_name:     revision.aname,
-          author_email:    revision.aemail,
-          committer_name:  revision.cname,
-          committer_email: revision.cemail,
-          message:         revision.message,
-          author_date:     revision.adate,
-          committer_date:  revision.cdate
+        author:          user_by_email(revision.aemail),
+        committer:       user_by_email(revision.cemail),
+        sha:             revision.sha,
+        author_name:     revision.aname,
+        author_email:    revision.aemail,
+        committer_name:  revision.cname,
+        committer_email: revision.cemail,
+        message:         revision.message,
+        author_date:     revision.adate,
+        committer_date:  revision.cdate
       )
       update_remote_repo_revision_refs(repo_revision)
       repo_revision
@@ -244,7 +244,7 @@ module RedmineUndevGit::Services
 
       user = user_by_email(revision.cemail) || User.anonymous
 
-      issue = Issue.find_by_id(issue_id, include: :project)
+      issue = Issue.find_by_id(issue_id)
       return unless issue
 
       repo_revision = repo_revision_by_git_revision(revision)
@@ -263,9 +263,9 @@ module RedmineUndevGit::Services
       return if hook_was_applied?(req)
 
       req.hook.apply_for_issue(
-          req.issue,
-          user:  req.repo_revision.committer,
-          notes: notes_for_issue_change(req.repo_revision)
+        req.issue,
+        user:  req.repo_revision.committer,
+        notes: notes_for_issue_change(req.repo_revision)
       )
       journal_id = req.issue.last_journal_id
 
@@ -274,24 +274,24 @@ module RedmineUndevGit::Services
 
     def save_fact_of_applying_hook(req, journal_id)
       req.repo_revision.applied_hooks.create!(
-          hook:         req.hook,
-          ref:          req.branch && repo_ref_by_name(req.branch),
-          issue:        req.issue,
-          journal_id:   journal_id,
-          author_email: req.repo_revision.author_email,
-          author_date:  req.repo_revision.author_date,
-          keyword:      req.keyword,
-          branch:       req.branch
+        hook:         req.hook,
+        ref:          req.branch && repo_ref_by_name(req.branch),
+        issue:        req.issue,
+        journal_id:   journal_id,
+        author_email: req.repo_revision.author_email,
+        author_date:  req.repo_revision.author_date,
+        keyword:      req.keyword,
+        branch:       req.branch
       )
     end
 
     def hook_was_applied?(req)
       repo.applied_hooks.where(
-          issue_id: req.issue.id,
-          author_email: req.repo_revision.author_email,
-          author_date: req.repo_revision.author_date,
-          keyword: req.keyword,
-          branch: req.branch
+        issue_id:     req.issue.id,
+        author_email: req.repo_revision.author_email,
+        author_date:  req.repo_revision.author_date,
+        keyword:      req.keyword,
+        branch:       req.branch
       ).any?
     end
 
@@ -313,7 +313,7 @@ module RedmineUndevGit::Services
 
     def initialize_repository
       if scm.repository_exists?
-        fetch_url = scm.fetch_url
+        fetch_url     = scm.fetch_url
         scm.fetch_url = repo.url if fetch_url != repo.url
       else
         scm.clone_repository
@@ -368,7 +368,7 @@ module RedmineUndevGit::Services
     # 2.2. for any branch
     def all_applicable_hooks
       @all_applicable_hooks_cache ||=
-          ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
+        ProjectHook.global.by_position.partition { |h| !h.any_branch? }.flatten +
           GlobalHook.by_position.partition { |h| !h.any_branch? }.flatten
     end
 

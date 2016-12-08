@@ -6,12 +6,12 @@
     <legend><%= l(:label_hook_filter) %></legend>
 
     <p>
-      <%= f.text_field :branches, required: true %><br />
+      <%= f.text_field :branches, required: true %><br/>
       <em><%= raw(l(:text_branches)) %></em>
     </p>
 
     <p>
-      <%= f.text_field :keywords, required: true %><br />
+      <%= f.text_field :keywords, required: true %><br/>
       <em><%= l(:text_comma_separated) %></em>
     </p>
   </fieldset>
@@ -20,24 +20,24 @@
     <legend><%= l(:label_hook_new_values) %></legend>
 
     <p>
-      <%= f.select :status_id, [['', nil]] + IssueStatus.all.map { |status| [ status.name, status.id ] } %>
+      <%= f.select :status_id, [['', nil]] + IssueStatus.sorted.map { |status| [status.name, status.id] } %>
     </p>
 
     <p>
-      <%= f.select :done_ratio, [['', nil]] + (0 .. 10).to_a.map { |r| [ "#{r * 10} %", r * 10 ] } %>
+      <%= f.select :done_ratio, [['', nil]] + (0 .. 10).to_a.map { |r| ["#{r * 10} %", r * 10] } %>
     </p>
 
     <p>
       <%= f.select :assignee_type,
-                   GlobalHook::ASSIGNEE_TYPES.map { |type| [l("assignee_type.#{type}"), type] },
-                   {},
-                   class: 'hook_assignee_type' %>
+          GlobalHook::ASSIGNEE_TYPES.map { |type| [l("assignee_type.#{type}"), type] },
+          {},
+          class: 'hook_assignee_type' %>
     </p>
 
     <p><%= f.select :assigned_to_id,
-                    principals_options_for_select(hook.assignable_users, hook.assigned_to),
-                    {},
-                    class: 'hook_assigned_to_id' %></p>
+        principals_options_for_select(hook.assignable_users, hook.assigned_to),
+        {},
+        class: 'hook_assigned_to_id' %></p>
 
     <% hook.custom_field_values.each do |value| %>
       <p><%= hook_custom_field_value_tag_with_label :global_hook, value %></p>

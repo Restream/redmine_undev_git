@@ -4,5 +4,4 @@ module RedmineUndevGit::Services
 
   class WrongRepoUrl < ServiceError
   end
-
 end

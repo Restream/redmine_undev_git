@@ -1,9 +1,9 @@
 class HookBase < ActiveRecord::Base
   self.table_name = 'hooks'
 
-  NOBODY = 'nobody'
-  USER = 'user'
-  AUTHOR = 'author'
+  NOBODY         = 'nobody'
+  USER           = 'user'
+  AUTHOR         = 'author'
   ASSIGNEE_TYPES = [NOBODY, USER, AUTHOR]
 
   include Redmine::SafeAttributes
@@ -21,7 +21,7 @@ class HookBase < ActiveRecord::Base
   validates :keywords, presence: true
   validates :assignee_type, presence: true, inclusion: { in: ASSIGNEE_TYPES }
 
-  scope :by_position, order("#{table_name}.position")
+  scope :by_position, -> { order("#{table_name}.position") }
 
   def available_custom_fields
     CustomField.where('type = ?', 'IssueCustomField').order('position')
@@ -62,7 +62,7 @@ class HookBase < ActiveRecord::Base
     return unless has_changes_for_issue?(issue)
 
     updater = options[:user] || User.anonymous
-    notes = options[:notes] || "Changed by hook #{id}"
+    notes   = options[:notes] || "Changed by hook #{id}"
 
     issue.reload
     issue.init_journal(updater, notes)
@@ -94,9 +94,9 @@ class HookBase < ActiveRecord::Base
 
   def has_changes_for_issue?(issue)
     (status && issue.status != status) ||
-        (done_ratio.present? && issue.done_ratio != done_ratio) ||
-        (assignee(issue) && issue.assigned_to != assignee(issue)) ||
-        has_custom_field_changes_for_issue?(issue)
+      (done_ratio.present? && issue.done_ratio != done_ratio) ||
+      (assignee(issue) && issue.assigned_to != assignee(issue)) ||
+      has_custom_field_changes_for_issue?(issue)
   end
 
   def has_custom_field_changes_for_issue?(issue)
@@ -107,13 +107,13 @@ class HookBase < ActiveRecord::Base
   end
 
   def change_issue(issue)
-    issue.status = status if status
-    issue.done_ratio = done_ratio if done_ratio.present?
+    issue.status      = status if status
+    issue.done_ratio  = done_ratio if done_ratio.present?
     issue.assigned_to = assignee(issue) if assignee(issue)
 
     cfvalues = {}
     issue.custom_field_values.each do |cfvalue|
-      hook_value = custom_value_for(cfvalue.custom_field)
+      hook_value                        = custom_value_for(cfvalue.custom_field)
       cfvalues[cfvalue.custom_field_id] = hook_value.value if hook_value.try(:value).present?
     end
     issue.custom_field_values = cfvalues unless cfvalues.empty?

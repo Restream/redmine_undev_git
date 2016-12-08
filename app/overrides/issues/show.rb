@@ -1,9 +1,9 @@
 Deface::Override.new(
-    virtual_path: 'issues/show',
-    name: 'related_remote_repo_revisions',
-    replace: 'code:contains("if @changesets.present?")',
-    closing_selector: 'code:contains("end")',
-    text: <<INCLUDES
+  virtual_path:     'issues/show',
+  name:             'related_remote_repo_revisions',
+  replace:          'erb:contains("if @changesets.present?")',
+  closing_selector: 'erb:contains("end")',
+  text:             <<INCLUDES
 <% if @changesets.present? || remote_revisions.present? %>
 <div id="issue-changesets">
   <% if @changesets.present? %>

@@ -11,7 +11,7 @@ class RemoteRepoSitesController < ApplicationController
   private
 
   def remote_repo_sites
-    @remote_repo_sites ||= RemoteRepoSite.all
+    @remote_repo_sites ||= RemoteRepoSite.order('server_name')
   end
 
 end

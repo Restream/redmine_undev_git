@@ -8,7 +8,7 @@ class Repository::RemoteGit < Repository
 
   # Hooks from all projects without explicit repository_id
   def hooks
-    # ???
+    # TODO
   end
 
   def supports_directory_revisions?

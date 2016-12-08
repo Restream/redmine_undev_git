@@ -4,7 +4,7 @@ class RemoteRepoSitesControllerTest < ActionController::TestCase
   tests RemoteRepoSitesController
 
   def setup
-    @user = create(:admin_user)
+    @user                     = create(:admin_user)
     request.session[:user_id] = @user.id
   end
 
@@ -19,8 +19,7 @@ class RemoteRepoSitesControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_match site1.server_name, response.body
-    assert_tag tag: 'a', attributes: { href: site1.uri }
-    assert_match site2.server_name, response.body
-    assert_tag tag: 'a', attributes: { href: site2.uri }
+    assert_select 'a[href=?]', site1.uri
+    assert_select 'a[href=?]', site2.uri
   end
 end

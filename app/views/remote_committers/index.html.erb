@@ -20,7 +20,7 @@
       <% i = 0 -%>
       <% committers.each do |committer, user_id| -%>
         <tr class="<%= cycle 'odd', 'even' %>">
-          <td><%=h committer %></td>
+          <td><%= h committer %></td>
           <td>
             <%= hidden_field_tag "committers[#{i}][]", committer %>
             <%= select_tag "committers[#{i}][]",

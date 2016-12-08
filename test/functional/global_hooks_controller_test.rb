@@ -1,14 +1,14 @@
 require File.expand_path('../../test_helper', __FILE__)
 
 class GlobalHooksControllerTest < ActionController::TestCase
-  fixtures :users, :roles, :members, :member_roles, :issue_statuses
+  fixtures :users, :email_addresses, :roles, :members, :member_roles, :issue_statuses
 
   def setup
-    @controller = GlobalHooksController.new
-    @request    = ActionController::TestRequest.new
-    @response   = ActionController::TestResponse.new
-    @user = User.find(1) # admin
-    User.current = @user
+    @controller                = GlobalHooksController.new
+    @request                   = ActionController::TestRequest.new
+    @response                  = ActionController::TestResponse.new
+    @user                      = User.find(1) # admin
+    User.current               = @user
     @request.session[:user_id] = @user.id
 
     create_hooks!
@@ -46,9 +46,9 @@ class GlobalHooksControllerTest < ActionController::TestCase
   def test_post_create
     assert_difference 'GlobalHook.count', 1 do
       post :create, global_hook: {
-              branches:   'Master',
-              keywords:   'closes',
-              done_ratio: '50%' }
+        branches:   'Master',
+        keywords:   'closes',
+        done_ratio: '50%' }
     end
 
     assert_redirected_to '/hooks'

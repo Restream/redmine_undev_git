@@ -250,10 +250,8 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       assert_equal 'sources', assigns(:entry).name
     end
 
-    focus
     def test_diff
       assert @repository.is_default
-      binding.pry
       assert_nil @repository.identifier
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets

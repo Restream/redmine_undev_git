@@ -1,48 +1,18 @@
-# commented rvm 1.9.3 and mysql for less load
-
 language: ruby
 
 services:
-#  - mysql
   - postgresql
 
 rvm:
-#  - 1.9.3
-  - 2.1.1
+  - 2.3.1
 
 gemfile:
   - $REDMINE_PATH/Gemfile
 
 env:
-#  - REDMINE_VER=2.1.6 DB=mysql
-#  - REDMINE_VER=2.2.4 DB=mysql
-#  - REDMINE_VER=2.3.3 DB=mysql
-#  - REDMINE_VER=2.3.4 DB=mysql
-#  - REDMINE_VER=2.4.7 DB=mysql
-#  - REDMINE_VER=2.5.3 DB=mysql
-#  - REDMINE_VER=2.6.0 DB=mysql
-  - REDMINE_VER=2.1.6 DB=postgresql
-  - REDMINE_VER=2.2.4 DB=postgresql
-  - REDMINE_VER=2.3.3 DB=postgresql
-  - REDMINE_VER=2.3.4 DB=postgresql
-  - REDMINE_VER=2.4.7 DB=postgresql
-  - REDMINE_VER=2.5.3 DB=postgresql
-  - REDMINE_VER=2.6.0 DB=postgresql
-
-matrix:
-  exclude:
-#    - rvm: 2.1.1
-#      env: REDMINE_VER=2.1.6 DB=mysql
-#      gemfile: $REDMINE_PATH/Gemfile
-#    - rvm: 2.1.1
-#      env: REDMINE_VER=2.2.4 DB=mysql
-#      gemfile: $REDMINE_PATH/Gemfile
-    - rvm: 2.1.1
-      env: REDMINE_VER=2.1.6 DB=postgresql
-      gemfile: $REDMINE_PATH/Gemfile
-    - rvm: 2.1.1
-      env: REDMINE_VER=2.2.4 DB=postgresql
-      gemfile: $REDMINE_PATH/Gemfile
+  - REDMINE_VER=3.1.7 DB=postgresql
+  - REDMINE_VER=3.2.4 DB=postgresql
+  - REDMINE_VER=3.3.1 DB=postgresql
 
 before_install:
   - export PLUGIN_NAME=redmine_undev_git
@@ -59,5 +29,5 @@ before_script:
   - bundle exec rake test:scm:setup:undev_git
 
 script:
-  - bundle exec rake redmine:plugins:test NAME=$PLUGIN_NAME
+  - bundle exec rake redmine:plugins:test NAME=$PLUGIN_NAME RUBYOPT="-W0"
 

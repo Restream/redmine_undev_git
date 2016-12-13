@@ -187,11 +187,10 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
 
     def test_changes
       @repository.fetch_changesets
-      get :changes, id: PRJ_ID,
-        path:           repository_path_hash(['images', 'edit.png'])[:param]
+      get :changes, id: PRJ_ID, path: repository_path_hash(['images', 'edit.png'])[:param]
       assert_response :success
       assert_template 'changes'
-      assert_select 'h2', 'edit.png'
+      assert_select 'h2', /edit.png/
     end
 
     def test_entry_show
@@ -435,9 +434,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       assert_response :success
       assert_template 'diff'
       # modified file
-      assert_select 'th.filename', text: /sources\/watchers_controller\.rb/
-      # deleted file
-      assert_select 'th.filename', text: /test\.txt/
+      assert_select 'th.filename', 'sources/watchers_controller.rb'
     end
 
     def test_save_diff_type

@@ -1,16 +1,18 @@
-require 'projects_controller'
+require_dependency 'projects_controller'
 
-module RedmineUndevGit::Patches::ProjectsControllerPatch
-  extend ActiveSupport::Concern
+module RedmineUndevGit
+  module Patches
+    module ProjectsControllerPatch
 
-  included do
-    lazy_helper :hooks
-    lazy_helper :custom_fields
+      def self.prepended(base)
+        base.class_eval do
+
+          helper :hooks
+          helper :custom_fields
+
+        end
+      end
+
+    end
   end
-
 end
-
-unless ProjectsController.included_modules.include?(RedmineUndevGit::Patches::ProjectsControllerPatch)
-  ProjectsController.send :include, RedmineUndevGit::Patches::ProjectsControllerPatch
-end
-

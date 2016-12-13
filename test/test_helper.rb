@@ -111,7 +111,7 @@ class ActiveSupport::TestCase
       done_ratio: '80%'
     )
     ProjectHook.create!(
-      project_id:    3,
+      project:       Project.find(3),
       repository_id: repository_id,
       branches:      'master',
       keywords:      'close,fix',
@@ -119,7 +119,7 @@ class ActiveSupport::TestCase
       done_ratio:    '70%'
     )
     ProjectHook.create!(
-      project_id:    3,
+      project:       Project.find(3),
       repository_id: repository_id,
       branches:      'production',
       keywords:      'close,fix',
@@ -127,7 +127,7 @@ class ActiveSupport::TestCase
       done_ratio:    '60%'
     )
     ProjectHook.create!(
-      project_id: 3,
+      project:    Project.find(3),
       branches:   'production',
       keywords:   'fix',
       status_id:  3,

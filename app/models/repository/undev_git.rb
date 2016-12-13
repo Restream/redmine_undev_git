@@ -1,4 +1,4 @@
-require 'redmine/scm/adapters/undev_git_adapter'
+require_dependency 'redmine/scm/adapters/undev_git_adapter'
 
 class Repository::UndevGit < Repository
 

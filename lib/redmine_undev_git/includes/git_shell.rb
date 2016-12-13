@@ -1,6 +1,10 @@
 module RedmineUndevGit::Includes::GitShell
   extend ActiveSupport::Concern
 
+  included do
+    require 'open3'
+  end
+
   module ClassMethods
 
     def quoted_git_command

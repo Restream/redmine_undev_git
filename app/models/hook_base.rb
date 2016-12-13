@@ -33,11 +33,11 @@ class HookBase < ActiveRecord::Base
   end
 
   def branches
-    @branches ||= read_attribute(:branches).to_s.split_by_comma
+    @branches ||= read_attribute(:branches).to_s.downcase.split(',').map(&:strip)
   end
 
   def keywords
-    @keywords ||= read_attribute(:keywords).to_s.split_by_comma
+    @keywords ||= read_attribute(:keywords).to_s.downcase.split(',').map(&:strip)
   end
 
   def applicable_for?(o_keywords, o_branches)

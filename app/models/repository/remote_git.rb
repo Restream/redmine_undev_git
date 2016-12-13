@@ -1,4 +1,7 @@
-require 'redmine/scm/adapters/undev_git_adapter'
+require_dependency 'redmine/scm/adapters/undev_git_adapter'
+require_dependency 'redmine_undev_git/includes/repo_store'
+require_dependency 'redmine_undev_git/includes/repo_fetch'
+require_dependency 'redmine_undev_git/includes/repo_validate'
 
 class Repository::RemoteGit < Repository
 

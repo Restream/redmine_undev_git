@@ -62,6 +62,7 @@ class ProjectHooksController < ApplicationController
 
   def project_hook_params_with_cfv
     params.required(:project_hook).
-      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type, :assigned_to_id, :custom_field_values)
+      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type,
+        :assigned_to_id, :custom_field_values, :move_to)
   end
 end

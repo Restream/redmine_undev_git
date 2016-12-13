@@ -1,19 +1,7 @@
 require 'redmine'
 
-raise(
-  PluginRequirementError,
-  "redmine_undev_git plugin requires Ruby 1.9.1 or higher but current is #{RUBY_VERSION}"
-) unless RUBY_VERSION >= '1.9.1'
-
-raise(
-  PluginRequirementError,
-  'redmine_undev_git plugin requires git version 1.7.2 or higher'
-) unless RedmineUndevGit::Services::GitAdapter.git_version >= '1.7.2'
-
 Rails.application.paths['app/overrides'] ||= []
 Rails.application.paths['app/overrides'] << File.expand_path('../app/overrides', __FILE__)
-
-require 'redmine_undev_git'
 
 Redmine::Plugin.register :redmine_undev_git do
   name 'Redmine UndevGit Plugin'
@@ -23,7 +11,7 @@ Redmine::Plugin.register :redmine_undev_git do
   version '0.3.0'
   url 'https://github.com/Restream/redmine_undev_git'
 
-  requires_redmine version_or_higher: '2.1'
+  requires_redmine version_or_higher: '3.1'
 
   # Global hooks
   menu :admin_menu,
@@ -64,4 +52,7 @@ Redmine::Plugin.register :redmine_undev_git do
 
 end
 
-Redmine::Scm::Base.insert 0, 'UndevGit'
+require 'redmine_undev_git'
+
+# Add UndevGit SCM adapter and repository
+Redmine::Scm::Base.add 'UndevGit'

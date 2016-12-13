@@ -1,19 +1,26 @@
-module RedmineUndevGit::Patches
-  module RedmineScmBasePatch
-    extend ActiveSupport::Concern
+require_dependency 'redmine/scm/base'
 
-    module ClassMethods
+module RedmineUndevGit
+  module Patches
+    module RedmineScmBasePatch
 
-      # Inserts the given SCM adapter and Repository before the SCM adapter with the given index.
-      def insert(index, scm_name)
-        @scms ||= []
-        @scms.insert(index, scm_name)
+      def self.prepended(base)
+        base.class_eval do
+
+          extend ClassMethods
+
+        end
       end
 
+      module ClassMethods
+
+        # Inserts the given SCM adapter and Repository before the SCM adapter with the given index.
+        def insert(index, scm_name)
+          @scms ||= []
+          @scms.insert(index, scm_name)
+        end
+
+      end
     end
   end
-end
-
-unless Redmine::Scm::Base.included_modules.include?(RedmineUndevGit::Patches::RedmineScmBasePatch)
-  Redmine::Scm::Base.send :include, RedmineUndevGit::Patches::RedmineScmBasePatch
 end

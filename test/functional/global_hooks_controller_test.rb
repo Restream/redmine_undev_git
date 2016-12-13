@@ -1,7 +1,7 @@
 require File.expand_path('../../test_helper', __FILE__)
 
 class GlobalHooksControllerTest < ActionController::TestCase
-  fixtures :users, :email_addresses, :roles, :members, :member_roles, :issue_statuses
+  fixtures :users, :email_addresses, :roles, :members, :member_roles, :issue_statuses, :projects
 
   def setup
     @controller                = GlobalHooksController.new

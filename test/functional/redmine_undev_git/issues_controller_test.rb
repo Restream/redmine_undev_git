@@ -53,7 +53,7 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
   end
 
   def test_show_repo_name_in_associated_revisions
-    @repository = create_test_repository(project: @project)
+    @repository = create_test_repository(project: @project, identifier: 'repotest')
     @repository.fetch_changesets
     changeset = @repository.changesets.last
     branches  = %w[fakebranch]
@@ -63,10 +63,8 @@ class RedmineUndevGit::IssuesControllerTest < ActionController::TestCase
     get :show, id: 1
     assert_response :success
 
-    assert_select 'div#issue-changesets a', { text: /#{@repository.name}/ } do |links|
-      assert_equal 1, links.length
-      assert_match "/projects/ecookbook/repository/#{@repository.identifier_param}",
-        links[0].attributes['href']
+    assert_select 'div#issue-changesets a', { text: @repository.name } do |links|
+      assert_select 'a', 'repotest', count: 1
     end
   end
 

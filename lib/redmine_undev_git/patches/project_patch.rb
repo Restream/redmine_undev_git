@@ -1,17 +1,21 @@
-module RedmineUndevGit::Patches
-  module ProjectPatch
-    extend ActiveSupport::Concern
+require_dependency 'project'
 
-    included do
-      has_many :hooks, class_name: 'ProjectHook'
-    end
+module RedmineUndevGit
+  module Patches
+    module ProjectPatch
 
-    def remote_repositories
-      RemoteRepo.related_to_project(self)
+      def self.prepended(base)
+        base.class_eval do
+
+          has_many :hooks, class_name: 'ProjectHook'
+
+        end
+      end
+
+      def remote_repositories
+        RemoteRepo.related_to_project(self)
+      end
+
     end
   end
-end
-
-unless Project.included_modules.include?(RedmineUndevGit::Patches::ProjectPatch)
-  Project.send :include, RedmineUndevGit::Patches::ProjectPatch
 end

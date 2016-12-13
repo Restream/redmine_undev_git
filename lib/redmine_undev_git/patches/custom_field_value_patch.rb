@@ -1,17 +1,16 @@
-module RedmineUndevGit::Patches
-  module CustomFieldValuePatch
-    extend ActiveSupport::Concern
+require_dependency 'custom_field_value'
 
-    def value_blank?
-      if value.is_a?(Array)
-        value.empty? || value.map(&:blank?).inject(:&)
-      else
-        value.blank?
+module RedmineUndevGit
+  module Patches
+    module CustomFieldValuePatch
+
+      def value_blank?
+        if value.is_a?(Array)
+          value.empty? || value.map(&:blank?).inject(:&)
+        else
+          value.blank?
+        end
       end
     end
   end
-end
-
-unless CustomFieldValue.included_modules.include?(RedmineUndevGit::Patches::CustomFieldValuePatch)
-  CustomFieldValue.send :include, RedmineUndevGit::Patches::CustomFieldValuePatch
 end

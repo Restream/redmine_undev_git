@@ -54,6 +54,6 @@ class GlobalHooksController < ApplicationController
 
   def global_hook_params
     params.required(:global_hook).
-      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type, :assigned_to_id)
+      permit(:branches, :keywords, :status_id, :done_ratio, :assignee_type, :assigned_to_id, :move_to)
   end
 end

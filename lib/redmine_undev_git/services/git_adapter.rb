@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'open3'
 
 module RedmineUndevGit::Services
 

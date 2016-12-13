@@ -1,65 +1,71 @@
-module RedmineUndevGit::Patches
-  module RepositoryPatch
-    extend ActiveSupport::Concern
+require_dependency 'repository'
 
-    included do
-      KEEP_FETCH_EVENTS    = 100
-      RED_STATUS_THRESHOLD = 3
+class Repository < ActiveRecord::Base
+  KEEP_FETCH_EVENTS    = 100
+  RED_STATUS_THRESHOLD = 3
+end
 
-      has_many :fetch_events, dependent: :delete_all
+module RedmineUndevGit
+  module Patches
+    module RepositoryPatch
 
-      class << self
-        alias_method_chain :fetch_changesets, :web_hooks
-      end
-    end
+      def self.prepended(base)
+        base.class_eval do
 
-    module ClassMethods
-      def fetch_changesets_with_web_hooks
-        Project.active.has_module(:repository).each do |project|
-          project.repositories.each do |repository|
-            begin
-              if self.fetch_by_web_hook?(repository)
-                logger.warning "Repository #{repository.url} skipped because it's fetch by web hooks."
-              else
-                repository.fetch_changesets
-              end
-            rescue Redmine::Scm::Adapters::CommandFailed => e
-              logger.error "scm: error during fetching changesets: #{e.message} #{repository.url}"
-            rescue Exception => e
-              logger.error "Unknown error during fetching changesets: #{e.message} #{repository.url}"
-            end
+          has_many :fetch_events, dependent: :delete_all
+
+          class << base
+            prepend ClassMethods
           end
+
         end
       end
 
-      def fetch_by_web_hook?(repository)
-        repository.respond_to?(:fetch_by_web_hook?) &&
-          (RedmineUndevGit.fetch_by_web_hook? || repository.fetch_by_web_hook?)
+      module ClassMethods
+        def fetch_changesets
+          Project.active.has_module(:repository).each do |project|
+            project.repositories.each do |repository|
+              begin
+                if self.fetch_by_web_hook?(repository)
+                  logger.warning "Repository #{repository.url} skipped because it's fetch by web hooks."
+                else
+                  repository.fetch_changesets
+                end
+              rescue Redmine::Scm::Adapters::CommandFailed => e
+                logger.error "scm: error during fetching changesets: #{e.message} #{repository.url}"
+              rescue Exception => e
+                logger.error "Unknown error during fetching changesets: #{e.message} #{repository.url}"
+              end
+            end
+          end
+        end
+
+        def fetch_by_web_hook?(repository)
+          repository.respond_to?(:fetch_by_web_hook?) &&
+            (RedmineUndevGit.fetch_by_web_hook? || repository.fetch_by_web_hook?)
+        end
+      end
+
+      def cleanup_fetch_events(keep = nil)
+        return unless persisted?
+        keep     ||= Repository::KEEP_FETCH_EVENTS
+        last_ids = fetch_events.sorted.limit(keep).pluck(:id)
+        return 0 if last_ids.count < keep
+        FetchEvent.delete_all(['repository_id = ? and id < ?', id, last_ids.min])
+      end
+
+      # should returns :unknown, :green, :yellow or :red status
+      def fetch_status
+        :unknown
+      end
+
+      def fetch_successful?
+        last_fetch_event.try(:successful?)
+      end
+
+      def last_fetch_event
+        fetch_events.sorted.first
       end
     end
-
-    def cleanup_fetch_events(keep = KEEP_FETCH_EVENTS)
-      return unless persisted?
-      last_ids = fetch_events.sorted.limit(keep).pluck(:id)
-      return 0 if last_ids.count < keep
-      FetchEvent.delete_all(['repository_id = ? and id < ?', id, last_ids.min])
-    end
-
-    # should returns :unknown, :green, :yellow or :red status
-    def fetch_status
-      :unknown
-    end
-
-    def fetch_successful?
-      last_fetch_event.try(:successful?)
-    end
-
-    def last_fetch_event
-      fetch_events.sorted.first
-    end
   end
-end
-
-unless Repository.included_modules.include?(RedmineUndevGit::Patches::RepositoryPatch)
-  Repository.send :include, RedmineUndevGit::Patches::RepositoryPatch
 end

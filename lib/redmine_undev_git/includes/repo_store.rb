@@ -46,6 +46,6 @@ module RedmineUndevGit::Includes::RepoStore
   end
 
   def remove_repository_folder
-    FileUtils.remove_entry_secure(root_url) if root_url.present? && Dir.exists?(root_url)
+    FileUtils.remove_entry_secure(root_url) if root_url.present? && Dir.exist?(root_url)
   end
 end

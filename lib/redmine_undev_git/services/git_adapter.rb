@@ -35,7 +35,7 @@ module RedmineUndevGit::Services
     end
 
     def repository_exists?
-      return false unless Dir.exists?(root_url)
+      return false unless Dir.exist?(root_url)
       git_cmd('--git-dir', root_url, 'rev-parse')
       true
     rescue Redmine::Scm::Adapters::CommandFailed
@@ -163,7 +163,7 @@ module RedmineUndevGit::Services
     end
 
     def remove_repo
-      FileUtils.rm_r(root_url) if Dir.exists?(root_url)
+      FileUtils.rm_r(root_url) if Dir.exist?(root_url)
     end
 
   end

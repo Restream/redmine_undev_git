@@ -641,9 +641,9 @@ class UndevGitTest < ActiveSupport::TestCase
       repository = create_test_repository(identifier: 'x')
       repository.fetch_changesets
       root_url = repository.root_url
-      assert Dir.exists?(root_url)
+      assert Dir.exist?(root_url)
       repository.destroy
-      refute Dir.exists?(root_url)
+      refute Dir.exist?(root_url)
     end
 
     def test_previous_branches

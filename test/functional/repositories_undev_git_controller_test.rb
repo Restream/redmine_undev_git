@@ -250,8 +250,8 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
     end
 
     def test_diff
-      assert @repository.is_default
-      assert_nil @repository.identifier
+      assert_equal true, @repository.is_default
+      assert @repository.identifier.blank?
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets
       @project.reload
@@ -259,21 +259,14 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       # Full diff of changeset 2f9c0091
       ['inline', 'sbs'].each do |dt|
         get :diff,
-          id:   PRJ_ID,
-          rev:  '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
-          type: dt
+            :id   => PRJ_ID,
+            :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
+            :type => dt
         assert_response :success
         assert_template 'diff'
         # Line 22 removed
-        assert_select 'th', /22/
-        assert_select 'th', /2f9c0091/
-        assert_select 'th ~ td.diff_out', /def remove/
-        assert_tag tag: 'th',
-          content:      /22/,
-          sibling:      { tag: 'td',
-            attributes:        { class: /diff_out/ },
-            content:           /def remove/ }
-        assert_tag tag: 'h2', content: /2f9c0091/
+        assert_select 'th.line-num:contains(22) ~ td.diff_out', :text => /def remove/
+        assert_select 'h2', :text => /2f9c0091/
       end
     end
 
@@ -624,9 +617,7 @@ class RepositoriesUndevGitControllerTest < ActionController::TestCase
       get :revision, id: PRJ_ID, rev: changeset.revision
       assert_response :success
 
-      assert_select 'table.revision-info a', { text: /fakebranch/ } do |links|
-        assert_equal max_branches, links.length
-      end
+      assert_select 'table.revision-info a', { text: /fakebranch/, count: max_branches }
     end
 
     def test_new_form_contains_fetch_by_web_hook_checkbox

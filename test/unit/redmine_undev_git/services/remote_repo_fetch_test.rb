@@ -47,9 +47,9 @@ class RedmineUndevGit::Services::RemoteRepoFetchTest < ActiveSupport::TestCase
   end
 
   def test_initialize_repo_should_clone_repo
-    refute Dir.exists?(@service.local_path)
+    refute Dir.exist?(@service.local_path)
     @service.send :initialize_repository
-    assert Dir.exists?(@service.local_path)
+    assert Dir.exist?(@service.local_path)
     assert @service.scm.repository_exists?
   end
 

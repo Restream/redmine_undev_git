@@ -1,5 +1,5 @@
 Deface::Override.new(
-  virtual_path: 'repositories/revision',
+  virtual_path: 'repositories/_changeset',
   name:         'revision_rebased_to',
   insert_after: 'h2 erb:contains(\'format_revision(@changeset)\')',
   text:         <<-REBASE_INFO
@@ -38,7 +38,7 @@ REBASE_INFO
 )
 
 Deface::Override.new(
-  virtual_path:  'repositories/revision',
+  virtual_path:  'repositories/_changeset',
   name:          'branches_for_revision',
   insert_bottom: 'table.revision-info',
   text:          '<tr><td><%= l(:label_branches) %></td><td><%= changeset_branches(@changeset, 0) %></td></tr>')

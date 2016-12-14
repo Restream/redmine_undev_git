@@ -379,7 +379,7 @@ module Redmine::Scm::Adapters
     end
 
     def cloned?
-      return false unless Dir.exists?(root_url)
+      return false unless Dir.exist?(root_url)
 
       args = ['--git-dir', root_url, 'rev-parse']
       args = args.map { |arg| shell_quote(arg.to_s) }.join(' ')

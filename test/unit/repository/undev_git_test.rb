@@ -110,7 +110,7 @@ class UndevGitTest < ActiveSupport::TestCase
       @project.reload
 
       assert_equal NUM_REV, @repository.changesets.count
-      assert_equal 38, @repository.filechanges.count
+      assert_equal 39, @repository.filechanges.count
 
       commit = @repository.changesets.find_by_revision('7234cb2750b63f47bff735edc50a1c0a433c2518')
       assert_equal '7234cb2750b63f47bff735edc50a1c0a433c2518', commit.scmid

@@ -14,7 +14,7 @@ When accessing a remote or local repository, UndevGit clones it and then works w
 
 ## Compatibility
 
-This plugin version is compatible only with Redmine 3.x and later.
+This plugin version is compatible only with Redmine 3.3.1 and later.
 
 ## Installation
 

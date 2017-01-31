@@ -247,7 +247,7 @@ module RedmineUndevGit::Includes::RepoFetch
       # log time for issues
       if Setting.commit_logtime_enabled?
         parsed[:log_time].each do |issue, hours|
-          changeset.log_time(issue, hours)
+          changeset.log_time_wrapped(issue, hours)
         end
       end
     end

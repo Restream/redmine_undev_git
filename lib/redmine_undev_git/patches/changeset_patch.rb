@@ -86,6 +86,9 @@ module RedmineUndevGit
         tag
       end
 
+      def log_time_wrapped(issue, hours)
+        log_time(issue, hours)
+      end
     end
   end
 end

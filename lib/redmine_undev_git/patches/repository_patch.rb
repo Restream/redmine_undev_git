@@ -27,7 +27,7 @@ module RedmineUndevGit
             project.repositories.each do |repository|
               begin
                 if self.fetch_by_web_hook?(repository)
-                  logger.warning "Repository #{repository.url} skipped because it's fetch by web hooks."
+                  logger.warn "Repository #{repository.url} skipped because it's fetch by web hooks."
                 else
                   repository.fetch_changesets
                 end

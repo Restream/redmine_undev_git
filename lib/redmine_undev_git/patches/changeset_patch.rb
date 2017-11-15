@@ -86,6 +86,15 @@ module RedmineUndevGit
         tag
       end
 
+      def log_time_wrapped(issue, hours)
+        if hours.kind_of?(Array)
+          hours.each do |h|
+            log_time(issue, h)
+          end
+        else
+          log_time(issue, hours)
+        end
+      end
     end
   end
 end
